@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>비주거 부동산담보대출 상담 기록</title>
+    <!-- 
+        SheetJS (xlsx.full.min.js) v0.20.1
+        - 기능: 브라우저에서 Excel(.xlsx) 파일 생성/읽기
+        - 용량: ~500KB (CDN gzip 압축 시 ~150KB)
+        - 사용법: XLSX.utils로 시트 생성 → XLSX.writeFile로 다운로드
+        - 라이선스: Apache 2.0
+    -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <style>
+        /* ===== 전역 리셋 및 기본 스타일 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+            background: #f0f2f5;
+            color: #333;
+            font-size: 14px;
+        }
+
+        /* ===== 헤더 영역 ===== */
+        .header {
+            background: linear-gradient(135deg, #1a237e, #283593);
+            color: white;
+            padding: 20px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            font-size: 13px;
+            opacity: 0.85;
+        }
+
+        /* ===== 상단 액션 버튼 바 ===== */
+        .action-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 12px 20px;
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .action-bar button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-add { background: #1565c0; color: #fff; }
+        .btn-add:hover { background: #0d47a1; }
+        .btn-excel { background: #2e7d32; color: #fff; }
+        .btn-excel:hover { background: #1b5e20; }
+        .btn-compare { background: #6a1b9a; color: #fff; }
+        .btn-compare:hover { background: #4a148c; }
+        .btn-save { background: #e65100; color: #fff; }
+        .btn-save:hover { background: #bf360c; }
+        .btn-load { background: #00838f; color: #fff; }
+        .btn-load:hover { background: #006064; }
+        .btn-clear { background: #c62828; color: #fff; }
+        .btn-clear:hover { background: #b71c1c; }
+
+        /* ===== 탭 네비게이션 ===== */
+        .tab-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            padding: 10px 20px;
+            background: #e8eaf6;
+            border-bottom: 2px solid #3949ab;
+        }
+
+        .tab-btn {
+            padding: 8px 14px;
+            border: 1px solid #9fa8da;
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            background: #c5cae9;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .tab-btn.active {
+            background: #fff;
+            border-color: #3949ab;
+            color: #1a237e;
+        }
+
+        .tab-btn .close-tab {
+            margin-left: 6px;
+            color: #999;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .tab-btn .close-tab:hover {
+            color: #c62828;
+        }
+
+        /* ===== 탭 콘텐츠 (폼) ===== */
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ===== 섹션 스타일 ===== */
+        .section {
+            background: #fff;
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1a237e;
+            border-left: 4px solid #3949ab;
+            padding-left: 10px;
+            margin-bottom: 14px;
+        }
+
+        /* ===== 필드 행 ===== */
+        .field-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+
+        .field-label {
+            flex: 0 0 260px;
+            font-weight: 600;
+            font-size: 13px;
+            color: #444;
+        }
+
+        .field-label .field-num {
+            color: #3949ab;
+            margin-right: 4px;
+        }
+
+        .field-input {
+            flex: 1;
+        }
+
+        .field-input input[type="text"],
+        .field-input input[type="number"],
+        .field-input textarea,
+        .field-input select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .field-input textarea {
+            height: 60px;
+            resize: vertical;
+        }
+
+        .field-input input:focus,
+        .field-input textarea:focus,
+        .field-input select:focus {
+            outline: none;
+            border-color: #3949ab;
+            box-shadow: 0 0 0 2px rgba(57,73,171,0.15);
+        }
+
+        .field-hint {
+            flex: 0 0 200px;
+            font-size: 11px;
+            color: #888;
+        }
+
+        /* ===== 라디오/체크 그룹 ===== */
+        .radio-group, .check-group {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .radio-group label, .check-group label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        /* ===== 자동 계산 영역 ===== */
+        .calc-box {
+            background: #e8eaf6;
+            border: 2px solid #3949ab;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-top: 10px;
+        }
+
+        .calc-box .calc-title {
+            font-weight: 700;
+            color: #1a237e;
+            margin-bottom: 10px;
+        }
+
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px dashed #9fa8da;
+        }
+
+        .calc-row:last-child {
+            border-bottom: none;
+        }
+
+        .calc-label {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .calc-value {
+            font-weight: 700;
+            color: #c62828;
+            font-size: 14px;
+        }
+
+        /* ===== 은행 선택 모달 ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 700px;
+            width: 95%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #1a237e;
+        }
+
+        .preset-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .preset-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-size: 12px;
+        }
+
+        .preset-item:hover {
+            background: #e8eaf6;
+        }
+
+        .preset-item input[type="checkbox"] {
+            flex-shrink: 0;
+        }
+
+        .preset-bank {
+            font-weight: 700;
+            color: #1a237e;
+            min-width: 90px;
+        }
+
+        .preset-branch {
+            font-weight: 600;
+            min-width: 160px;
+        }
+
+        .preset-addr {
+            color: #666;
+            flex: 1;
+        }
+
+        .preset-tel {
+            color: #2e7d32;
+            font-weight: 600;
+            min-width: 110px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-actions button {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .modal-ok { background: #1565c0; color: #fff; }
+        .modal-cancel { background: #bdbdbd; color: #333; }
+
+        /* ===== 비교표 모달 ===== */
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .compare-table th {
+            background: #1a237e;
+            color: #fff;
+            padding: 8px 6px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .compare-table td {
+            padding: 6px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .compare-table tr:nth-child(even) {
+            background: #f5f5f5;
+        }
+
+        .highlight-cell {
+            background: #fff9c4 !important;
+            font-weight: 700;
+        }
+
+        /* ===== 반응형 ===== */
+        @media (max-width: 768px) {
+            .field-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .field-label {
+                flex: none;
+            }
+            .field-hint {
+                flex: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== 헤더 ===== -->
+<div class="header">
+    <h1>개인 비주거 부동산담보대출 상담 기록 시스템</h1>
+    <p>2억원 · 10년 분할상환 · 1년 거치 · 원리금균등 | 성남시 1금융권 26개 지점</p>
+</div>
+
+<!-- ===== 액션 바 ===== -->
+<div class="action-bar">
+    <button class="btn-add" onclick="openModal()">+ 은행 추가</button>
+    <button class="btn-excel" onclick="downloadExcel()">📥 엑셀 다운로드</button>
+    <button class="btn-compare" onclick="showCompare()">📊 비교표 보기</button>
+    <button class="btn-save" onclick="saveLocal()">💾 임시 저장</button>
+    <button class="btn-load" onclick="loadLocal()">📂 불러오기</button>
+    <button class="btn-clear" onclick="clearAll()">🗑 전체 삭제</button>
+</div>
+
+<!-- ===== 탭 네비게이션 ===== -->
+<div class="tab-nav" id="tabNav"></div>
+
+<!-- ===== 탭 콘텐츠 컨테이너 ===== -->
+<div id="tabContents"></div>
+
+<!-- ===== 은행 선택 모달 ===== -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <h2>상담 은행 추가</h2>
+        <p style="font-size:12px; color:#666; margin-bottom:12px;">추가할 지점을 선택하세요 (복수 선택 가능)</p>
+        <div class="preset-list" id="presetList"></div>
+        <hr style="margin:12px 0;">
+        <p style="font-size:12px; color:#666; margin-bottom:8px;">직접 입력</p>
+        <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+            <input type="text" id="customBank" placeholder="은행명" style="flex:1; min-width:80px; padding:8px; border:1px solid #ccc; border-radius:6px; font-size:13px;">
+            <input type="text" id="customBranch" placeholder="지점명" style="flex:1; min-width:100px; padding:8px; border:1px solid #ccc; border-radius:6px; font-size:13px;">
+            <input type="text" id="customAddr" placeholder="주소" style="flex:2; min-width:150px; padding:8px; border:1px solid #ccc; border-radius:6px; font-size:13px;">
+            <input type="text" id="customTel" placeholder="전화번호" style="flex:1; min-width:100px; padding:8px; border:1px solid #ccc; border-radius:6px; font-size:13px;">
+            <button onclick="addCustom()" style="padding:8px 14px; background:#1565c0; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:600;">추가</button>
+        </div>
+        <div class="modal-actions">
+            <button class="modal-cancel" onclick="closeModal()">취소</button>
+            <button class="modal-ok" onclick="addSelected()">선택 추가</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== 비교표 모달 ===== -->
+<div class="modal-overlay" id="compareOverlay">
+    <div class="modal" style="max-width:95%; overflow-x:auto;">
+        <h2>📊 은행별 비교표</h2>
+        <div id="compareBody"></div>
+        <div class="modal-actions" style="margin-top:16px;">
+            <button class="modal-cancel" onclick="closeCompare()">닫기</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ================================================================
+// 프리셋 데이터: 성남시 1금융권 26개 지점
+// 카카오맵 기반 실제 주소 + 검증된 전화번호
+// ================================================================
+const PRESET_BANKS = [
+    { bank: "NH농협은행", branch: "단대지점", addr: "중원구 산성대로372번길 10, 단대쇼핑내 (금광동)", tel: "031-749-8480" },
+    { bank: "NH농협은행", branch: "모란지점", addr: "중원구 둔촌대로 84, 206호 (성남동)", tel: "031-754-0903" },
+    { bank: "NH농협은행", branch: "성남시지부", addr: "수정구 수정로 126 (수진동)", tel: "031-751-0162" },
+    { bank: "NH농협은행", branch: "은행동지점", addr: "수정구 산성대로 469 (단대동)", tel: "031-743-9478" },
+    { bank: "NH농협은행", branch: "성남금융센터", addr: "중원구 사기막골로 99 (상대원동)", tel: "031-737-0472" },
+    { bank: "NH농협은행", branch: "황송지점", addr: "중원구 금상로 134 (상대원동)", tel: "031-748-1542" },
+    { bank: "KB국민은행", branch: "모란역지점", addr: "중원구 성남대로 1126 (성남동)", tel: "031-753-0401" },
+    { bank: "KB국민은행", branch: "성남종합금융센터", addr: "수정구 수정로 125 (태평동)", tel: "031-756-4984" },
+    { bank: "KB국민은행", branch: "신흥동지점", addr: "수정구 공원로 322, 신동아파라디움 상가 1층 (신흥동)", tel: "031-731-2181" },
+    { bank: "KB국민은행", branch: "성남하이테크밸리종합금융센터", addr: "중원구 둔촌대로 464, 중일아인스프라츠 B1층 (상대원동)", tel: "031-737-6981" },
+    { bank: "신한은행", branch: "성남지점", addr: "수정구 수정로 150, 교보생명빌딩 1층 (신흥동)", tel: "031-751-8501" },
+    { bank: "신한은행", branch: "성남중앙지점", addr: "수정구 산성대로 331, 한신프라자 1층 (신흥동)", tel: "031-748-5050" },
+    { bank: "신한은행", branch: "성남공단금융센터", addr: "중원구 둔촌대로 474 (상대원동)", tel: "031-732-2112" },
+    { bank: "우리은행", branch: "모란역지점", addr: "중원구 성남대로1130번길 3 (성남동)", tel: "031-731-1507" },
+    { bank: "우리은행", branch: "성남중앙지점", addr: "수정구 수정로 157 (태평동)", tel: "031-751-4811" },
+    { bank: "우리은행", branch: "성남금융센터", addr: "수정구 산성대로 321 (신흥동)", tel: "031-744-3900" },
+    { bank: "우리은행", branch: "성남하이테크지점", addr: "중원구 둔촌대로 449, 1층 201호 (상대원동)", tel: "031-731-5980" },
+    { bank: "우리은행", branch: "성남공단금융센터", addr: "중원구 갈마치로 245, 1층 (상대원동)", tel: "031-744-5885" },
+    { bank: "하나은행", branch: "성남중앙지점", addr: "수정구 수정로 167 (태평동)", tel: "031-755-1111" },
+    { bank: "하나은행", branch: "성남금융센터지점", addr: "중원구 산성대로 366 (중앙동)", tel: "031-746-1111" },
+    { bank: "하나은행", branch: "성남기업센터지점", addr: "중원구 둔촌대로 537 (상대원동)", tel: "031-735-1111" },
+    { bank: "IBK기업은행", branch: "성남지점", addr: "수정구 산성대로 277 (신흥동)", tel: "031-742-0050" },
+    { bank: "IBK기업은행", branch: "성남테크노지점", addr: "중원구 사기막골로 124 (상대원동)", tel: "031-745-4783" },
+    { bank: "IBK기업은행", branch: "성남디지털지점", addr: "중원구 갈마치로288번길 14 (상대원동)", tel: "031-750-0271" },
+    { bank: "Sh수협은행", branch: "성남지점", addr: "수정구 수정로 185, 2층 (태평동)", tel: "031-756-1711" },
+    { bank: "SC제일은행", branch: "서현역지점", addr: "분당구 서현동 일대 (주소 고객센터 확인)", tel: "1588-1599" }
+];
+
+// ================================================================
+// 상담 항목 필드 정의
+// type: text, number, select, radio, textarea
+// ================================================================
+const FIELD_SECTIONS = [
+    {
+        title: "📋 기본 정보",
+        fields: [
+            { id: "consult_date", label: "상담일시", num: "", type: "text", hint: "예: 2026-04-07 14:00", defaultVal: "" },
+            { id: "consultant", label: "상담자 (직급/이름)", num: "", type: "text", hint: "", defaultVal: "" },
+            { id: "direct_tel", label: "연락처 (직통)", num: "", type: "text", hint: "", defaultVal: "" }
+        ]
+    },
+    {
+        title: "💰 금리 조건",
+        fields: [
+            { id: "product_name", label: "상품명", num: "①", type: "text", hint: "", defaultVal: "" },
+            { id: "base_rate_type", label: "기준금리 종류", num: "②", type: "select", options: ["선택", "COFIX(코픽스)", "금융채", "CD", "MOR", "기타"], hint: "" },
+            { id: "base_rate", label: "기준금리 현재값 (%)", num: "③", type: "number", hint: "", defaultVal: "" },
+            { id: "add_rate", label: "가산금리 (%)", num: "④", type: "number", hint: "", defaultVal: "" },
+            { id: "discount_detail", label: "우대금리 항목별 내역", num: "⑤", type: "textarea", hint: "항목: %p 형식으로 기입" },
+            { id: "discount_total", label: "우대금리 합계 (%)", num: "⑥", type: "number", hint: "", defaultVal: "" },
+            { id: "final_rate", label: "최종 예상금리 (%)", num: "⑦", type: "number", hint: "③+④-⑥ (자동계산)", defaultVal: "", readonly: true }
+        ]
+    },
+    {
+        title: "🔄 상환 조건",
+        fields: [
+            { id: "max_amort", label: "비주거 최장 분할상환 (년)", num: "⑧", type: "text", hint: "" },
+            { id: "amort_10yr", label: "10년 분할상환 가능?", num: "", type: "radio", options: ["Y", "N", "미확인"], hint: "핵심 조건" },
+            { id: "grace_period", label: "거치기간 가능 여부 / 최대", num: "⑨", type: "text", hint: "" },
+            { id: "grace_1yr", label: "1년 거치 가능?", num: "", type: "radio", options: ["Y", "N", "미확인"], hint: "" },
+            { id: "repay_method", label: "상환방식", num: "⑩", type: "select", options: ["선택", "원리금균등", "원금균등", "만기일시", "기타"], hint: "" }
+        ]
+    },
+    {
+        title: "⚡ 중도상환 조건 ★핵심★",
+        fields: [
+            { id: "free_repay", label: "연 10% 무료 중도상환", num: "⑪", type: "radio", options: ["가능", "불가", "아파트만", "미확인"], hint: "★비주거 적용 여부★" },
+            { id: "free_repay_nonres", label: "→ 비주거(근린시설) 적용?", num: "", type: "radio", options: ["Y", "N", "미확인"], hint: "가장 중요한 확인사항" },
+            { id: "prepay_fee", label: "중도상환수수료율 (%)", num: "⑫", type: "number", hint: "", defaultVal: "" },
+            { id: "fee_waiver", label: "수수료 면제 시점", num: "⑬", type: "text", hint: "예: 3년 후" }
+        ]
+    },
+    {
+        title: "🏢 담보·한도",
+        fields: [
+            { id: "ltv", label: "LTV (근린시설 기준, %)", num: "⑭", type: "number", hint: "", defaultVal: "" },
+            { id: "limit_ok", label: "2억 대출 시 예상한도 OK?", num: "⑮", type: "radio", options: ["Y", "N", "미확인"], hint: "감정가 기준" },
+            { id: "max_limit", label: "최대 한도 (원)", num: "", type: "text", hint: "" },
+            { id: "co_owner", label: "3인 공동명의 처리방식", num: "⑯", type: "select", options: ["선택", "전원서류", "대표1인위임", "기타"], hint: "" },
+            { id: "no_guarantor", label: "연대보증 없이 가능?", num: "⑰", type: "radio", options: ["Y", "N", "미확인"], hint: "" }
+        ]
+    },
+    {
+        title: "💵 비용",
+        fields: [
+            { id: "appraisal_cost", label: "감정평가 비용 (원)", num: "⑱", type: "text", hint: "" },
+            { id: "appraisal_days", label: "감정평가 소요기간", num: "⑲", type: "text", hint: "예: 7일" },
+            { id: "stamp_tax", label: "인지세 (고객부담, 원)", num: "⑳", type: "text", hint: "2억 기준 75,000원", defaultVal: "75,000" },
+            { id: "mortgage_fee", label: "근저당 설정비 (원)", num: "㉑", type: "text", hint: "" },
+            { id: "other_cost", label: "기타 부대비용", num: "㉒", type: "text", hint: "보험료 등" }
+        ]
+    },
+    {
+        title: "📄 진행",
+        fields: [
+            { id: "documents", label: "필요서류 목록", num: "㉓", type: "textarea", hint: "" },
+            { id: "process_days", label: "심사~실행 소요기간", num: "㉔", type: "text", hint: "예: 14일" },
+            { id: "memo", label: "특이사항 / 메모", num: "㉕", type: "textarea", hint: "" }
+        ]
+    },
+    {
+        title: "📊 최종 산출",
+        fields: [
+            { id: "monthly_grace", label: "월 상환액 (거치 중, 원)", num: "", type: "text", hint: "자동계산 참고", readonly: true },
+            { id: "monthly_after", label: "월 상환액 (거치 후, 원)", num: "", type: "text", hint: "자동계산 참고", readonly: true },
+            { id: "total_interest", label: "10년 총 이자 (원)", num: "", type: "text", hint: "자동계산 참고", readonly: true },
+            { id: "eval_grade", label: "종합 평가", num: "", type: "select", options: ["선택", "A (최우선)", "B (우수)", "C (보통)", "D (부적합)"], hint: "" },
+            { id: "eval_reason", label: "평가 사유", num: "", type: "textarea", hint: "" }
+        ]
+    }
+];
+
+// ================================================================
+// 글로벌 상태
+// ================================================================
+let tabs = []; // { id, bank, branch, addr, tel, data: {} }
+let activeTabId = null;
+
+// ================================================================
+// 초기화
+// ================================================================
+window.addEventListener("DOMContentLoaded", () => {
+    renderPresetList();
+    // 로컬 저장소에 데이터가 있으면 복원 여부 확인
+    const saved = localStorage.getItem("loan_consult_data");
+    if (saved) {
+        if (confirm("이전에 저장된 상담 데이터가 있습니다. 불러올까요?")) {
+            loadLocal();
+        }
+    }
+});
+
+// ================================================================
+// 프리셋 리스트 렌더링 (모달)
+// ================================================================
+function renderPresetList() {
+    const container = document.getElementById("presetList");
+    container.innerHTML = "";
+    PRESET_BANKS.forEach((p, i) => {
+        // 이미 추가된 지점은 비활성화 처리
+        const alreadyAdded = tabs.some(t => t.bank === p.bank && t.branch === p.branch);
+        const div = document.createElement("div");
+        div.className = "preset-item";
+        if (alreadyAdded) div.style.opacity = "0.4";
+        div.innerHTML = `
+            <input type="checkbox" class="preset-chk" data-idx="${i}" ${alreadyAdded ? "disabled" : ""}>
+            <span class="preset-bank">${p.bank}</span>
+            <span class="preset-branch">${p.branch}</span>
+            <span class="preset-addr">${p.addr}</span>
+            <span class="preset-tel">${p.tel}</span>
+        `;
+        // 행 클릭 시 체크박스 토글 (비활성화 아닌 경우)
+        div.addEventListener("click", (e) => {
+            if (alreadyAdded) return;
+            if (e.target.type === "checkbox") return;
+            const chk = div.querySelector(".preset-chk");
+            chk.checked = !chk.checked;
+        });
+        container.appendChild(div);
+    });
+}
+
+// ================================================================
+// 모달 열기/닫기
+// ================================================================
+function openModal() {
+    renderPresetList();
+    document.getElementById("modalOverlay").classList.add("show");
+}
+
+function closeModal() {
+    document.getElementById("modalOverlay").classList.remove("show");
+    // 직접 입력 필드 초기화
+    document.getElementById("customBank").value = "";
+    document.getElementById("customBranch").value = "";
+    document.getElementById("customAddr").value = "";
+    document.getElementById("customTel").value = "";
+}
+
+// ================================================================
+// 프리셋에서 선택 추가
+// ================================================================
+function addSelected() {
+    const checkboxes = document.querySelectorAll(".preset-chk:checked");
+    checkboxes.forEach(chk => {
+        const idx = parseInt(chk.dataset.idx);
+        const p = PRESET_BANKS[idx];
+        addTab(p.bank, p.branch, p.addr, p.tel);
+    });
+    closeModal();
+}
+
+// ================================================================
+// 직접 입력 추가
+// ================================================================
+function addCustom() {
+    const bank = document.getElementById("customBank").value.trim();
+    const branch = document.getElementById("customBranch").value.trim();
+    const addr = document.getElementById("customAddr").value.trim();
+    const tel = document.getElementById("customTel").value.trim();
+    if (!bank || !branch) {
+        alert("은행명과 지점명은 필수입니다.");
+        return;
+    }
+    addTab(bank, branch, addr, tel);
+    // 입력 필드 초기화
+    document.getElementById("customBank").value = "";
+    document.getElementById("customBranch").value = "";
+    document.getElementById("customAddr").value = "";
+    document.getElementById("customTel").value = "";
+}
+
+// ================================================================
+// 탭 추가
+// ================================================================
+function addTab(bank, branch, addr, tel) {
+    // 중복 체크
+    if (tabs.some(t => t.bank === bank && t.branch === branch)) {
+        alert(`${bank} ${branch}은(는) 이미 추가되어 있습니다.`);
+        return;
+    }
+
+    const id = "tab_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
+    const tabData = { id, bank, branch, addr, tel, data: {} };
+    tabs.push(tabData);
+
+    renderTabs();
+    switchTab(id);
+}
+
+// ================================================================
+// 탭 렌더링
+// ================================================================
+function renderTabs() {
+    const nav = document.getElementById("tabNav");
+    nav.innerHTML = "";
+    tabs.forEach(t => {
+        const btn = document.createElement("div");
+        btn.className = "tab-btn" + (t.id === activeTabId ? " active" : "");
+        // 은행명 축약 표시
+        const shortBank = t.bank.replace("은행", "").replace("NH농협", "농협").replace("KB국민", "KB").replace("신한", "신한").replace("우리", "우리").replace("하나", "하나").replace("IBK기업", "IBK").replace("Sh수협", "수협").replace("SC제일", "SC");
+        btn.innerHTML = `
+            <span onclick="switchTab('${t.id}')">${shortBank} ${t.branch}</span>
+            <span class="close-tab" onclick="event.stopPropagation(); removeTab('${t.id}')">×</span>
+        `;
+        nav.appendChild(btn);
+    });
+}
+
+// ================================================================
+// 탭 전환
+// ================================================================
+function switchTab(id) {
+    // 현재 탭 데이터 저장
+    if (activeTabId) {
+        saveTabData(activeTabId);
+    }
+
+    activeTabId = id;
+    renderTabs();
+    renderTabContent(id);
+}
+
+// ================================================================
+// 탭 삭제
+// ================================================================
+function removeTab(id) {
+    const tab = tabs.find(t => t.id === id);
+    if (!confirm(`${tab.bank} ${tab.branch} 탭을 삭제할까요?`)) return;
+
+    tabs = tabs.filter(t => t.id !== id);
+
+    if (activeTabId === id) {
+        activeTabId = tabs.length > 0 ? tabs[0].id : null;
+    }
+
+    renderTabs();
+    if (activeTabId) {
+        renderTabContent(activeTabId);
+    } else {
+        document.getElementById("tabContents").innerHTML = "";
+    }
+}
+
+// ================================================================
+// 탭 콘텐츠 렌더링 (폼 생성)
+// ================================================================
+function renderTabContent(id) {
+    const tab = tabs.find(t => t.id === id);
+    if (!tab) return;
+
+    const container = document.getElementById("tabContents");
+    container.innerHTML = "";
+
+    const content = document.createElement("div");
+    content.className = "tab-content active";
+    content.id = "content_" + id;
+
+    // 은행 정보 헤더
+    const infoSection = document.createElement("div");
+    infoSection.className = "section";
+    infoSection.style.background = "#e3f2fd";
+    infoSection.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div>
+                <strong style="font-size:18px; color:#1a237e;">${tab.bank} ${tab.branch}</strong>
+                <div style="font-size:12px; color:#555; margin-top:4px;">📍 ${tab.addr}</div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:15px; font-weight:700; color:#2e7d32;">📞 ${tab.tel}</div>
+            </div>
+        </div>
+    `;
+    content.appendChild(infoSection);
+
+    // 각 섹션별 필드 렌더링
+    FIELD_SECTIONS.forEach(section => {
+        const sec = document.createElement("div");
+        sec.className = "section";
+
+        const title = document.createElement("div");
+        title.className = "section-title";
+        title.textContent = section.title;
+        sec.appendChild(title);
+
+        section.fields.forEach(field => {
+            const row = document.createElement("div");
+            row.className = "field-row";
+
+            // 라벨
+            const label = document.createElement("div");
+            label.className = "field-label";
+            label.innerHTML = (field.num ? `<span class="field-num">${field.num}</span>` : "") + field.label;
+            row.appendChild(label);
+
+            // 입력 필드
+            const inputDiv = document.createElement("div");
+            inputDiv.className = "field-input";
+
+            const fieldId = `${id}_${field.id}`;
+            const savedVal = tab.data[field.id] || field.defaultVal || "";
+
+            switch (field.type) {
+                case "text":
+                    inputDiv.innerHTML = `<input type="text" id="${fieldId}" value="${savedVal}" ${field.readonly ? "readonly style='background:#e8eaf6;'" : ""}>`;
+                    // 금리 자동계산 이벤트
+                    if (["base_rate", "add_rate", "discount_total"].includes(field.id)) {
+                        // 이벤트는 아래에서 일괄 바인딩
+                    }
+                    break;
+                case "number":
+                    inputDiv.innerHTML = `<input type="number" step="0.01" id="${fieldId}" value="${savedVal}" ${field.readonly ? "readonly style='background:#e8eaf6;'" : ""}>`;
+                    break;
+                case "select":
+                    let opts = field.options.map(o => `<option value="${o}" ${savedVal === o ? "selected" : ""}>${o}</option>`).join("");
+                    inputDiv.innerHTML = `<select id="${fieldId}">${opts}</select>`;
+                    break;
+                case "radio":
+                    let radios = field.options.map(o => {
+                        const checked = savedVal === o ? "checked" : "";
+                        return `<label><input type="radio" name="${fieldId}" value="${o}" ${checked}> ${o}</label>`;
+                    }).join("");
+                    inputDiv.innerHTML = `<div class="radio-group">${radios}</div>`;
+                    break;
+                case "textarea":
+                    inputDiv.innerHTML = `<textarea id="${fieldId}">${savedVal}</textarea>`;
+                    break;
+            }
+
+            row.appendChild(inputDiv);
+
+            // 힌트
+            if (field.hint) {
+                const hint = document.createElement("div");
+                hint.className = "field-hint";
+                hint.textContent = field.hint;
+                row.appendChild(hint);
+            }
+
+            sec.appendChild(row);
+        });
+
+        content.appendChild(sec);
+    });
+
+    // 자동 계산 박스
+    const calcBox = document.createElement("div");
+    calcBox.className = "calc-box";
+    calcBox.id = "calcBox_" + id;
+    calcBox.innerHTML = `
+        <div class="calc-title">🔢 자동 계산 (2억원 · 1년 거치 · 9년 원리금균등)</div>
+        <div class="calc-row"><span class="calc-label">최종금리</span><span class="calc-value" id="calc_rate_${id}">-</span></div>
+        <div class="calc-row"><span class="calc-label">거치 중 월 이자</span><span class="calc-value" id="calc_grace_${id}">-</span></div>
+        <div class="calc-row"><span class="calc-label">거치 후 월 상환액</span><span class="calc-value" id="calc_monthly_${id}">-</span></div>
+        <div class="calc-row"><span class="calc-label">10년 총 이자</span><span class="calc-value" id="calc_total_${id}">-</span></div>
+        <div class="calc-row"><span class="calc-label">연 10% 추가상환 시 총 이자 (추정)</span><span class="calc-value" id="calc_extra_${id}">-</span></div>
+    `;
+    content.appendChild(calcBox);
+
+    container.appendChild(content);
+
+    // 금리 입력 시 자동계산 이벤트 바인딩
+    bindCalcEvents(id);
+    // 저장된 값으로 초기 계산 실행
+    doCalc(id);
+}
+
+// ================================================================
+// 금리 자동계산 이벤트 바인딩
+// ================================================================
+function bindCalcEvents(tabId) {
+    ["base_rate", "add_rate", "discount_total"].forEach(fid => {
+        const el = document.getElementById(`${tabId}_${fid}`);
+        if (el) {
+            el.addEventListener("input", () => doCalc(tabId));
+        }
+    });
+}
+
+// ================================================================
+// 자동 계산 로직
+// 대출금: 2억 / 거치: 1년 / 상환: 9년 원리금균등
+// ================================================================
+function doCalc(tabId) {
+    const getVal = (fid) => {
+        const el = document.getElementById(`${tabId}_${fid}`);
+        return el ? parseFloat(el.value) || 0 : 0;
+    };
+
+    const base = getVal("base_rate");
+    const add = getVal("add_rate");
+    const discount = getVal("discount_total");
+    const finalRate = base + add - discount;
+
+    // 최종금리 필드에 반영
+    const finalEl = document.getElementById(`${tabId}_final_rate`);
+    if (finalEl && (base > 0 || add > 0)) {
+        finalEl.value = finalRate.toFixed(2);
+    }
+
+    if (finalRate <= 0) {
+        ["calc_rate", "calc_grace", "calc_monthly", "calc_total", "calc_extra"].forEach(k => {
+            const el = document.getElementById(`${k}_${tabId}`);
+            if (el) el.textContent = "-";
+        });
+        return;
+    }
+
+    const principal = 200000000; // 2억
+    const monthlyRate = finalRate / 100 / 12; // 월이율
+    const graceMonths = 12; // 거치 1년
+    const repayMonths = 108; // 9년 (10년 - 1년 거치)
+
+    // 거치 중 월 이자
+    const gracePayment = principal * monthlyRate;
+
+    // 거치 후 원리금균등 월 상환액
+    // PMT = P * r * (1+r)^n / ((1+r)^n - 1)
+    const factor = Math.pow(1 + monthlyRate, repayMonths);
+    const monthlyPayment = principal * monthlyRate * factor / (factor - 1);
+
+    // 10년 총 이자
+    const totalPaid = (gracePayment * graceMonths) + (monthlyPayment * repayMonths);
+    const totalInterest = totalPaid - principal;
+
+    // 연 10% 추가상환 시 추정 (단순 시뮬레이션)
+    let balance = principal;
+    let totalInterestExtra = 0;
+
+    // 거치기간: 매월 이자만 + 연말 10% 상환
+    for (let m = 1; m <= graceMonths; m++) {
+        const interest = balance * monthlyRate;
+        totalInterestExtra += interest;
+        if (m === 12) {
+            // 연 10% 추가 상환
+            balance -= principal * 0.1;
+            if (balance < 0) balance = 0;
+        }
+    }
+
+    // 상환기간: 잔액 기준 원리금균등 재계산 (매년 10% 추가상환)
+    for (let year = 2; year <= 10; year++) {
+        const remainMonths = (10 - year + 1) * 12 < repayMonths ? (10 - year + 1) * 12 : 12;
+        if (balance <= 0) break;
+
+        const mRate = finalRate / 100 / 12;
+        // 해당 연도 12개월간 상환
+        for (let m = 1; m <= 12; m++) {
+            if (balance <= 0) break;
+            const interest = balance * mRate;
+            totalInterestExtra += interest;
+
+            // 간이 원리금균등 (잔여기간 기준)
+            const remainTotal = (10 - year) * 12 + (12 - m) + 1;
+            if (remainTotal > 0) {
+                const f2 = Math.pow(1 + mRate, remainTotal);
+                const pmt = balance * mRate * f2 / (f2 - 1);
+                const principalPart = pmt - interest;
+                balance -= principalPart;
+            }
+        }
+        // 연말 10% 추가상환 (원금의 10%)
+        const extraRepay = Math.min(principal * 0.1, balance);
+        balance -= extraRepay;
+        if (balance < 0) balance = 0;
+    }
+
+    // 화면 갱신
+    const fmt = (n) => Math.round(n).toLocaleString("ko-KR");
+
+    document.getElementById(`calc_rate_${tabId}`).textContent = finalRate.toFixed(2) + "%";
+    document.getElementById(`calc_grace_${tabId}`).textContent = fmt(gracePayment) + "원";
+    document.getElementById(`calc_monthly_${tabId}`).textContent = fmt(monthlyPayment) + "원";
+    document.getElementById(`calc_total_${tabId}`).textContent = fmt(totalInterest) + "원";
+    document.getElementById(`calc_extra_${tabId}`).textContent = fmt(totalInterestExtra) + "원 (추정)";
+
+    // 산출 필드에도 반영
+    const graceEl = document.getElementById(`${tabId}_monthly_grace`);
+    const afterEl = document.getElementById(`${tabId}_monthly_after`);
+    const totalEl = document.getElementById(`${tabId}_total_interest`);
+    if (graceEl) graceEl.value = fmt(gracePayment);
+    if (afterEl) afterEl.value = fmt(monthlyPayment);
+    if (totalEl) totalEl.value = fmt(totalInterest);
+}
+
+// ================================================================
+// 현재 탭 데이터 저장 (메모리)
+// ================================================================
+function saveTabData(tabId) {
+    const tab = tabs.find(t => t.id === tabId);
+    if (!tab) return;
+
+    FIELD_SECTIONS.forEach(section => {
+        section.fields.forEach(field => {
+            const fieldId = `${tabId}_${field.id}`;
+            if (field.type === "radio") {
+                const checked = document.querySelector(`input[name="${fieldId}"]:checked`);
+                tab.data[field.id] = checked ? checked.value : "";
+            } else {
+                const el = document.getElementById(fieldId);
+                tab.data[field.id] = el ? el.value : "";
+            }
+        });
+    });
+}
+
+// ================================================================
+// 로컬 저장
+// ================================================================
+function saveLocal() {
+    if (activeTabId) saveTabData(activeTabId);
+    const saveObj = tabs.map(t => ({
+        bank: t.bank,
+        branch: t.branch,
+        addr: t.addr,
+        tel: t.tel,
+        data: t.data
+    }));
+    localStorage.setItem("loan_consult_data", JSON.stringify(saveObj));
+    alert(`✅ ${tabs.length}개 은행 데이터가 저장되었습니다.`);
+}
+
+// ================================================================
+// 로컬 불러오기
+// ================================================================
+function loadLocal() {
+    const saved = localStorage.getItem("loan_consult_data");
+    if (!saved) {
+        alert("저장된 데이터가 없습니다.");
+        return;
+    }
+
+    const arr = JSON.parse(saved);
+    tabs = [];
+    activeTabId = null;
+
+    arr.forEach(item => {
+        const id = "tab_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
+        tabs.push({
+            id,
+            bank: item.bank,
+            branch: item.branch,
+            addr: item.addr,
+            tel: item.tel,
+            data: item.data || {}
+        });
+    });
+
+    if (tabs.length > 0) {
+        activeTabId = tabs[0].id;
+        renderTabs();
+        renderTabContent(activeTabId);
+        alert(`✅ ${tabs.length}개 은행 데이터를 불러왔습니다.`);
+    }
+}
+
+// ================================================================
+// 전체 삭제
+// ================================================================
+function clearAll() {
+    if (!confirm("⚠️ 모든 탭과 데이터를 삭제할까요?\n(로컬 저장소도 삭제됩니다)")) return;
+    tabs = [];
+    activeTabId = null;
+    localStorage.removeItem("loan_consult_data");
+    document.getElementById("tabNav").innerHTML = "";
+    document.getElementById("tabContents").innerHTML = "";
+    alert("🗑 전체 삭제 완료");
+}
+
+// ================================================================
+// 비교표 보기
+// ================================================================
+function showCompare() {
+    if (activeTabId) saveTabData(activeTabId);
+
+    if (tabs.length === 0) {
+        alert("비교할 은행이 없습니다. 먼저 은행을 추가하세요.");
+        return;
+    }
+
+    // 비교 항목 정의
+    const compareFields = [
+        { id: "product_name", label: "상품명" },
+        { id: "final_rate", label: "최종금리 (%)", highlight: true },
+        { id: "base_rate_type", label: "기준금리 종류" },
+        { id: "base_rate", label: "기준금리 (%)" },
+        { id: "add_rate", label: "가산금리 (%)" },
+        { id: "discount_total", label: "우대합계 (%)" },
+        { id: "amort_10yr", label: "10년 상환 가능?", highlight: true },
+        { id: "grace_1yr", label: "1년 거치 가능?" },
+        { id: "repay_method", label: "상환방식" },
+        { id: "free_repay", label: "연10% 무료상환", highlight: true },
+        { id: "free_repay_nonres", label: "비주거 적용?", highlight: true },
+        { id: "prepay_fee", label: "중도상환수수료 (%)" },
+        { id: "fee_waiver", label: "수수료면제 시점" },
+        { id: "ltv", label: "LTV (%)", highlight: true },
+        { id: "limit_ok", label: "2억 한도 OK?" },
+        { id: "co_owner", label: "공동명의 처리" },
+        { id: "no_guarantor", label: "연대보증 불요?" },
+        { id: "appraisal_cost", label: "감정평가비" },
+        { id: "mortgage_fee", label: "근저당설정비" },
+        { id: "process_days", label: "소요기간" },
+        { id: "monthly_grace", label: "거치 중 월상환" },
+        { id: "monthly_after", label: "거치 후 월상환" },
+        { id: "total_interest", label: "10년 총이자" },
+        { id: "eval_grade", label: "종합평가", highlight: true }
+    ];
+
+    // 테이블 생성
+    let html = '<table class="compare-table">';
+
+    // 헤더
+    html += "<tr><th>항목</th>";
+    tabs.forEach(t => {
+        const short = t.bank.replace("은행", "").replace("NH농협", "농협").replace("KB국민", "KB");
+        html += `<th>${short}<br>${t.branch}</th>`;
+    });
+    html += "</tr>";
+
+    // 전화번호 행
+    html += "<tr><td style='font-weight:600;'>전화번호</td>";
+    tabs.forEach(t => {
+        html += `<td>${t.tel}</td>`;
+    });
+    html += "</tr>";
+
+    // 각 비교 항목
+    compareFields.forEach(cf => {
+        html += `<tr><td style="font-weight:600; text-align:left; padding-left:8px;">${cf.label}</td>`;
+        tabs.forEach(t => {
+            const val = t.data[cf.id] || "-";
+            const cls = cf.highlight && val !== "-" && val !== "선택" && val !== "" ? ' class="highlight-cell"' : "";
+            html += `<td${cls}>${val}</td>`;
+        });
+        html += "</tr>";
+    });
+
+    html += "</table>";
+
+    document.getElementById("compareBody").innerHTML = html;
+    document.getElementById("compareOverlay").classList.add("show");
+}
+
+function closeCompare() {
+    document.getElementById("compareOverlay").classList.remove("show");
+}
+
+// ================================================================
+// 엑셀 다운로드
+// SheetJS를 이용해 .xlsx 파일 생성
+// 시트1: 비교표 / 시트2: 상세 데이터
+// ================================================================
+function downloadExcel() {
+    if (activeTabId) saveTabData(activeTabId);
+
+    if (tabs.length === 0) {
+        alert("다운로드할 데이터가 없습니다.");
+        return;
+    }
+
+    const wb = XLSX.utils.book_new();
+
+    // ---- 시트1: 비교표 ----
+    const compareFields = [
+        "product_name", "final_rate", "base_rate_type", "base_rate", "add_rate",
+        "discount_total", "amort_10yr", "grace_1yr", "repay_method",
+        "free_repay", "free_repay_nonres", "prepay_fee", "fee_waiver",
+        "ltv", "limit_ok", "co_owner", "no_guarantor",
+        "appraisal_cost", "mortgage_fee", "process_days",
+        "monthly_grace", "monthly_after", "total_interest",
+        "eval_grade", "eval_reason"
+    ];
+
+    const compareLabels = {
+        product_name: "상품명", final_rate: "최종금리(%)", base_rate_type: "기준금리종류",
+        base_rate: "기준금리(%)", add_rate: "가산금리(%)", discount_total: "우대합계(%)",
+        amort_10yr: "10년상환가능", grace_1yr: "1년거치가능", repay_method: "상환방식",
+        free_repay: "연10%무료상환", free_repay_nonres: "비주거적용", prepay_fee: "중도상환수수료(%)",
+        fee_waiver: "수수료면제시점", ltv: "LTV(%)", limit_ok: "2억한도OK",
+        co_owner: "공동명의처리", no_guarantor: "연대보증불요", appraisal_cost: "감정평가비",
+        mortgage_fee: "근저당설정비", process_days: "소요기간",
+        monthly_grace: "거치중월상환", monthly_after: "거치후월상환", total_interest: "10년총이자",
+        eval_grade: "종합평가", eval_reason: "평가사유"
+    };
+
+    // 비교표 데이터 배열
+    const cmpHeader = ["항목"];
+    tabs.forEach(t => cmpHeader.push(`${t.bank} ${t.branch}`));
+
+    const cmpData = [cmpHeader];
+    // 주소 행
+    const addrRow = ["주소"];
+    tabs.forEach(t => addrRow.push(t.addr));
+    cmpData.push(addrRow);
+    // 전화 행
+    const telRow = ["전화번호"];
+    tabs.forEach(t => telRow.push(t.tel));
+    cmpData.push(telRow);
+
+    compareFields.forEach(fid => {
+        const row = [compareLabels[fid] || fid];
+        tabs.forEach(t => row.push(t.data[fid] || ""));
+        cmpData.push(row);
+    });
+
+    const ws1 = XLSX.utils.aoa_to_sheet(cmpData);
+    // 열 너비 설정
+    ws1["!cols"] = [{ wch: 18 }];
+    tabs.forEach(() => ws1["!cols"].push({ wch: 22 }));
+    XLSX.utils.book_append_sheet(wb, ws1, "비교표");
+
+    // ---- 시트2: 상세 데이터 ----
+    const detailHeader = ["은행", "지점", "주소", "전화번호"];
+    FIELD_SECTIONS.forEach(sec => {
+        sec.fields.forEach(f => {
+            detailHeader.push((f.num ? f.num + " " : "") + f.label);
+        });
+    });
+
+    const detailData = [detailHeader];
+    tabs.forEach(t => {
+        const row = [t.bank, t.branch, t.addr, t.tel];
+        FIELD_SECTIONS.forEach(sec => {
+            sec.fields.forEach(f => {
+                row.push(t.data[f.id] || "");
+            });
+        });
+        detailData.push(row);
+    });
+
+    const ws2 = XLSX.utils.aoa_to_sheet(detailData);
+    ws2["!cols"] = detailHeader.map(() => ({ wch: 18 }));
+    XLSX.utils.book_append_sheet(wb, ws2, "상세데이터");
+
+    // 파일 다운로드
+    const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    XLSX.writeFile(wb, `비주거담보대출_상담기록_${today}.xlsx`);
+}
+</script>
+
+</body>
+</html>
