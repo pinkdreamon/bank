@@ -13,7 +13,6 @@
     -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <style>
-        /* ===== 전역 리셋 및 기본 스타일 ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Malgun Gothic', sans-serif;
@@ -21,7 +20,6 @@
             color: #333;
             font-size: 14px;
         }
-        /* ===== 헤더 ===== */
         .header {
             background: linear-gradient(135deg, #1a237e, #283593);
             color: white;
@@ -30,7 +28,6 @@
         }
         .header h1 { font-size: 22px; margin-bottom: 4px; }
         .header p { font-size: 13px; opacity: 0.85; }
-        /* ===== 상태 표시 ===== */
         .status-bar {
             padding: 8px 20px;
             font-size: 12px;
@@ -40,7 +37,6 @@
         .status-online { background: #e8f5e9; color: #2e7d32; }
         .status-saving { background: #fff3e0; color: #e65100; }
         .status-error { background: #ffebee; color: #c62828; }
-        /* ===== 액션 바 ===== */
         .action-bar {
             display: flex;
             flex-wrap: wrap;
@@ -73,7 +69,6 @@
         .btn-load:hover { background: #006064; }
         .btn-clear { background: #c62828; color: #fff; }
         .btn-clear:hover { background: #b71c1c; }
-        /* ===== 탭 네비게이션 ===== */
         .tab-nav {
             display: flex;
             flex-wrap: wrap;
@@ -97,10 +92,8 @@
         .tab-btn.active { background: #fff; border-color: #3949ab; color: #1a237e; }
         .tab-btn .close-tab { margin-left: 6px; color: #999; font-weight: bold; cursor: pointer; }
         .tab-btn .close-tab:hover { color: #c62828; }
-        /* ===== 탭 콘텐츠 ===== */
         .tab-content { display: none; padding: 20px; }
         .tab-content.active { display: block; }
-        /* ===== 섹션 ===== */
         .section {
             background: #fff;
             border-radius: 10px;
@@ -116,7 +109,6 @@
             padding-left: 10px;
             margin-bottom: 14px;
         }
-        /* ===== 필드 행 ===== */
         .field-row { display: flex; align-items: center; margin-bottom: 10px; gap: 10px; }
         .field-label { flex: 0 0 260px; font-weight: 600; font-size: 13px; color: #444; }
         .field-label .field-num { color: #3949ab; margin-right: 4px; }
@@ -139,10 +131,8 @@
             box-shadow: 0 0 0 2px rgba(57,73,171,0.15);
         }
         .field-hint { flex: 0 0 200px; font-size: 11px; color: #888; }
-        /* ===== 라디오 그룹 ===== */
         .radio-group { display: flex; gap: 14px; flex-wrap: wrap; }
         .radio-group label { display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer; }
-        /* ===== 자동 계산 ===== */
         .calc-box {
             background: #e8eaf6;
             border: 2px solid #3949ab;
@@ -155,7 +145,6 @@
         .calc-row:last-child { border-bottom: none; }
         .calc-label { font-weight: 600; font-size: 13px; }
         .calc-value { font-weight: 700; color: #c62828; font-size: 14px; }
-        /* ===== 모달 ===== */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -204,13 +193,11 @@
         }
         .modal-ok { background: #1565c0; color: #fff; }
         .modal-cancel { background: #bdbdbd; color: #333; }
-        /* ===== 비교표 ===== */
         .compare-table { width: 100%; border-collapse: collapse; font-size: 12px; }
         .compare-table th { background: #1a237e; color: #fff; padding: 8px 6px; text-align: center; white-space: nowrap; }
         .compare-table td { padding: 6px; border: 1px solid #ddd; text-align: center; }
         .compare-table tr:nth-child(even) { background: #f5f5f5; }
         .highlight-cell { background: #fff9c4 !important; font-weight: 700; }
-        /* ===== 반응형 ===== */
         @media (max-width: 768px) {
             .field-row { flex-direction: column; align-items: stretch; }
             .field-label { flex: none; }
@@ -220,16 +207,13 @@
 </head>
 <body>
 
-<!-- 헤더 -->
 <div class="header">
     <h1>개인 비주거 부동산담보대출 상담 기록 시스템</h1>
     <p>2억원 · 10년 분할상환 · 1년 거치 · 원리금균등 | 성남시 1금융권 26개 지점</p>
 </div>
 
-<!-- 상태 표시 -->
 <div class="status-bar status-online" id="statusBar">구글 스프레드시트 연동 준비 완료</div>
 
-<!-- 액션 바 -->
 <div class="action-bar">
     <button class="btn-add" onclick="openModal()">+ 은행 추가</button>
     <button class="btn-excel" onclick="downloadExcel()">엑셀 다운로드</button>
@@ -239,13 +223,9 @@
     <button class="btn-clear" onclick="clearAll()">전체 삭제</button>
 </div>
 
-<!-- 탭 네비게이션 -->
 <div class="tab-nav" id="tabNav"></div>
-
-<!-- 탭 콘텐츠 -->
 <div id="tabContents"></div>
 
-<!-- 은행 선택 모달 -->
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
         <h2>상담 은행 추가</h2>
@@ -267,7 +247,6 @@
     </div>
 </div>
 
-<!-- 비교표 모달 -->
 <div class="modal-overlay" id="compareOverlay">
     <div class="modal" style="max-width:95%; overflow-x:auto;">
         <h2>은행별 비교표</h2>
@@ -281,7 +260,6 @@
 <script>
 // ================================================================
 // 구글 Apps Script 웹앱 URL
-// 이 URL을 통해 구글 스프레드시트에 데이터를 읽고/씀
 // ================================================================
 var GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyF_LfIkNI3YiGZNmxm9g6hfOB6wCHTucFvGcblO3DAdeTMY7_fN-yF2udskdY1YWB0GQ/exec";
 
@@ -318,7 +296,7 @@ var PRESET_BANKS = [
 ];
 
 // ================================================================
-// 상담 항목 필드 정의
+// 상담 항목 필드 정의 (모든 항목 포함)
 // ================================================================
 var FIELD_SECTIONS = [
     {
@@ -401,13 +379,53 @@ var FIELD_SECTIONS = [
 ];
 
 // ================================================================
+// 모든 필드 ID 목록 (엑셀/비교표에서 사용)
+// ================================================================
+var ALL_COMPARE_FIELDS = [
+    "consult_date", "consultant", "direct_tel",
+    "product_name", "base_rate_type", "base_rate", "add_rate",
+    "discount_detail", "discount_total", "final_rate",
+    "max_amort", "amort_10yr", "grace_period", "grace_1yr", "repay_method",
+    "free_repay", "free_repay_nonres", "prepay_fee", "fee_waiver",
+    "ltv", "limit_ok", "max_limit", "co_owner", "no_guarantor",
+    "appraisal_cost", "appraisal_days", "stamp_tax", "mortgage_fee", "other_cost",
+    "documents", "process_days", "memo",
+    "monthly_grace", "monthly_after", "total_interest",
+    "eval_grade", "eval_reason"
+];
+
+var ALL_COMPARE_LABELS = {
+    consult_date: "상담일시", consultant: "상담자", direct_tel: "직통번호",
+    product_name: "상품명", base_rate_type: "기준금리종류",
+    base_rate: "기준금리(%)", add_rate: "가산금리(%)",
+    discount_detail: "우대금리내역", discount_total: "우대합계(%)", final_rate: "최종금리(%)",
+    max_amort: "최장분할상환(년)", amort_10yr: "10년상환가능",
+    grace_period: "거치기간", grace_1yr: "1년거치가능", repay_method: "상환방식",
+    free_repay: "연10%무료상환", free_repay_nonres: "비주거적용",
+    prepay_fee: "중도상환수수료(%)", fee_waiver: "수수료면제시점",
+    ltv: "LTV(%)", limit_ok: "2억한도OK", max_limit: "최대한도",
+    co_owner: "공동명의처리", no_guarantor: "연대보증불요",
+    appraisal_cost: "감정평가비", appraisal_days: "감정소요기간",
+    stamp_tax: "인지세", mortgage_fee: "근저당설정비", other_cost: "기타비용",
+    documents: "필요서류", process_days: "소요기간", memo: "특이사항",
+    monthly_grace: "거치중월상환", monthly_after: "거치후월상환", total_interest: "10년총이자",
+    eval_grade: "종합평가", eval_reason: "평가사유"
+};
+
+// 비교표에서 하이라이트할 핵심 필드
+var HIGHLIGHT_FIELDS = [
+    "final_rate", "amort_10yr", "free_repay", "free_repay_nonres",
+    "ltv", "eval_grade", "direct_tel", "consultant", "consult_date"
+];
+
+// ================================================================
 // 글로벌 상태
 // ================================================================
 var tabs = [];
 var activeTabId = null;
 
 // ================================================================
-// 초기화: 페이지 로드 시 구글 시트에서 데이터 불러오기 시도
+// 초기화
 // ================================================================
 window.addEventListener("DOMContentLoaded", function() {
     renderPresetList();
@@ -416,7 +434,7 @@ window.addEventListener("DOMContentLoaded", function() {
 });
 
 // ================================================================
-// 상태바 업데이트
+// 상태바
 // ================================================================
 function setStatus(msg, type) {
     var bar = document.getElementById("statusBar");
@@ -428,14 +446,11 @@ function setStatus(msg, type) {
 }
 
 // ================================================================
-// 구글 스프레드시트에 저장
+// 구글 스프레드시트 저장
 // ================================================================
 function saveToGoogle() {
     if (activeTabId) saveTabData(activeTabId);
-    if (tabs.length === 0) {
-        alert("저장할 데이터가 없습니다.");
-        return;
-    }
+    if (tabs.length === 0) { alert("저장할 데이터가 없습니다."); return; }
 
     setStatus("구글 스프레드시트에 저장 중...", "saving");
 
@@ -467,18 +482,14 @@ function saveToGoogle() {
 }
 
 // ================================================================
-// 구글 스프레드시트에서 불러오기
-// JSONP 방식으로 CORS 우회
+// 구글 스프레드시트 불러오기 (JSONP)
 // ================================================================
 function loadFromGoogle() {
     setStatus("구글 스프레드시트에서 불러오는 중...", "saving");
 
-    // JSONP 콜백 함수명 생성
     var callbackName = "googleCallback_" + Date.now();
 
-    // 콜백 함수 등록
     window[callbackName] = function(response) {
-        // 스크립트 태그 제거
         var scriptTag = document.getElementById("jsonp_" + callbackName);
         if (scriptTag) scriptTag.remove();
         delete window[callbackName];
@@ -511,23 +522,19 @@ function loadFromGoogle() {
         }
     };
 
-    // JSONP 요청: script 태그로 GET 요청
     var script = document.createElement("script");
     script.id = "jsonp_" + callbackName;
     script.src = GOOGLE_SCRIPT_URL + "?callback=" + callbackName;
-
-    // 에러 처리
     script.onerror = function() {
         delete window[callbackName];
         script.remove();
         setStatus("불러오기 실패 — 네트워크 확인", "error");
     };
-
     document.body.appendChild(script);
 }
 
 // ================================================================
-// 프리셋 리스트 렌더링
+// 프리셋 리스트
 // ================================================================
 function renderPresetList() {
     var container = document.getElementById("presetList");
@@ -544,8 +551,6 @@ function renderPresetList() {
         var div = document.createElement("div");
         div.className = "preset-item";
         if (alreadyAdded) div.style.opacity = "0.4";
-        div.setAttribute("data-idx", i);
-        div.setAttribute("data-added", alreadyAdded ? "1" : "0");
         div.innerHTML =
             '<input type="checkbox" class="preset-chk" data-idx="' + i + '"' + (alreadyAdded ? " disabled" : "") + '>' +
             '<span class="preset-bank">' + p.bank + '</span>' +
@@ -578,10 +583,6 @@ function closeModal() {
     document.getElementById("customAddr").value = "";
     document.getElementById("customTel").value = "";
 }
-
-// ================================================================
-// 프리셋 선택 추가
-// ================================================================
 function addSelected() {
     var checkboxes = document.querySelectorAll(".preset-chk:checked");
     for (var i = 0; i < checkboxes.length; i++) {
@@ -591,10 +592,6 @@ function addSelected() {
     }
     closeModal();
 }
-
-// ================================================================
-// 직접 입력 추가
-// ================================================================
 function addCustom() {
     var bank = document.getElementById("customBank").value.trim();
     var branch = document.getElementById("customBranch").value.trim();
@@ -609,7 +606,7 @@ function addCustom() {
 }
 
 // ================================================================
-// 탭 추가
+// 탭
 // ================================================================
 function addTab(bank, branch, addr, tel) {
     for (var i = 0; i < tabs.length; i++) {
@@ -624,9 +621,6 @@ function addTab(bank, branch, addr, tel) {
     switchTab(id);
 }
 
-// ================================================================
-// 탭 렌더링
-// ================================================================
 function renderTabs() {
     var nav = document.getElementById("tabNav");
     nav.innerHTML = "";
@@ -635,17 +629,13 @@ function renderTabs() {
         var btn = document.createElement("div");
         btn.className = "tab-btn" + (t.id === activeTabId ? " active" : "");
         var shortBank = t.bank.replace("은행", "").replace("NH농협", "농협").replace("KB국민", "KB").replace("IBK기업", "IBK").replace("Sh수협", "수협").replace("SC제일", "SC");
-        btn.setAttribute("data-id", t.id);
         btn.innerHTML =
             '<span onclick="switchTab(\'' + t.id + '\')">' + shortBank + " " + t.branch + '</span>' +
-            '<span class="close-tab" onclick="event.stopPropagation(); removeTab(\'' + t.id + '\')">×</span>';
+            '<span class="close-tab" onclick="event.stopPropagation(); removeTab(\'' + t.id + '\')">x</span>';
         nav.appendChild(btn);
     }
 }
 
-// ================================================================
-// 탭 전환
-// ================================================================
 function switchTab(id) {
     if (activeTabId) saveTabData(activeTabId);
     activeTabId = id;
@@ -653,9 +643,6 @@ function switchTab(id) {
     renderTabContent(id);
 }
 
-// ================================================================
-// 탭 삭제
-// ================================================================
 function removeTab(id) {
     var tab = null;
     var tabIdx = -1;
@@ -768,14 +755,14 @@ function renderTabContent(id) {
         '<div class="calc-row"><span class="calc-label">10년 총 이자</span><span class="calc-value" id="calc_total_' + id + '">-</span></div>' +
         '<div class="calc-row"><span class="calc-label">연 10% 추가상환 시 총 이자 (추정)</span><span class="calc-value" id="calc_extra_' + id + '">-</span></div>';
     content.appendChild(calcBox);
-
     container.appendChild(content);
+
     bindCalcEvents(id);
     doCalc(id);
 }
 
 // ================================================================
-// 금리 자동계산 이벤트
+// 금리 자동계산
 // ================================================================
 function bindCalcEvents(tabId) {
     var fields = ["base_rate", "add_rate", "discount_total"];
@@ -789,9 +776,6 @@ function bindCalcEvents(tabId) {
     }
 }
 
-// ================================================================
-// 자동 계산 로직
-// ================================================================
 function doCalc(tabId) {
     var getVal = function(fid) {
         var el = document.getElementById(tabId + "_" + fid);
@@ -825,7 +809,6 @@ function doCalc(tabId) {
     var totalPaid = (gracePayment * graceMonths) + (monthlyPayment * repayMonths);
     var totalInterest = totalPaid - principal;
 
-    // 연 10% 추가상환 시뮬레이션
     var balance = principal;
     var totalInterestExtra = 0;
     for (var m = 1; m <= graceMonths; m++) {
@@ -904,55 +887,42 @@ function clearAll() {
 }
 
 // ================================================================
-// 비교표
+// 비교표 보기
 // ================================================================
 function showCompare() {
     if (activeTabId) saveTabData(activeTabId);
     if (tabs.length === 0) { alert("비교할 은행이 없습니다."); return; }
 
-    var compareFields = [
-        { id: "product_name", label: "상품명" },
-        { id: "final_rate", label: "최종금리 (%)", highlight: true },
-        { id: "base_rate_type", label: "기준금리 종류" },
-        { id: "base_rate", label: "기준금리 (%)" },
-        { id: "add_rate", label: "가산금리 (%)" },
-        { id: "discount_total", label: "우대합계 (%)" },
-        { id: "amort_10yr", label: "10년 상환 가능?", highlight: true },
-        { id: "grace_1yr", label: "1년 거치 가능?" },
-        { id: "repay_method", label: "상환방식" },
-        { id: "free_repay", label: "연10% 무료상환", highlight: true },
-        { id: "free_repay_nonres", label: "비주거 적용?", highlight: true },
-        { id: "prepay_fee", label: "중도상환수수료 (%)" },
-        { id: "fee_waiver", label: "수수료면제 시점" },
-        { id: "ltv", label: "LTV (%)", highlight: true },
-        { id: "limit_ok", label: "2억 한도 OK?" },
-        { id: "co_owner", label: "공동명의 처리" },
-        { id: "no_guarantor", label: "연대보증 불요?" },
-        { id: "appraisal_cost", label: "감정평가비" },
-        { id: "mortgage_fee", label: "근저당설정비" },
-        { id: "process_days", label: "소요기간" },
-        { id: "monthly_grace", label: "거치중 월상환" },
-        { id: "monthly_after", label: "거치후 월상환" },
-        { id: "total_interest", label: "10년 총이자" },
-        { id: "eval_grade", label: "종합평가", highlight: true }
-    ];
-
     var html = '<table class="compare-table"><tr><th>항목</th>';
     for (var i = 0; i < tabs.length; i++) {
-        var short = tabs[i].bank.replace("은행", "").replace("NH농협", "농협").replace("KB국민", "KB");
+        var short = tabs[i].bank.replace("은행", "").replace("NH농협", "농협").replace("KB국민", "KB").replace("IBK기업", "IBK").replace("Sh수협", "수협").replace("SC제일", "SC");
         html += "<th>" + short + "<br>" + tabs[i].branch + "</th>";
     }
     html += "</tr>";
-    html += "<tr><td style='font-weight:600;'>전화번호</td>";
+
+    // 대표번호 행
+    html += "<tr><td style='font-weight:600;'>대표번호</td>";
     for (var i = 0; i < tabs.length; i++) html += "<td>" + tabs[i].tel + "</td>";
     html += "</tr>";
 
-    for (var f = 0; f < compareFields.length; f++) {
-        var cf = compareFields[f];
-        html += "<tr><td style='font-weight:600; text-align:left; padding-left:8px;'>" + cf.label + "</td>";
+    // 주소 행
+    html += "<tr><td style='font-weight:600;'>주소</td>";
+    for (var i = 0; i < tabs.length; i++) html += "<td style='font-size:11px;'>" + tabs[i].addr + "</td>";
+    html += "</tr>";
+
+    // 모든 필드
+    for (var f = 0; f < ALL_COMPARE_FIELDS.length; f++) {
+        var fid = ALL_COMPARE_FIELDS[f];
+        var label = ALL_COMPARE_LABELS[fid] || fid;
+        var isHighlight = false;
+        for (var h = 0; h < HIGHLIGHT_FIELDS.length; h++) {
+            if (HIGHLIGHT_FIELDS[h] === fid) { isHighlight = true; break; }
+        }
+
+        html += "<tr><td style='font-weight:600; text-align:left; padding-left:8px;'>" + label + "</td>";
         for (var i = 0; i < tabs.length; i++) {
-            var val = tabs[i].data[cf.id] || "-";
-            var cls = cf.highlight && val !== "-" && val !== "선택" ? ' class="highlight-cell"' : "";
+            var val = tabs[i].data[fid] || "-";
+            var cls = isHighlight && val !== "-" && val !== "선택" ? ' class="highlight-cell"' : "";
             html += "<td" + cls + ">" + val + "</td>";
         }
         html += "</tr>";
@@ -968,7 +938,7 @@ function closeCompare() {
 }
 
 // ================================================================
-// 엑셀 다운로드
+// 엑셀 다운로드 (모든 필드 포함)
 // ================================================================
 function downloadExcel() {
     if (activeTabId) saveTabData(activeTabId);
@@ -976,64 +946,44 @@ function downloadExcel() {
 
     var wb = XLSX.utils.book_new();
 
-    var compareFields = [
-        "product_name", "final_rate", "base_rate_type", "base_rate", "add_rate",
-        "discount_total", "amort_10yr", "grace_1yr", "repay_method",
-        "free_repay", "free_repay_nonres", "prepay_fee", "fee_waiver",
-        "ltv", "limit_ok", "co_owner", "no_guarantor",
-        "appraisal_cost", "mortgage_fee", "process_days",
-        "monthly_grace", "monthly_after", "total_interest",
-        "eval_grade", "eval_reason"
-    ];
-    var compareLabels = {
-        product_name: "상품명", final_rate: "최종금리(%)", base_rate_type: "기준금리종류",
-        base_rate: "기준금리(%)", add_rate: "가산금리(%)", discount_total: "우대합계(%)",
-        amort_10yr: "10년상환가능", grace_1yr: "1년거치가능", repay_method: "상환방식",
-        free_repay: "연10%무료상환", free_repay_nonres: "비주거적용", prepay_fee: "중도상환수수료(%)",
-        fee_waiver: "수수료면제시점", ltv: "LTV(%)", limit_ok: "2억한도OK",
-        co_owner: "공동명의처리", no_guarantor: "연대보증불요", appraisal_cost: "감정평가비",
-        mortgage_fee: "근저당설정비", process_days: "소요기간",
-        monthly_grace: "거치중월상환", monthly_after: "거치후월상환", total_interest: "10년총이자",
-        eval_grade: "종합평가", eval_reason: "평가사유"
-    };
-
+    // ---- 시트1: 비교표 ----
     var cmpHeader = ["항목"];
     for (var i = 0; i < tabs.length; i++) cmpHeader.push(tabs[i].bank + " " + tabs[i].branch);
     var cmpData = [cmpHeader];
 
+    // 주소 행
     var addrRow = ["주소"];
     for (var i = 0; i < tabs.length; i++) addrRow.push(tabs[i].addr);
     cmpData.push(addrRow);
 
-    var telRow = ["전화번호"];
+    // 대표번호 행
+    var telRow = ["대표번호"];
     for (var i = 0; i < tabs.length; i++) telRow.push(tabs[i].tel);
     cmpData.push(telRow);
 
-    for (var f = 0; f < compareFields.length; f++) {
-        var row = [compareLabels[compareFields[f]] || compareFields[f]];
-        for (var i = 0; i < tabs.length; i++) row.push(tabs[i].data[compareFields[f]] || "");
+    // 모든 상담 항목
+    for (var f = 0; f < ALL_COMPARE_FIELDS.length; f++) {
+        var fid = ALL_COMPARE_FIELDS[f];
+        var row = [ALL_COMPARE_LABELS[fid] || fid];
+        for (var i = 0; i < tabs.length; i++) row.push(tabs[i].data[fid] || "");
         cmpData.push(row);
     }
 
     var ws1 = XLSX.utils.aoa_to_sheet(cmpData);
-    ws1["!cols"] = [{ wch: 18 }];
-    for (var i = 0; i < tabs.length; i++) ws1["!cols"].push({ wch: 22 });
+    ws1["!cols"] = [{ wch: 20 }];
+    for (var i = 0; i < tabs.length; i++) ws1["!cols"].push({ wch: 24 });
     XLSX.utils.book_append_sheet(wb, ws1, "비교표");
 
-    var detailHeader = ["은행", "지점", "주소", "전화번호"];
-    for (var s = 0; s < FIELD_SECTIONS.length; s++) {
-        for (var f = 0; f < FIELD_SECTIONS[s].fields.length; f++) {
-            var field = FIELD_SECTIONS[s].fields[f];
-            detailHeader.push((field.num ? field.num + " " : "") + field.label);
-        }
+    // ---- 시트2: 상세데이터 (가로형) ----
+    var detailHeader = ["은행", "지점", "주소", "대표번호"];
+    for (var f = 0; f < ALL_COMPARE_FIELDS.length; f++) {
+        detailHeader.push(ALL_COMPARE_LABELS[ALL_COMPARE_FIELDS[f]] || ALL_COMPARE_FIELDS[f]);
     }
     var detailData = [detailHeader];
     for (var i = 0; i < tabs.length; i++) {
         var row = [tabs[i].bank, tabs[i].branch, tabs[i].addr, tabs[i].tel];
-        for (var s = 0; s < FIELD_SECTIONS.length; s++) {
-            for (var f = 0; f < FIELD_SECTIONS[s].fields.length; f++) {
-                row.push(tabs[i].data[FIELD_SECTIONS[s].fields[f].id] || "");
-            }
+        for (var f = 0; f < ALL_COMPARE_FIELDS.length; f++) {
+            row.push(tabs[i].data[ALL_COMPARE_FIELDS[f]] || "");
         }
         detailData.push(row);
     }
@@ -1042,6 +992,7 @@ function downloadExcel() {
     for (var i = 0; i < detailHeader.length; i++) ws2["!cols"].push({ wch: 18 });
     XLSX.utils.book_append_sheet(wb, ws2, "상세데이터");
 
+    // 다운로드
     var today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
     XLSX.writeFile(wb, "비주거담보대출_상담기록_" + today + ".xlsx");
 }
