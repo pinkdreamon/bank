@@ -4,193 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>비주거 부동산담보대출 상담 기록</title>
-    <!--
-        SheetJS (xlsx.full.min.js) v0.20.1
-        - 기능: 브라우저에서 Excel(.xlsx) 파일 생성/읽기
-        - 용량: ~500KB (CDN gzip 압축 시 ~150KB)
-        - 사용법: XLSX.utils로 시트 생성 -> XLSX.writeFile로 다운로드
-        - 라이선스: Apache 2.0
-    -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Malgun Gothic', sans-serif;
-            background: #f0f2f5;
-            color: #333;
-            font-size: 14px;
-        }
-        .header {
-            background: linear-gradient(135deg, #1a237e, #283593);
-            color: white;
-            padding: 20px 30px;
-            text-align: center;
-        }
+        body { font-family: 'Malgun Gothic', sans-serif; background: #f0f2f5; color: #333; font-size: 14px; }
+        .header { background: linear-gradient(135deg, #1a237e, #283593); color: white; padding: 20px 30px; text-align: center; }
         .header h1 { font-size: 22px; margin-bottom: 4px; }
         .header p { font-size: 13px; opacity: 0.85; }
-        .status-bar {
-            padding: 8px 20px;
-            font-size: 12px;
-            text-align: center;
-            font-weight: 600;
-        }
+        .status-bar { padding: 8px 20px; font-size: 12px; text-align: center; font-weight: 600; }
         .status-online { background: #e8f5e9; color: #2e7d32; }
         .status-saving { background: #fff3e0; color: #e65100; }
         .status-error { background: #ffebee; color: #c62828; }
-        .action-bar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 12px 20px;
-            background: #fff;
-            border-bottom: 1px solid #ddd;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .action-bar button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-add { background: #1565c0; color: #fff; }
-        .btn-add:hover { background: #0d47a1; }
-        .btn-excel { background: #2e7d32; color: #fff; }
-        .btn-excel:hover { background: #1b5e20; }
-        .btn-compare { background: #6a1b9a; color: #fff; }
-        .btn-compare:hover { background: #4a148c; }
-        .btn-save { background: #e65100; color: #fff; }
-        .btn-save:hover { background: #bf360c; }
-        .btn-load { background: #00838f; color: #fff; }
-        .btn-load:hover { background: #006064; }
-        .btn-clear { background: #c62828; color: #fff; }
-        .btn-clear:hover { background: #b71c1c; }
-        .tab-nav {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            padding: 10px 20px;
-            background: #e8eaf6;
-            border-bottom: 2px solid #3949ab;
-        }
-        .tab-btn {
-            padding: 8px 14px;
-            border: 1px solid #9fa8da;
-            border-bottom: none;
-            border-radius: 8px 8px 0 0;
-            background: #c5cae9;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            color: #333;
-            transition: all 0.2s;
-        }
+        .action-bar { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 20px; background: #fff; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 100; }
+        .action-bar button { padding: 8px 16px; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-add { background: #1565c0; color: #fff; } .btn-add:hover { background: #0d47a1; }
+        .btn-excel { background: #2e7d32; color: #fff; } .btn-excel:hover { background: #1b5e20; }
+        .btn-compare { background: #6a1b9a; color: #fff; } .btn-compare:hover { background: #4a148c; }
+        .btn-save { background: #e65100; color: #fff; } .btn-save:hover { background: #bf360c; }
+        .btn-load { background: #00838f; color: #fff; } .btn-load:hover { background: #006064; }
+        .btn-clear { background: #c62828; color: #fff; } .btn-clear:hover { background: #b71c1c; }
+        .tab-nav { display: flex; flex-wrap: wrap; gap: 4px; padding: 10px 20px; background: #e8eaf6; border-bottom: 2px solid #3949ab; }
+        .tab-btn { padding: 8px 14px; border: 1px solid #9fa8da; border-bottom: none; border-radius: 8px 8px 0 0; background: #c5cae9; cursor: pointer; font-size: 12px; font-weight: 600; color: #333; transition: all 0.2s; }
         .tab-btn.active { background: #fff; border-color: #3949ab; color: #1a237e; }
         .tab-btn .close-tab { margin-left: 6px; color: #999; font-weight: bold; cursor: pointer; }
         .tab-btn .close-tab:hover { color: #c62828; }
         .tab-content { display: none; padding: 20px; }
         .tab-content.active { display: block; }
-        .section {
-            background: #fff;
-            border-radius: 10px;
-            padding: 18px 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-        }
-        .section-title {
-            font-size: 15px;
-            font-weight: 700;
-            color: #1a237e;
-            border-left: 4px solid #3949ab;
-            padding-left: 10px;
-            margin-bottom: 14px;
-        }
+        .section { background: #fff; border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        .section-title { font-size: 15px; font-weight: 700; color: #1a237e; border-left: 4px solid #3949ab; padding-left: 10px; margin-bottom: 14px; }
+        .section-title.highlight { border-left-color: #ff6f00; color: #e65100; }
         .field-row { display: flex; align-items: center; margin-bottom: 10px; gap: 10px; }
-        .field-label { flex: 0 0 260px; font-weight: 600; font-size: 13px; color: #444; }
+        .field-label { flex: 0 0 280px; font-weight: 600; font-size: 13px; color: #444; }
         .field-label .field-num { color: #3949ab; margin-right: 4px; }
         .field-input { flex: 1; }
-        .field-input input[type="text"],
-        .field-input input[type="number"],
-        .field-input textarea,
-        .field-input select {
-            width: 100%;
-            padding: 8px 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 13px;
-            font-family: inherit;
-        }
+        .field-input input[type="text"], .field-input input[type="number"], .field-input textarea, .field-input select { width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; font-family: inherit; }
         .field-input textarea { height: 60px; resize: vertical; }
-        .field-input input:focus, .field-input textarea:focus, .field-input select:focus {
-            outline: none;
-            border-color: #3949ab;
-            box-shadow: 0 0 0 2px rgba(57,73,171,0.15);
-        }
-        .field-hint { flex: 0 0 200px; font-size: 11px; color: #888; }
+        .field-input input:focus, .field-input textarea:focus, .field-input select:focus { outline: none; border-color: #3949ab; box-shadow: 0 0 0 2px rgba(57,73,171,0.15); }
+        .field-hint { flex: 0 0 220px; font-size: 11px; color: #888; }
         .radio-group { display: flex; gap: 14px; flex-wrap: wrap; }
         .radio-group label { display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer; }
-        .calc-box {
-            background: #e8eaf6;
-            border: 2px solid #3949ab;
-            border-radius: 10px;
-            padding: 16px 20px;
-            margin-top: 10px;
-        }
+        .calc-box { background: #e8eaf6; border: 2px solid #3949ab; border-radius: 10px; padding: 16px 20px; margin-top: 10px; }
         .calc-box .calc-title { font-weight: 700; color: #1a237e; margin-bottom: 10px; }
         .calc-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #9fa8da; }
         .calc-row:last-child { border-bottom: none; }
         .calc-label { font-weight: 600; font-size: 13px; }
         .calc-value { font-weight: 700; color: #c62828; font-size: 14px; }
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
         .modal-overlay.show { display: flex; }
-        .modal {
-            background: #fff;
-            border-radius: 12px;
-            padding: 24px;
-            max-width: 700px;
-            width: 95%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
+        .modal { background: #fff; border-radius: 12px; padding: 24px; max-width: 700px; width: 95%; max-height: 80vh; overflow-y: auto; }
         .modal h2 { font-size: 18px; margin-bottom: 16px; color: #1a237e; }
         .preset-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-        .preset-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 12px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.15s;
-            font-size: 12px;
-        }
+        .preset-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 8px; cursor: pointer; transition: background 0.15s; font-size: 12px; }
         .preset-item:hover { background: #e8eaf6; }
         .preset-bank { font-weight: 700; color: #1a237e; min-width: 90px; }
         .preset-branch { font-weight: 600; min-width: 160px; }
         .preset-addr { color: #666; flex: 1; }
         .preset-tel { color: #2e7d32; font-weight: 600; min-width: 110px; }
         .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
-        .modal-actions button {
-            padding: 10px 24px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-        }
+        .modal-actions button { padding: 10px 24px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; }
         .modal-ok { background: #1565c0; color: #fff; }
         .modal-cancel { background: #bdbdbd; color: #333; }
         .compare-table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -258,14 +129,8 @@
 </div>
 
 <script>
-// ================================================================
-// 구글 Apps Script 웹앱 URL
-// ================================================================
 var GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyF_LfIkNI3YiGZNmxm9g6hfOB6wCHTucFvGcblO3DAdeTMY7_fN-yF2udskdY1YWB0GQ/exec";
 
-// ================================================================
-// 프리셋 데이터: 성남시 1금융권 26개 지점
-// ================================================================
 var PRESET_BANKS = [
     { bank: "NH농협은행", branch: "단대지점", addr: "중원구 산성대로372번길 10, 단대쇼핑내 (금광동)", tel: "031-749-8480" },
     { bank: "NH농협은행", branch: "모란지점", addr: "중원구 둔촌대로 84, 206호 (성남동)", tel: "031-754-0903" },
@@ -295,9 +160,6 @@ var PRESET_BANKS = [
     { bank: "SC제일은행", branch: "서현역지점", addr: "분당구 서현동 일대 (주소 고객센터 확인)", tel: "1588-1599" }
 ];
 
-// ================================================================
-// 상담 항목 필드 정의 (모든 항목 포함)
-// ================================================================
 var FIELD_SECTIONS = [
     {
         title: "기본 정보",
@@ -314,9 +176,21 @@ var FIELD_SECTIONS = [
             { id: "base_rate_type", label: "기준금리 종류", num: "②", type: "select", options: ["선택", "COFIX(코픽스)", "금융채", "CD", "MOR", "기타"], hint: "" },
             { id: "base_rate", label: "기준금리 현재값 (%)", num: "③", type: "number", hint: "", defaultVal: "" },
             { id: "add_rate", label: "가산금리 (%)", num: "④", type: "number", hint: "", defaultVal: "" },
-            { id: "discount_detail", label: "우대금리 항목별 내역", num: "⑤", type: "textarea", hint: "항목: %p 형식으로 기입" },
+            { id: "discount_detail", label: "우대금리 항목별 내역", num: "⑤", type: "textarea", hint: "예: 급여이체 0.3%p / 카드실적 0.2%p" },
             { id: "discount_total", label: "우대금리 합계 (%)", num: "⑥", type: "number", hint: "", defaultVal: "" },
             { id: "final_rate", label: "최종 예상금리 (%)", num: "⑦", type: "number", hint: "③+④-⑥ (자동계산)", defaultVal: "", readonly: true }
+        ]
+    },
+    {
+        title: "우대금리 충족 조건 (실질 부담)",
+        titleClass: "highlight",
+        fields: [
+            { id: "need_new_account", label: "신규 통장 개설 필요?", num: "⑤-1", type: "radio", options: ["Y", "N", "미확인"], hint: "기존 통장 사용 가능 여부" },
+            { id: "parking_account_ok", label: "기존 파킹통장 연결 가능?", num: "⑤-2", type: "radio", options: ["Y", "N", "미확인"], hint: "별도 잔액 묶이는지" },
+            { id: "salary_transfer", label: "급여이체 필수? (최소금액)", num: "⑤-3", type: "text", hint: "예: 월 100만원 이상", defaultVal: "" },
+            { id: "need_new_card", label: "카드 신규발급 필수? (최소실적)", num: "⑤-4", type: "text", hint: "예: 월 30만원 실적", defaultVal: "" },
+            { id: "auto_transfer", label: "자동이체 조건", num: "⑤-5", type: "text", hint: "예: 3건 이상", defaultVal: "" },
+            { id: "discount_maintain", label: "우대금리 유지 조건", num: "⑤-6", type: "radio", options: ["최초1회", "매년갱신", "미확인"], hint: "매년 충족해야 하면 부담" }
         ]
     },
     {
@@ -378,64 +252,35 @@ var FIELD_SECTIONS = [
     }
 ];
 
-// ================================================================
-// 모든 필드 ID 목록 (엑셀/비교표에서 사용)
-// ================================================================
-var ALL_COMPARE_FIELDS = [
-    "consult_date", "consultant", "direct_tel",
-    "product_name", "base_rate_type", "base_rate", "add_rate",
-    "discount_detail", "discount_total", "final_rate",
-    "max_amort", "amort_10yr", "grace_period", "grace_1yr", "repay_method",
-    "free_repay", "free_repay_nonres", "prepay_fee", "fee_waiver",
-    "ltv", "limit_ok", "max_limit", "co_owner", "no_guarantor",
-    "appraisal_cost", "appraisal_days", "stamp_tax", "mortgage_fee", "other_cost",
-    "documents", "process_days", "memo",
-    "monthly_grace", "monthly_after", "total_interest",
-    "eval_grade", "eval_reason"
-];
+// 모든 필드 ID (비교표/엑셀용)
+var ALL_COMPARE_FIELDS = [];
+var ALL_COMPARE_LABELS = {};
+(function() {
+    for (var s = 0; s < FIELD_SECTIONS.length; s++) {
+        for (var f = 0; f < FIELD_SECTIONS[s].fields.length; f++) {
+            var field = FIELD_SECTIONS[s].fields[f];
+            ALL_COMPARE_FIELDS.push(field.id);
+            var numPrefix = field.num ? field.num + " " : "";
+            ALL_COMPARE_LABELS[field.id] = numPrefix + field.label;
+        }
+    }
+})();
 
-var ALL_COMPARE_LABELS = {
-    consult_date: "상담일시", consultant: "상담자", direct_tel: "직통번호",
-    product_name: "상품명", base_rate_type: "기준금리종류",
-    base_rate: "기준금리(%)", add_rate: "가산금리(%)",
-    discount_detail: "우대금리내역", discount_total: "우대합계(%)", final_rate: "최종금리(%)",
-    max_amort: "최장분할상환(년)", amort_10yr: "10년상환가능",
-    grace_period: "거치기간", grace_1yr: "1년거치가능", repay_method: "상환방식",
-    free_repay: "연10%무료상환", free_repay_nonres: "비주거적용",
-    prepay_fee: "중도상환수수료(%)", fee_waiver: "수수료면제시점",
-    ltv: "LTV(%)", limit_ok: "2억한도OK", max_limit: "최대한도",
-    co_owner: "공동명의처리", no_guarantor: "연대보증불요",
-    appraisal_cost: "감정평가비", appraisal_days: "감정소요기간",
-    stamp_tax: "인지세", mortgage_fee: "근저당설정비", other_cost: "기타비용",
-    documents: "필요서류", process_days: "소요기간", memo: "특이사항",
-    monthly_grace: "거치중월상환", monthly_after: "거치후월상환", total_interest: "10년총이자",
-    eval_grade: "종합평가", eval_reason: "평가사유"
-};
-
-// 비교표에서 하이라이트할 핵심 필드
 var HIGHLIGHT_FIELDS = [
-    "final_rate", "amort_10yr", "free_repay", "free_repay_nonres",
-    "ltv", "eval_grade", "direct_tel", "consultant", "consult_date"
+    "consult_date", "consultant", "direct_tel", "final_rate",
+    "need_new_account", "parking_account_ok", "discount_maintain",
+    "amort_10yr", "free_repay", "free_repay_nonres", "ltv", "eval_grade"
 ];
 
-// ================================================================
-// 글로벌 상태
-// ================================================================
 var tabs = [];
 var activeTabId = null;
 
-// ================================================================
-// 초기화
-// ================================================================
 window.addEventListener("DOMContentLoaded", function() {
     renderPresetList();
     setStatus("구글 스프레드시트에서 데이터 확인 중...", "saving");
     loadFromGoogle();
 });
 
-// ================================================================
-// 상태바
-// ================================================================
 function setStatus(msg, type) {
     var bar = document.getElementById("statusBar");
     bar.textContent = msg;
@@ -445,29 +290,16 @@ function setStatus(msg, type) {
     else if (type === "error") bar.classList.add("status-error");
 }
 
-// ================================================================
-// 구글 스프레드시트 저장
-// ================================================================
 function saveToGoogle() {
     if (activeTabId) saveTabData(activeTabId);
     if (tabs.length === 0) { alert("저장할 데이터가 없습니다."); return; }
-
     setStatus("구글 스프레드시트에 저장 중...", "saving");
-
     var saveData = [];
     for (var i = 0; i < tabs.length; i++) {
-        saveData.push({
-            bank: tabs[i].bank,
-            branch: tabs[i].branch,
-            addr: tabs[i].addr,
-            tel: tabs[i].tel,
-            data: tabs[i].data
-        });
+        saveData.push({ bank: tabs[i].bank, branch: tabs[i].branch, addr: tabs[i].addr, tel: tabs[i].tel, data: tabs[i].data });
     }
-
     fetch(GOOGLE_SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
+        method: "POST", mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ banks: saveData })
     })
@@ -481,36 +313,21 @@ function saveToGoogle() {
     });
 }
 
-// ================================================================
-// 구글 스프레드시트 불러오기 (JSONP)
-// ================================================================
 function loadFromGoogle() {
     setStatus("구글 스프레드시트에서 불러오는 중...", "saving");
-
     var callbackName = "googleCallback_" + Date.now();
-
     window[callbackName] = function(response) {
         var scriptTag = document.getElementById("jsonp_" + callbackName);
         if (scriptTag) scriptTag.remove();
         delete window[callbackName];
-
         if (response && response.success && response.data && response.data.length > 0) {
             tabs = [];
             activeTabId = null;
             var banks = response.data;
-
             for (var i = 0; i < banks.length; i++) {
                 var id = "tab_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
-                tabs.push({
-                    id: id,
-                    bank: banks[i].bank,
-                    branch: banks[i].branch,
-                    addr: banks[i].addr || "",
-                    tel: banks[i].tel || "",
-                    data: banks[i].data || {}
-                });
+                tabs.push({ id: id, bank: banks[i].bank, branch: banks[i].branch, addr: banks[i].addr || "", tel: banks[i].tel || "", data: banks[i].data || {} });
             }
-
             if (tabs.length > 0) {
                 activeTabId = tabs[0].id;
                 renderTabs();
@@ -521,482 +338,185 @@ function loadFromGoogle() {
             setStatus("저장된 데이터 없음 — 은행을 추가하세요", "online");
         }
     };
-
     var script = document.createElement("script");
     script.id = "jsonp_" + callbackName;
     script.src = GOOGLE_SCRIPT_URL + "?callback=" + callbackName;
-    script.onerror = function() {
-        delete window[callbackName];
-        script.remove();
-        setStatus("불러오기 실패 — 네트워크 확인", "error");
-    };
+    script.onerror = function() { delete window[callbackName]; script.remove(); setStatus("불러오기 실패 — 네트워크 확인", "error"); };
     document.body.appendChild(script);
 }
 
-// ================================================================
-// 프리셋 리스트
-// ================================================================
 function renderPresetList() {
     var container = document.getElementById("presetList");
     container.innerHTML = "";
     for (var i = 0; i < PRESET_BANKS.length; i++) {
         var p = PRESET_BANKS[i];
         var alreadyAdded = false;
-        for (var j = 0; j < tabs.length; j++) {
-            if (tabs[j].bank === p.bank && tabs[j].branch === p.branch) {
-                alreadyAdded = true;
-                break;
-            }
-        }
+        for (var j = 0; j < tabs.length; j++) { if (tabs[j].bank === p.bank && tabs[j].branch === p.branch) { alreadyAdded = true; break; } }
         var div = document.createElement("div");
         div.className = "preset-item";
         if (alreadyAdded) div.style.opacity = "0.4";
-        div.innerHTML =
-            '<input type="checkbox" class="preset-chk" data-idx="' + i + '"' + (alreadyAdded ? " disabled" : "") + '>' +
-            '<span class="preset-bank">' + p.bank + '</span>' +
-            '<span class="preset-branch">' + p.branch + '</span>' +
-            '<span class="preset-addr">' + p.addr + '</span>' +
-            '<span class="preset-tel">' + p.tel + '</span>';
-        (function(divEl, added) {
-            divEl.addEventListener("click", function(e) {
-                if (added) return;
-                if (e.target.type === "checkbox") return;
-                var chk = divEl.querySelector(".preset-chk");
-                chk.checked = !chk.checked;
-            });
-        })(div, alreadyAdded);
+        div.innerHTML = '<input type="checkbox" class="preset-chk" data-idx="' + i + '"' + (alreadyAdded ? " disabled" : "") + '><span class="preset-bank">' + p.bank + '</span><span class="preset-branch">' + p.branch + '</span><span class="preset-addr">' + p.addr + '</span><span class="preset-tel">' + p.tel + '</span>';
+        (function(divEl, added) { divEl.addEventListener("click", function(e) { if (added) return; if (e.target.type === "checkbox") return; var chk = divEl.querySelector(".preset-chk"); chk.checked = !chk.checked; }); })(div, alreadyAdded);
         container.appendChild(div);
     }
 }
 
-// ================================================================
-// 모달
-// ================================================================
-function openModal() {
-    renderPresetList();
-    document.getElementById("modalOverlay").classList.add("show");
-}
-function closeModal() {
-    document.getElementById("modalOverlay").classList.remove("show");
-    document.getElementById("customBank").value = "";
-    document.getElementById("customBranch").value = "";
-    document.getElementById("customAddr").value = "";
-    document.getElementById("customTel").value = "";
-}
-function addSelected() {
-    var checkboxes = document.querySelectorAll(".preset-chk:checked");
-    for (var i = 0; i < checkboxes.length; i++) {
-        var idx = parseInt(checkboxes[i].getAttribute("data-idx"));
-        var p = PRESET_BANKS[idx];
-        addTab(p.bank, p.branch, p.addr, p.tel);
-    }
-    closeModal();
-}
-function addCustom() {
-    var bank = document.getElementById("customBank").value.trim();
-    var branch = document.getElementById("customBranch").value.trim();
-    var addr = document.getElementById("customAddr").value.trim();
-    var tel = document.getElementById("customTel").value.trim();
-    if (!bank || !branch) { alert("은행명과 지점명은 필수입니다."); return; }
-    addTab(bank, branch, addr, tel);
-    document.getElementById("customBank").value = "";
-    document.getElementById("customBranch").value = "";
-    document.getElementById("customAddr").value = "";
-    document.getElementById("customTel").value = "";
-}
+function openModal() { renderPresetList(); document.getElementById("modalOverlay").classList.add("show"); }
+function closeModal() { document.getElementById("modalOverlay").classList.remove("show"); document.getElementById("customBank").value = ""; document.getElementById("customBranch").value = ""; document.getElementById("customAddr").value = ""; document.getElementById("customTel").value = ""; }
+function addSelected() { var checkboxes = document.querySelectorAll(".preset-chk:checked"); for (var i = 0; i < checkboxes.length; i++) { var idx = parseInt(checkboxes[i].getAttribute("data-idx")); var p = PRESET_BANKS[idx]; addTab(p.bank, p.branch, p.addr, p.tel); } closeModal(); }
+function addCustom() { var bank = document.getElementById("customBank").value.trim(); var branch = document.getElementById("customBranch").value.trim(); var addr = document.getElementById("customAddr").value.trim(); var tel = document.getElementById("customTel").value.trim(); if (!bank || !branch) { alert("은행명과 지점명은 필수입니다."); return; } addTab(bank, branch, addr, tel); document.getElementById("customBank").value = ""; document.getElementById("customBranch").value = ""; document.getElementById("customAddr").value = ""; document.getElementById("customTel").value = ""; }
 
-// ================================================================
-// 탭
-// ================================================================
 function addTab(bank, branch, addr, tel) {
-    for (var i = 0; i < tabs.length; i++) {
-        if (tabs[i].bank === bank && tabs[i].branch === branch) {
-            alert(bank + " " + branch + "은(는) 이미 추가되어 있습니다.");
-            return;
-        }
-    }
+    for (var i = 0; i < tabs.length; i++) { if (tabs[i].bank === bank && tabs[i].branch === branch) { alert(bank + " " + branch + "은(는) 이미 추가되어 있습니다."); return; } }
     var id = "tab_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
     tabs.push({ id: id, bank: bank, branch: branch, addr: addr, tel: tel, data: {} });
-    renderTabs();
-    switchTab(id);
+    renderTabs(); switchTab(id);
 }
 
 function renderTabs() {
-    var nav = document.getElementById("tabNav");
-    nav.innerHTML = "";
+    var nav = document.getElementById("tabNav"); nav.innerHTML = "";
     for (var i = 0; i < tabs.length; i++) {
-        var t = tabs[i];
-        var btn = document.createElement("div");
+        var t = tabs[i]; var btn = document.createElement("div");
         btn.className = "tab-btn" + (t.id === activeTabId ? " active" : "");
         var shortBank = t.bank.replace("은행", "").replace("NH농협", "농협").replace("KB국민", "KB").replace("IBK기업", "IBK").replace("Sh수협", "수협").replace("SC제일", "SC");
-        btn.innerHTML =
-            '<span onclick="switchTab(\'' + t.id + '\')">' + shortBank + " " + t.branch + '</span>' +
-            '<span class="close-tab" onclick="event.stopPropagation(); removeTab(\'' + t.id + '\')">x</span>';
+        btn.innerHTML = '<span onclick="switchTab(\'' + t.id + '\')">' + shortBank + " " + t.branch + '</span><span class="close-tab" onclick="event.stopPropagation(); removeTab(\'' + t.id + '\')">x</span>';
         nav.appendChild(btn);
     }
 }
 
-function switchTab(id) {
-    if (activeTabId) saveTabData(activeTabId);
-    activeTabId = id;
-    renderTabs();
-    renderTabContent(id);
-}
+function switchTab(id) { if (activeTabId) saveTabData(activeTabId); activeTabId = id; renderTabs(); renderTabContent(id); }
 
 function removeTab(id) {
-    var tab = null;
-    var tabIdx = -1;
-    for (var i = 0; i < tabs.length; i++) {
-        if (tabs[i].id === id) { tab = tabs[i]; tabIdx = i; break; }
-    }
+    var tab = null; var tabIdx = -1;
+    for (var i = 0; i < tabs.length; i++) { if (tabs[i].id === id) { tab = tabs[i]; tabIdx = i; break; } }
     if (!confirm(tab.bank + " " + tab.branch + " 탭을 삭제할까요?")) return;
     tabs.splice(tabIdx, 1);
-    if (activeTabId === id) {
-        activeTabId = tabs.length > 0 ? tabs[0].id : null;
-    }
+    if (activeTabId === id) { activeTabId = tabs.length > 0 ? tabs[0].id : null; }
     renderTabs();
-    if (activeTabId) renderTabContent(activeTabId);
-    else document.getElementById("tabContents").innerHTML = "";
+    if (activeTabId) renderTabContent(activeTabId); else document.getElementById("tabContents").innerHTML = "";
 }
 
-// ================================================================
-// 탭 콘텐츠 렌더링
-// ================================================================
 function renderTabContent(id) {
     var tab = null;
-    for (var i = 0; i < tabs.length; i++) {
-        if (tabs[i].id === id) { tab = tabs[i]; break; }
-    }
+    for (var i = 0; i < tabs.length; i++) { if (tabs[i].id === id) { tab = tabs[i]; break; } }
     if (!tab) return;
+    var container = document.getElementById("tabContents"); container.innerHTML = "";
+    var content = document.createElement("div"); content.className = "tab-content active";
 
-    var container = document.getElementById("tabContents");
-    container.innerHTML = "";
-
-    var content = document.createElement("div");
-    content.className = "tab-content active";
-
-    // 은행 정보 헤더
-    var infoSection = document.createElement("div");
-    infoSection.className = "section";
-    infoSection.style.background = "#e3f2fd";
-    infoSection.innerHTML =
-        '<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">' +
-        '<div><strong style="font-size:18px; color:#1a237e;">' + tab.bank + " " + tab.branch + '</strong>' +
-        '<div style="font-size:12px; color:#555; margin-top:4px;">' + tab.addr + '</div></div>' +
-        '<div style="text-align:right;"><div style="font-size:15px; font-weight:700; color:#2e7d32;">' + tab.tel + '</div></div></div>';
+    var infoSection = document.createElement("div"); infoSection.className = "section"; infoSection.style.background = "#e3f2fd";
+    infoSection.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;"><div><strong style="font-size:18px; color:#1a237e;">' + tab.bank + " " + tab.branch + '</strong><div style="font-size:12px; color:#555; margin-top:4px;">' + tab.addr + '</div></div><div style="text-align:right;"><div style="font-size:15px; font-weight:700; color:#2e7d32;">' + tab.tel + '</div></div></div>';
     content.appendChild(infoSection);
 
-    // 각 섹션별 필드
     for (var s = 0; s < FIELD_SECTIONS.length; s++) {
         var section = FIELD_SECTIONS[s];
-        var sec = document.createElement("div");
-        sec.className = "section";
-        var title = document.createElement("div");
-        title.className = "section-title";
-        title.textContent = section.title;
-        sec.appendChild(title);
+        var sec = document.createElement("div"); sec.className = "section";
+        var title = document.createElement("div"); title.className = "section-title" + (section.titleClass ? " " + section.titleClass : "");
+        title.textContent = section.title; sec.appendChild(title);
 
         for (var f = 0; f < section.fields.length; f++) {
             var field = section.fields[f];
-            var row = document.createElement("div");
-            row.className = "field-row";
-
-            var label = document.createElement("div");
-            label.className = "field-label";
+            var row = document.createElement("div"); row.className = "field-row";
+            var label = document.createElement("div"); label.className = "field-label";
             label.innerHTML = (field.num ? '<span class="field-num">' + field.num + "</span>" : "") + field.label;
             row.appendChild(label);
-
-            var inputDiv = document.createElement("div");
-            inputDiv.className = "field-input";
+            var inputDiv = document.createElement("div"); inputDiv.className = "field-input";
             var fieldId = id + "_" + field.id;
             var savedVal = tab.data[field.id] || field.defaultVal || "";
 
-            if (field.type === "text") {
-                inputDiv.innerHTML = '<input type="text" id="' + fieldId + '" value="' + savedVal + '"' + (field.readonly ? ' readonly style="background:#e8eaf6;"' : "") + ">";
-            } else if (field.type === "number") {
-                inputDiv.innerHTML = '<input type="number" step="0.01" id="' + fieldId + '" value="' + savedVal + '"' + (field.readonly ? ' readonly style="background:#e8eaf6;"' : "") + ">";
-            } else if (field.type === "select") {
-                var opts = "";
-                for (var o = 0; o < field.options.length; o++) {
-                    opts += '<option value="' + field.options[o] + '"' + (savedVal === field.options[o] ? " selected" : "") + ">" + field.options[o] + "</option>";
-                }
-                inputDiv.innerHTML = '<select id="' + fieldId + '">' + opts + "</select>";
-            } else if (field.type === "radio") {
-                var radios = "";
-                for (var r = 0; r < field.options.length; r++) {
-                    var checked = savedVal === field.options[r] ? " checked" : "";
-                    radios += '<label><input type="radio" name="' + fieldId + '" value="' + field.options[r] + '"' + checked + "> " + field.options[r] + "</label>";
-                }
-                inputDiv.innerHTML = '<div class="radio-group">' + radios + "</div>";
-            } else if (field.type === "textarea") {
-                inputDiv.innerHTML = '<textarea id="' + fieldId + '">' + savedVal + "</textarea>";
-            }
+            if (field.type === "text") { inputDiv.innerHTML = '<input type="text" id="' + fieldId + '" value="' + savedVal + '"' + (field.readonly ? ' readonly style="background:#e8eaf6;"' : "") + ">"; }
+            else if (field.type === "number") { inputDiv.innerHTML = '<input type="number" step="0.01" id="' + fieldId + '" value="' + savedVal + '"' + (field.readonly ? ' readonly style="background:#e8eaf6;"' : "") + ">"; }
+            else if (field.type === "select") { var opts = ""; for (var o = 0; o < field.options.length; o++) { opts += '<option value="' + field.options[o] + '"' + (savedVal === field.options[o] ? " selected" : "") + ">" + field.options[o] + "</option>"; } inputDiv.innerHTML = '<select id="' + fieldId + '">' + opts + "</select>"; }
+            else if (field.type === "radio") { var radios = ""; for (var r = 0; r < field.options.length; r++) { var checked = savedVal === field.options[r] ? " checked" : ""; radios += '<label><input type="radio" name="' + fieldId + '" value="' + field.options[r] + '"' + checked + "> " + field.options[r] + "</label>"; } inputDiv.innerHTML = '<div class="radio-group">' + radios + "</div>"; }
+            else if (field.type === "textarea") { inputDiv.innerHTML = '<textarea id="' + fieldId + '">' + savedVal + "</textarea>"; }
             row.appendChild(inputDiv);
-
-            if (field.hint) {
-                var hint = document.createElement("div");
-                hint.className = "field-hint";
-                hint.textContent = field.hint;
-                row.appendChild(hint);
-            }
+            if (field.hint) { var hint = document.createElement("div"); hint.className = "field-hint"; hint.textContent = field.hint; row.appendChild(hint); }
             sec.appendChild(row);
         }
         content.appendChild(sec);
     }
 
-    // 자동 계산 박스
-    var calcBox = document.createElement("div");
-    calcBox.className = "calc-box";
-    calcBox.innerHTML =
-        '<div class="calc-title">자동 계산 (2억원 · 1년 거치 · 9년 원리금균등)</div>' +
-        '<div class="calc-row"><span class="calc-label">최종금리</span><span class="calc-value" id="calc_rate_' + id + '">-</span></div>' +
-        '<div class="calc-row"><span class="calc-label">거치 중 월 이자</span><span class="calc-value" id="calc_grace_' + id + '">-</span></div>' +
-        '<div class="calc-row"><span class="calc-label">거치 후 월 상환액</span><span class="calc-value" id="calc_monthly_' + id + '">-</span></div>' +
-        '<div class="calc-row"><span class="calc-label">10년 총 이자</span><span class="calc-value" id="calc_total_' + id + '">-</span></div>' +
-        '<div class="calc-row"><span class="calc-label">연 10% 추가상환 시 총 이자 (추정)</span><span class="calc-value" id="calc_extra_' + id + '">-</span></div>';
-    content.appendChild(calcBox);
-    container.appendChild(content);
-
-    bindCalcEvents(id);
-    doCalc(id);
+    var calcBox = document.createElement("div"); calcBox.className = "calc-box";
+    calcBox.innerHTML = '<div class="calc-title">자동 계산 (2억원 · 1년 거치 · 9년 원리금균등)</div><div class="calc-row"><span class="calc-label">최종금리</span><span class="calc-value" id="calc_rate_' + id + '">-</span></div><div class="calc-row"><span class="calc-label">거치 중 월 이자</span><span class="calc-value" id="calc_grace_' + id + '">-</span></div><div class="calc-row"><span class="calc-label">거치 후 월 상환액</span><span class="calc-value" id="calc_monthly_' + id + '">-</span></div><div class="calc-row"><span class="calc-label">10년 총 이자</span><span class="calc-value" id="calc_total_' + id + '">-</span></div><div class="calc-row"><span class="calc-label">연 10% 추가상환 시 총 이자 (추정)</span><span class="calc-value" id="calc_extra_' + id + '">-</span></div>';
+    content.appendChild(calcBox); container.appendChild(content);
+    bindCalcEvents(id); doCalc(id);
 }
 
-// ================================================================
-// 금리 자동계산
-// ================================================================
 function bindCalcEvents(tabId) {
     var fields = ["base_rate", "add_rate", "discount_total"];
-    for (var i = 0; i < fields.length; i++) {
-        var el = document.getElementById(tabId + "_" + fields[i]);
-        if (el) {
-            el.addEventListener("input", (function(tid) {
-                return function() { doCalc(tid); };
-            })(tabId));
-        }
-    }
+    for (var i = 0; i < fields.length; i++) { var el = document.getElementById(tabId + "_" + fields[i]); if (el) { el.addEventListener("input", (function(tid) { return function() { doCalc(tid); }; })(tabId)); } }
 }
 
 function doCalc(tabId) {
-    var getVal = function(fid) {
-        var el = document.getElementById(tabId + "_" + fid);
-        return el ? parseFloat(el.value) || 0 : 0;
-    };
-
-    var base = getVal("base_rate");
-    var add = getVal("add_rate");
-    var discount = getVal("discount_total");
+    var getVal = function(fid) { var el = document.getElementById(tabId + "_" + fid); return el ? parseFloat(el.value) || 0 : 0; };
+    var base = getVal("base_rate"); var add = getVal("add_rate"); var discount = getVal("discount_total");
     var finalRate = base + add - discount;
-
     var finalEl = document.getElementById(tabId + "_final_rate");
     if (finalEl && (base > 0 || add > 0)) finalEl.value = finalRate.toFixed(2);
-
-    if (finalRate <= 0) {
-        var keys = ["calc_rate", "calc_grace", "calc_monthly", "calc_total", "calc_extra"];
-        for (var i = 0; i < keys.length; i++) {
-            var el = document.getElementById(keys[i] + "_" + tabId);
-            if (el) el.textContent = "-";
-        }
-        return;
-    }
-
-    var principal = 200000000;
-    var monthlyRate = finalRate / 100 / 12;
-    var graceMonths = 12;
-    var repayMonths = 108;
+    if (finalRate <= 0) { var keys = ["calc_rate", "calc_grace", "calc_monthly", "calc_total", "calc_extra"]; for (var i = 0; i < keys.length; i++) { var el = document.getElementById(keys[i] + "_" + tabId); if (el) el.textContent = "-"; } return; }
+    var principal = 200000000; var monthlyRate = finalRate / 100 / 12; var graceMonths = 12; var repayMonths = 108;
     var gracePayment = principal * monthlyRate;
     var factor = Math.pow(1 + monthlyRate, repayMonths);
     var monthlyPayment = principal * monthlyRate * factor / (factor - 1);
     var totalPaid = (gracePayment * graceMonths) + (monthlyPayment * repayMonths);
     var totalInterest = totalPaid - principal;
-
-    var balance = principal;
-    var totalInterestExtra = 0;
-    for (var m = 1; m <= graceMonths; m++) {
-        totalInterestExtra += balance * monthlyRate;
-        if (m === 12) { balance -= principal * 0.1; if (balance < 0) balance = 0; }
-    }
-    for (var year = 2; year <= 10; year++) {
-        if (balance <= 0) break;
-        for (var m2 = 1; m2 <= 12; m2++) {
-            if (balance <= 0) break;
-            var interest = balance * monthlyRate;
-            totalInterestExtra += interest;
-            var remainTotal = (10 - year) * 12 + (12 - m2) + 1;
-            if (remainTotal > 0) {
-                var f2 = Math.pow(1 + monthlyRate, remainTotal);
-                var pmt = balance * monthlyRate * f2 / (f2 - 1);
-                balance -= (pmt - interest);
-            }
-        }
-        var extraRepay = Math.min(principal * 0.1, balance);
-        balance -= extraRepay;
-        if (balance < 0) balance = 0;
-    }
-
+    var balance = principal; var totalInterestExtra = 0;
+    for (var m = 1; m <= graceMonths; m++) { totalInterestExtra += balance * monthlyRate; if (m === 12) { balance -= principal * 0.1; if (balance < 0) balance = 0; } }
+    for (var year = 2; year <= 10; year++) { if (balance <= 0) break; for (var m2 = 1; m2 <= 12; m2++) { if (balance <= 0) break; var interest = balance * monthlyRate; totalInterestExtra += interest; var remainTotal = (10 - year) * 12 + (12 - m2) + 1; if (remainTotal > 0) { var f2 = Math.pow(1 + monthlyRate, remainTotal); var pmt = balance * monthlyRate * f2 / (f2 - 1); balance -= (pmt - interest); } } var extraRepay = Math.min(principal * 0.1, balance); balance -= extraRepay; if (balance < 0) balance = 0; }
     var fmt = function(n) { return Math.round(n).toLocaleString("ko-KR"); };
-
     document.getElementById("calc_rate_" + tabId).textContent = finalRate.toFixed(2) + "%";
     document.getElementById("calc_grace_" + tabId).textContent = fmt(gracePayment) + "원";
     document.getElementById("calc_monthly_" + tabId).textContent = fmt(monthlyPayment) + "원";
     document.getElementById("calc_total_" + tabId).textContent = fmt(totalInterest) + "원";
     document.getElementById("calc_extra_" + tabId).textContent = fmt(totalInterestExtra) + "원 (추정)";
-
-    var graceEl = document.getElementById(tabId + "_monthly_grace");
-    var afterEl = document.getElementById(tabId + "_monthly_after");
-    var totalEl = document.getElementById(tabId + "_total_interest");
-    if (graceEl) graceEl.value = fmt(gracePayment);
-    if (afterEl) afterEl.value = fmt(monthlyPayment);
-    if (totalEl) totalEl.value = fmt(totalInterest);
+    var graceEl = document.getElementById(tabId + "_monthly_grace"); var afterEl = document.getElementById(tabId + "_monthly_after"); var totalEl = document.getElementById(tabId + "_total_interest");
+    if (graceEl) graceEl.value = fmt(gracePayment); if (afterEl) afterEl.value = fmt(monthlyPayment); if (totalEl) totalEl.value = fmt(totalInterest);
 }
 
-// ================================================================
-// 현재 탭 데이터 저장 (메모리)
-// ================================================================
 function saveTabData(tabId) {
-    var tab = null;
-    for (var i = 0; i < tabs.length; i++) {
-        if (tabs[i].id === tabId) { tab = tabs[i]; break; }
-    }
-    if (!tab) return;
-
-    for (var s = 0; s < FIELD_SECTIONS.length; s++) {
-        for (var f = 0; f < FIELD_SECTIONS[s].fields.length; f++) {
-            var field = FIELD_SECTIONS[s].fields[f];
-            var fieldId = tabId + "_" + field.id;
-            if (field.type === "radio") {
-                var checked = document.querySelector('input[name="' + fieldId + '"]:checked');
-                tab.data[field.id] = checked ? checked.value : "";
-            } else {
-                var el = document.getElementById(fieldId);
-                tab.data[field.id] = el ? el.value : "";
-            }
-        }
-    }
+    var tab = null; for (var i = 0; i < tabs.length; i++) { if (tabs[i].id === tabId) { tab = tabs[i]; break; } } if (!tab) return;
+    for (var s = 0; s < FIELD_SECTIONS.length; s++) { for (var f = 0; f < FIELD_SECTIONS[s].fields.length; f++) { var field = FIELD_SECTIONS[s].fields[f]; var fieldId = tabId + "_" + field.id; if (field.type === "radio") { var checked = document.querySelector('input[name="' + fieldId + '"]:checked'); tab.data[field.id] = checked ? checked.value : ""; } else { var el = document.getElementById(fieldId); tab.data[field.id] = el ? el.value : ""; } } }
 }
 
-// ================================================================
-// 전체 삭제
-// ================================================================
-function clearAll() {
-    if (!confirm("모든 탭과 데이터를 삭제할까요?")) return;
-    tabs = [];
-    activeTabId = null;
-    document.getElementById("tabNav").innerHTML = "";
-    document.getElementById("tabContents").innerHTML = "";
-    setStatus("전체 삭제 완료", "online");
-}
+function clearAll() { if (!confirm("모든 탭과 데이터를 삭제할까요?")) return; tabs = []; activeTabId = null; document.getElementById("tabNav").innerHTML = ""; document.getElementById("tabContents").innerHTML = ""; setStatus("전체 삭제 완료", "online"); }
 
-// ================================================================
-// 비교표 보기
-// ================================================================
 function showCompare() {
     if (activeTabId) saveTabData(activeTabId);
     if (tabs.length === 0) { alert("비교할 은행이 없습니다."); return; }
-
     var html = '<table class="compare-table"><tr><th>항목</th>';
-    for (var i = 0; i < tabs.length; i++) {
-        var short = tabs[i].bank.replace("은행", "").replace("NH농협", "농협").replace("KB국민", "KB").replace("IBK기업", "IBK").replace("Sh수협", "수협").replace("SC제일", "SC");
-        html += "<th>" + short + "<br>" + tabs[i].branch + "</th>";
-    }
+    for (var i = 0; i < tabs.length; i++) { var short = tabs[i].bank.replace("은행", "").replace("NH농협", "농협").replace("KB국민", "KB").replace("IBK기업", "IBK").replace("Sh수협", "수협").replace("SC제일", "SC"); html += "<th>" + short + "<br>" + tabs[i].branch + "</th>"; }
     html += "</tr>";
-
-    // 대표번호 행
-    html += "<tr><td style='font-weight:600;'>대표번호</td>";
-    for (var i = 0; i < tabs.length; i++) html += "<td>" + tabs[i].tel + "</td>";
-    html += "</tr>";
-
-    // 주소 행
-    html += "<tr><td style='font-weight:600;'>주소</td>";
-    for (var i = 0; i < tabs.length; i++) html += "<td style='font-size:11px;'>" + tabs[i].addr + "</td>";
-    html += "</tr>";
-
-    // 모든 필드
+    html += "<tr><td style='font-weight:600;'>대표번호</td>"; for (var i = 0; i < tabs.length; i++) html += "<td>" + tabs[i].tel + "</td>"; html += "</tr>";
+    html += "<tr><td style='font-weight:600;'>주소</td>"; for (var i = 0; i < tabs.length; i++) html += "<td style='font-size:11px;'>" + tabs[i].addr + "</td>"; html += "</tr>";
     for (var f = 0; f < ALL_COMPARE_FIELDS.length; f++) {
-        var fid = ALL_COMPARE_FIELDS[f];
-        var label = ALL_COMPARE_LABELS[fid] || fid;
-        var isHighlight = false;
-        for (var h = 0; h < HIGHLIGHT_FIELDS.length; h++) {
-            if (HIGHLIGHT_FIELDS[h] === fid) { isHighlight = true; break; }
-        }
-
+        var fid = ALL_COMPARE_FIELDS[f]; var label = ALL_COMPARE_LABELS[fid] || fid;
+        var isHighlight = false; for (var h = 0; h < HIGHLIGHT_FIELDS.length; h++) { if (HIGHLIGHT_FIELDS[h] === fid) { isHighlight = true; break; } }
         html += "<tr><td style='font-weight:600; text-align:left; padding-left:8px;'>" + label + "</td>";
-        for (var i = 0; i < tabs.length; i++) {
-            var val = tabs[i].data[fid] || "-";
-            var cls = isHighlight && val !== "-" && val !== "선택" ? ' class="highlight-cell"' : "";
-            html += "<td" + cls + ">" + val + "</td>";
-        }
+        for (var i = 0; i < tabs.length; i++) { var val = tabs[i].data[fid] || "-"; var cls = isHighlight && val !== "-" && val !== "선택" ? ' class="highlight-cell"' : ""; html += "<td" + cls + ">" + val + "</td>"; }
         html += "</tr>";
     }
     html += "</table>";
-
-    document.getElementById("compareBody").innerHTML = html;
-    document.getElementById("compareOverlay").classList.add("show");
+    document.getElementById("compareBody").innerHTML = html; document.getElementById("compareOverlay").classList.add("show");
 }
+function closeCompare() { document.getElementById("compareOverlay").classList.remove("show"); }
 
-function closeCompare() {
-    document.getElementById("compareOverlay").classList.remove("show");
-}
-
-// ================================================================
-// 엑셀 다운로드 (모든 필드 포함)
-// ================================================================
 function downloadExcel() {
     if (activeTabId) saveTabData(activeTabId);
     if (tabs.length === 0) { alert("다운로드할 데이터가 없습니다."); return; }
-
     var wb = XLSX.utils.book_new();
-
-    // ---- 시트1: 비교표 ----
-    var cmpHeader = ["항목"];
-    for (var i = 0; i < tabs.length; i++) cmpHeader.push(tabs[i].bank + " " + tabs[i].branch);
+    var cmpHeader = ["항목"]; for (var i = 0; i < tabs.length; i++) cmpHeader.push(tabs[i].bank + " " + tabs[i].branch);
     var cmpData = [cmpHeader];
-
-    // 주소 행
-    var addrRow = ["주소"];
-    for (var i = 0; i < tabs.length; i++) addrRow.push(tabs[i].addr);
-    cmpData.push(addrRow);
-
-    // 대표번호 행
-    var telRow = ["대표번호"];
-    for (var i = 0; i < tabs.length; i++) telRow.push(tabs[i].tel);
-    cmpData.push(telRow);
-
-    // 모든 상담 항목
-    for (var f = 0; f < ALL_COMPARE_FIELDS.length; f++) {
-        var fid = ALL_COMPARE_FIELDS[f];
-        var row = [ALL_COMPARE_LABELS[fid] || fid];
-        for (var i = 0; i < tabs.length; i++) row.push(tabs[i].data[fid] || "");
-        cmpData.push(row);
-    }
-
-    var ws1 = XLSX.utils.aoa_to_sheet(cmpData);
-    ws1["!cols"] = [{ wch: 20 }];
-    for (var i = 0; i < tabs.length; i++) ws1["!cols"].push({ wch: 24 });
+    var addrRow = ["주소"]; for (var i = 0; i < tabs.length; i++) addrRow.push(tabs[i].addr); cmpData.push(addrRow);
+    var telRow = ["대표번호"]; for (var i = 0; i < tabs.length; i++) telRow.push(tabs[i].tel); cmpData.push(telRow);
+    for (var f = 0; f < ALL_COMPARE_FIELDS.length; f++) { var fid = ALL_COMPARE_FIELDS[f]; var row = [ALL_COMPARE_LABELS[fid] || fid]; for (var i = 0; i < tabs.length; i++) row.push(tabs[i].data[fid] || ""); cmpData.push(row); }
+    var ws1 = XLSX.utils.aoa_to_sheet(cmpData); ws1["!cols"] = [{ wch: 24 }]; for (var i = 0; i < tabs.length; i++) ws1["!cols"].push({ wch: 26 });
     XLSX.utils.book_append_sheet(wb, ws1, "비교표");
-
-    // ---- 시트2: 상세데이터 (가로형) ----
-    var detailHeader = ["은행", "지점", "주소", "대표번호"];
-    for (var f = 0; f < ALL_COMPARE_FIELDS.length; f++) {
-        detailHeader.push(ALL_COMPARE_LABELS[ALL_COMPARE_FIELDS[f]] || ALL_COMPARE_FIELDS[f]);
-    }
-    var detailData = [detailHeader];
-    for (var i = 0; i < tabs.length; i++) {
-        var row = [tabs[i].bank, tabs[i].branch, tabs[i].addr, tabs[i].tel];
-        for (var f = 0; f < ALL_COMPARE_FIELDS.length; f++) {
-            row.push(tabs[i].data[ALL_COMPARE_FIELDS[f]] || "");
-        }
-        detailData.push(row);
-    }
-    var ws2 = XLSX.utils.aoa_to_sheet(detailData);
-    ws2["!cols"] = [];
-    for (var i = 0; i < detailHeader.length; i++) ws2["!cols"].push({ wch: 18 });
+    var detailHeader = ["은행", "지점", "주소", "대표번호"]; for (var f = 0; f < ALL_COMPARE_FIELDS.length; f++) { detailHeader.push(ALL_COMPARE_LABELS[ALL_COMPARE_FIELDS[f]] || ALL_COMPARE_FIELDS[f]); }
+    var detailData = [detailHeader]; for (var i = 0; i < tabs.length; i++) { var row = [tabs[i].bank, tabs[i].branch, tabs[i].addr, tabs[i].tel]; for (var f = 0; f < ALL_COMPARE_FIELDS.length; f++) { row.push(tabs[i].data[ALL_COMPARE_FIELDS[f]] || ""); } detailData.push(row); }
+    var ws2 = XLSX.utils.aoa_to_sheet(detailData); ws2["!cols"] = []; for (var i = 0; i < detailHeader.length; i++) ws2["!cols"].push({ wch: 20 });
     XLSX.utils.book_append_sheet(wb, ws2, "상세데이터");
-
-    // 다운로드
     var today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
     XLSX.writeFile(wb, "비주거담보대출_상담기록_" + today + ".xlsx");
 }
 </script>
-
 </body>
 </html>
