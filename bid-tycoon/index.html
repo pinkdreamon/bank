@@ -2493,9 +2493,9 @@ function splashHTML() {
 /* 오프닝 챕터 영상 자리 — 파일이 없으면 첫 프레임 대신 일러스트로 대체 */
 function videoHTML() {
   return '<div class="vwrap">' +
-    '<video id="openingV" src="' + OPENING_MP4 + '" muted playsinline autoplay preload="auto" poster="' + OWNER_IMG + '"></video>' +
+    '<video id="openingV" src="' + OPENING_MP4 + '" muted playsinline autoplay preload="auto" poster="' + OWNER_IMG + '" loop="false"></video>' +
     '<div class="vfall"><img src="' + OWNER_IMG + '" alt="밤 사무실에서 걱정하는 사장님">' +
-      '<div class="vfb-t">오프닝 영상이 아직 없습니다 · 이야기로 바로 갑니다</div></div>' +
+      '<div class="vfb-t">오프닝 영상 불러오는 중 · 화면을 누르면 바로 재생됩니다</div></div>' +
     '<button class="vsnd" data-act="isound">🔇 소리 켜기</button>' +
     '<button class="vskip" data-act="ib">건너뛰기 ›</button>' +
     "</div>";
@@ -2506,9 +2506,25 @@ function bindOpening() {
   const fail = () => { if (GATE && BEAT === 1) { BEAT = 2; render(); } };
   v.addEventListener("error", fail);
   v.addEventListener("ended", () => { if (GATE && BEAT === 1) { BEAT = 6; render(); } });
-  const pr = v.play ? v.play() : null;
-  if (pr && pr.catch) pr.catch(() => { const w = document.querySelector(".vwrap"); if (w) w.classList.add("blocked"); });
-  setTimeout(() => { if (GATE && BEAT === 1 && v.readyState === 0) fail(); }, 900);
+  const wrap = () => document.querySelector(".vwrap");
+  const tryPlay = () => {
+    const pr = v.play ? v.play() : null;
+    if (pr && pr.catch) pr.catch(() => { const w = wrap(); if (w) w.classList.add("blocked"); });
+  };
+  tryPlay();
+  /* 모바일 자동재생이 막혀도 첫 터치에서 바로 재생되도록 */
+  const kick = () => { const w = wrap(); if (w) w.classList.remove("blocked"); tryPlay(); };
+  ["pointerdown", "touchstart", "click"].forEach(ev =>
+    document.addEventListener(ev, kick, { once: true, passive: true }));
+  /* 로딩이 느려도 영상을 건너뛰지 않고 기다린다 (기존 0.9초 즉시 건너뛰기 제거) */
+  let tries = 0;
+  const iv = setInterval(() => {
+    if (!GATE || BEAT !== 1) { clearInterval(iv); return; }
+    if (v.readyState >= 2) { clearInterval(iv); return; }
+    tries += 1;
+    tryPlay();
+    if (tries > 12) { clearInterval(iv); fail(); }
+  }, 700);
 }
 const STORY_LINE = {
   2: { who: "사장님", img: OWNER_IMG, say: "요즘 경기도 어렵고, 사업도 영업도 안 되는데 어떻게 해야 되나요?" },
