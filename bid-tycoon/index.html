@@ -3347,7 +3347,7 @@ document.addEventListener("click", e => {
   const t = e.target.closest ? e.target.closest("[data-act]") : null;
   if (!t) return;
   const a = t.dataset.act;
-  const mine = { pg: 1, ib: 1, iskip: 1, scan: 1, toInvest: 1, buy: 1, help: 1 };
+  const mine = { pg: 1, ib: 1, iskip: 1, isound: 1, scan: 1, toInvest: 1, buy: 1, help: 1 };
   if (!mine[a]) return;
   if (a === "pg") {
     PG.i += (+t.dataset.k || 1);
