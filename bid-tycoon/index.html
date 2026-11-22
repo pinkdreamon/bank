@@ -2702,6 +2702,7 @@ function bindOpening() {
   const clearLoad = () => { const w = document.querySelector(".vwrap"); if (w) w.classList.remove("loading"); };
   const clearPlay = () => { const w = document.querySelector(".vwrap"); if (w) w.classList.remove("loading", "blocked"); };
   v.addEventListener("playing", clearPlay);
+  v.addEventListener("playing", () => { try { sessionStorage.setItem("bidtycoon_opening_played", "1"); } catch (e) {} });
   v.addEventListener("timeupdate", () => { if (!v.paused && v.currentTime > 0) clearPlay(); });
   v.addEventListener("canplay", clearLoad);
   v.addEventListener("ended", () => {
@@ -4281,6 +4282,8 @@ document.addEventListener("click", e => {
   if (!S.learned) S.learned = [];
   if (S.screen && S.screen !== "end" && S.company) { render(); return; }
   S.screen = "intro";
+  /* 이 탭에서 이미 오프닝을 한 번 봤다면 다시 틀지 않는다 — 새로고침·복구로 돌아와도 소리가 반복되지 않게 */
+  try { if (sessionStorage.getItem("bidtycoon_opening_played") === "1") { OPENING_STAGE = 2; BEAT = 2; } } catch (e) {}
   render();
 })();
 </script></body></html>
