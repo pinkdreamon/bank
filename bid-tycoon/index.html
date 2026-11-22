@@ -1768,8 +1768,8 @@ function genName(charId) {
 function validateName(raw) {
   const v = String(raw || "");
   if (v.length === 0) return { ok: false, msg: "회사 이름을 입력해 주세요." };
-  if (/\s/.test(v)) return { ok: false, msg: "빈칸(띄어쓰기)은 넣을 수 없습니다." };
-  if (!/^[가-힣a-zA-Z0-9]+$/.test(v)) return { ok: false, msg: "한글·영문·숫자만 쓸 수 있습니다." };
+  if (/\s{2,}/.test(v)) return { ok: false, msg: "빈칸은 한 칸만 넣을 수 있습니다." };
+  if (!/^[가-힣a-zA-Z0-9 ()\.·&\-]+$/.test(v)) return { ok: false, msg: "한글·영문·숫자와 괄호·가운뎃점만 쓸 수 있습니다." };
   if (v.length < 2) return { ok: false, msg: "2자 이상이어야 합니다." };
   if (v.length > 20) return { ok: false, msg: "20자까지 쓸 수 있습니다. (지금 " + v.length + "자)" };
   return { ok: true, msg: "사용할 수 있는 이름입니다." };
@@ -2733,7 +2733,7 @@ function bindNameInput() {
   const board = document.getElementById("signName");
   const err = document.getElementById("nameErr");
   const apply = () => {
-    const v = inp.value.replace(/[^가-힣a-zA-Z0-9]/g, "").slice(0, 20);
+    const v = inp.value.replace(/[^가-힣a-zA-Z0-9 ()\.·&\-]/g, "").replace(/\s{2,}/g, " ").slice(0, 20);
     if (inp.value !== v) inp.value = v;
     S.typedName = v;
     if (board) board.textContent = v || "(이름 없음)";
