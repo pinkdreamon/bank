@@ -3169,7 +3169,7 @@ function screenQual() {
           : '<button class="btn subtle" data-act="giveUpQual">포기하고 다음 공고</button><button class="btn big-btn" data-act="reexam">재심사 요청 (3일)</button>')
     };
   }
-  return frame([p1, p2], "qual:" + q.phase + ":" + q.tried + ":" + (q.failed || ""));
+  return frame(q.phase === "result" ? [p2] : [p1], "qual:" + q.phase + ":" + q.tried + ":" + (q.failed || ""), 0);
 }
 
 /* =====================================================================
@@ -3464,7 +3464,9 @@ async function selfTest() {
   if (oc1 === "1순위") {
     await go('[data-act="toQual"]', 400);
     await walk("qual");
-    await go('[data-act="submitQual"]', 500);
+    for (let d = 0; d < 5; d++) { await go('[data-act="doc"][data-i="' + d + '"]', 110); }
+    snap("qual-docs");
+    await go('[data-act="submitQual"]', 700);
     await walk("qualres");
     if (Q('[data-act="toContract"]')) {
       await go('[data-act="toContract"]', 350);
