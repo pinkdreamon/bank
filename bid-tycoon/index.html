@@ -2952,7 +2952,7 @@ function bindBidInput() {
   if (sl) {
     sl.addEventListener("input", () => {
       const rate = (+sl.value) / 100;
-      const amt = Math.round(n.base * rate / 1000) * 1000;
+      const amt = Math.round(n.base * (rate / 100) / 1000) * 1000;
       S.bid.amount = amt;
       paint(amt);
     });
