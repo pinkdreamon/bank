@@ -2392,9 +2392,18 @@ function screenOf(sc) {
   if (sc === "end") return screenEnd();
   return screenIntro();
 }
+/* 화면을 갈아 끼우기 전에 이전 화면의 영상을 반드시 멈춘다
+   (DOM에서 빠져도 media 요소는 계속 재생되어 소리가 겹쳐 들리는 문제 방지) */
+function stopVideos(root) {
+  if (!root) return;
+  root.querySelectorAll("video").forEach(v => {
+    try { v.pause(); v.removeAttribute("src"); v.load(); } catch (e) {}
+  });
+}
 function render() {
   const sc = GATE ? "intro" : S.screen;
   const prevKey = window.__sceneKey;
+  stopVideos(app());
   app().innerHTML = screenOf(sc);
   /* 장면이 바뀌면 앞 장면에서 띄운 하단 안내 토스트는 지운다 */
   if (prevKey !== undefined && window.__sceneKey !== prevKey) clearToastOnSceneChange();
