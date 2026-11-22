@@ -3460,8 +3460,10 @@ async function selfTest(SEC) {
     /* 예비가격번호 2개 */
     for (let k = 1; k <= 2; k++) { await go('[data-act="pickNo"][data-k="' + k + '"]', 140); }
     const sl = Q("#rateSlider");
-    if (sl) { sl.value = String(rate); sl.dispatchEvent(new Event("input")); await T(200);
-      rep.events.push({ step: tag + ":slide", rate: rate, amount: S.bid.amount, odds: document.querySelector(".ro-v") ? document.querySelector(".ro-v").textContent : "", cls: (Q(".readout") || {}).className }); }
+    const _nn = noticeOf();
+    const _rate = _nn ? Math.round((_nn.lb * 1.02 + 0.004) * 10000) : rate;
+    if (sl) { sl.value = String(_rate); sl.dispatchEvent(new Event("input")); await T(200);
+      rep.events.push({ step: tag + ":slide", rate: _rate, amount: S.bid.amount, odds: document.querySelector(".ro-v") ? document.querySelector(".ro-v").textContent : "", cls: (Q(".readout") || {}).className }); }
     snap(tag + ":rate");
     if (!Q('[data-act="submitBid"]')) { rep.events.push({ step: tag + ":stuck", screen: S.screen, pg: PG.i }); return "stuck"; }
     await go('[data-act="submitBid"]', 2400);
