@@ -1909,9 +1909,14 @@ function bidJudgeHTML(n, amt) {
   const cap = Math.floor(n.base * RULES.capRate), lbAmt = Math.ceil(n.base * n.lb);
   const rate = amt / n.base * 100;
   const bad = amt < lbAmt || amt >= cap;
+  /* 하한·상한에 바짝 붙었을 때는 퍼센트 대신 몇 원 차이인지 적는다 */
+  const dLb = amt - lbAmt, dCap = cap - amt;
+  let edge = "";
+  if (Math.abs(dLb) <= 1000) edge = " · 낙찰하한 " + won(lbAmt) + "원" + (dLb === 0 ? "과 같은 금액" : dLb > 0 ? "보다 " + won(dLb) + "원 위" : "보다 " + won(-dLb) + "원 아래");
+  else if (Math.abs(dCap) <= 1000) edge = " · 102% 상한 " + won(cap) + "원" + (dCap > 0 ? "보다 " + won(dCap) + "원 아래" : "과 같은 금액 (접수 안 됨)");
   return '<div class="gauge"><i class="' + (bad ? "low" : "mid") + '" style="width:' + Math.min(100, Math.max(0, rate - 60) / 45 * 100) + '%"></i></div>' +
     '<div class="tiny" style="margin-top:6px;color:' + (bad ? "var(--red)" : "var(--green)") + '">' +
-    "기초금액의 " + rate.toFixed(2) + "% (" + won(amt) + "원) · " +
+    "기초금액의 " + rate.toFixed(3) + "% (" + won(amt) + "원" + edge + ") · " +
     (amt < lbAmt ? "낙찰하한 아래 — 1순위여도 심사 대상이 아닙니다" : amt >= cap ? "102% 상한 초과 — 접수되지 않습니다" : "제출 가능한 구간입니다") + "</div>";
 }
 function bindBidInput() {
