@@ -2675,7 +2675,9 @@ function bindOpening() {
   };
   v.addEventListener("error", fail);
   const clearLoad = () => { const w = document.querySelector(".vwrap"); if (w) w.classList.remove("loading"); };
-  v.addEventListener("playing", clearLoad);
+  const clearPlay = () => { const w = document.querySelector(".vwrap"); if (w) w.classList.remove("loading", "blocked"); };
+  v.addEventListener("playing", clearPlay);
+  v.addEventListener("timeupdate", () => { if (!v.paused && v.currentTime > 0) clearPlay(); });
   v.addEventListener("canplay", clearLoad);
   v.addEventListener("ended", () => {
     if (!GATE || BEAT !== 1) return;
@@ -2687,19 +2689,24 @@ function bindOpening() {
     v.muted = false; v.volume = 1;
     const pr = v.play ? v.play() : null;
     if (pr && pr.catch) pr.catch(() => {
-      const w = wrap(); if (w) w.classList.add("blocked");
+      const w = wrap(); if (w && v.paused) w.classList.add("blocked");
     });
   };
   tryPlay();
-  /* 모바일 자동재생이 막혀도 첫 터치에서 바로 재생되도록 */
-  const kick = () => { const w = wrap(); if (w) w.classList.remove("blocked"); tryPlay(); };
-  ["pointerdown", "touchstart", "click"].forEach(ev =>
-    document.addEventListener(ev, kick, { once: true, passive: true }));
+  /* 브라우저 자동재생 차단 시 화면을 누르면 즉시 소리와 함께 재생되도록 */
+  const kick = e => {
+    if (e && e.target && e.target.closest && e.target.closest("button")) return;
+    clearPlay();
+    tryPlay();
+  };
+  const w0 = wrap();
+  if (w0) ["pointerdown", "click"].forEach(ev => w0.addEventListener(ev, kick));
   /* 로딩이 느려도 영상을 건너뛰지 않고 기다린다 (기존 0.9초 즉시 건너뛰기 제거) */
   let tries = 0;
   const iv = setInterval(() => {
     if (!GATE || BEAT !== 1) { clearInterval(iv); return; }
-    if (v.readyState >= 2) { clearInterval(iv); return; }
+    const w = wrap();
+    if (v.readyState >= 2 || (w && w.classList.contains("blocked"))) { clearInterval(iv); return; }
     tries += 1;
     tryPlay();
     if (tries > 12) { clearInterval(iv); fail(); }
