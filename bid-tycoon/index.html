@@ -2128,7 +2128,7 @@ function sayFriend(text) { return say("지인", text, FRIEND_IMG, "rt"); }
 const chip = (k, v) => '<span class="chipx"><b>' + k + "</b>" + v + "</span>";
 function hudHTML() {
   const inGame = !GATE && !!(S.charId && S.company);
-  const c = S.charId ? CH() : null;
+  const c = (!GATE && S.charId) ? CH() : null;
   const rounds = ROUNDS(), left = Math.max(0, rounds - S.rounds);
   const ava = c ? '<div class="hero-ava">' + portraitMarkup(c) + "</div>"
     : '<div class="hero-ava noimg"><span>₩</span></div>';
@@ -2492,7 +2492,6 @@ function modePickHTML() {
       modeBtn("quick", "빠른 판(체험판)", "3분", "green", "공고 확인 → 투찰 → 개찰까지만 빠르게 봅니다.") +
       modeBtn("full", "전체 판", "10분", "blue", "입찰 3번. 계약 → 납품 → 대금까지 다 겪습니다.") +
     "</div>" +
-    '<button class="btn big-btn" style="margin-top:10px" data-act="newGame">입찰하러 가기</button>' +
     (hasSave ? '<button class="btn subtle wide" style="margin-top:8px" data-act="continue">이어서 하기 (' + esc(saved.company) + ")</button>" : "") +
     "</div>";
 }
