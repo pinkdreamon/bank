@@ -3095,7 +3095,7 @@ function screenOpen() {
         "1순위면 적격심사 서류를 5일 안에 냅니다. 부족하면 7일 안에 보완합니다.",
         "부적격 통보를 받으면 3일 안에 재심사를 요청할 수 있지만, 새 서류를 붙일 수는 없습니다.",
         "내 입찰이 무효인지, 자격 미달인지도 이때 확인합니다."], "open"),
-    acts: '<button class="btn subtle" data-act="pg" data-k="-1">결과표로</button>'
+    acts: nextAfterOpen(R)
   };
   return frame([p0, p1, p2], "open:" + yej + ":" + R.mine.amount + ":" + R.outcome);
 }
@@ -3391,6 +3391,13 @@ async function selfTest() {
   };
   const go = async (sel, ms) => { const ok = C(sel); await T(ms || 300); return ok; };
   const clearFx = () => { const m = document.getElementById("modal-root"); if (m) m.innerHTML = ""; };
+  const goHome = async () => {
+    for (let i = 0; i < 16; i++) {
+      const pb = Q('.sc-nav [data-act="pg"][data-k="-1"]');
+      if (!pb || pb.disabled) break;
+      pb.click(); await T(70);
+    }
+  };
 
   /* 1) 인트로 → 업종 → 개업 */
   snap("splash");
@@ -3420,6 +3427,7 @@ async function selfTest() {
 
   /* 2) 라운드 1 — 공고 → 투찰 → 개찰 → 심사 → 계약 → 수행 → 입금 */
   const round = async (rate, tag) => {
+    await goHome();
     if (S.screen === "open") { await go('[data-act="afterLose"]', 500); }
     else if (S.screen !== "list") { await go('[data-act="scan"]', 300); await T(1700); }
     await walk(tag + ":list");
@@ -3446,6 +3454,7 @@ async function selfTest() {
     if (!Q('[data-act="submitBid"]')) { rep.events.push({ step: tag + ":stuck", screen: S.screen, pg: PG.i }); return "stuck"; }
     await go('[data-act="submitBid"]', 2400);
     await walk(tag + ":open");
+    await goHome();
     const oc = S.result.outcome;
     rep.events.push({ step: tag + ":result", outcome: oc, yej: S.result.yej, mine: S.result.mine.amount, rivals: S.result.rows.length });
     return oc;
