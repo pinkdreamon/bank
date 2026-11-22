@@ -2669,7 +2669,7 @@ function screenName() {
     body: '<div class="signstage">' +
       '<div class="signboard"><div class="sn">' + esc(S.autoName) + '</div><div class="ss">' + c.name + " · " + c.owner + "</div></div>" +
       '<div class="note" style="margin-top:8px">' + c.shop + " 문 열었습니다! 오늘부터 나라장터에 입찰해 볼 겁니다.</div>" +
-      '<div class="mini4">' + miniStat("자본금", eok(c.start.capital)) + miniStat("신용", c.credit) +
+      '<div class="mini4" style="grid-template-columns:repeat(2,minmax(0,1fr))">' + miniStat("자본금", eok(c.start.capital)) + miniStat("신용", c.credit) +
         miniStat("실적", c.start.perf ? eok(c.start.perf) : "없음") + miniStat("직원", c.start.staff + "명") + "</div>" +
       '<p class="tiny muted" style="margin-top:8px">한글·영문·숫자만, 2~20자. 이 이름이 계약서·개찰표까지 따라갑니다.</p>' +
       "</div>" +
