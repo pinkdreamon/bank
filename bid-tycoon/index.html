@@ -2239,8 +2239,7 @@ function openingSeenRecently() {
   try { const t = +(localStorage.getItem(SND_SEEN_KEY) || 0); return t > 0 && (Date.now() - t) < SND_SEEN_WINDOW; } catch (e) { return false; }
 }
 function markOpeningSeen() { try { localStorage.setItem(SND_SEEN_KEY, String(Date.now())); } catch (e) {} }
-/* 어떤 경우에도 저절로 소리가 나지 않는다 — 첫 화면은 늘 무음, 사람이 눌렀을 때만 소리를 켠다 */
-function openingStartMuted() { return true; }
+function openingStartMuted() { return false; }
 function sndButtonLabel() { return openingMutedNow() ? "🔇 소리 켜기" : "🔊 소리 끄기"; }
 /* 이번 방문의 오프닝 소리 상태 — 페이지를 열 때 한 번만 정하고, 영상이 바뀌어도 유지한다 */
 let __openingMuted = null;
