@@ -2176,7 +2176,7 @@ window.__guides = {};
 function guide(title, lines, askKey, foot) {
   const id = "g" + (++GID);
   window.__guides[id] = { title: title, lines: lines || [], askKey: askKey, foot: foot || "" };
-  return '<button class="helpbtn" data-act="help" data-g="' + id + '">? ' + title + "</button>";
+  return '<button class="helpbtn" data-act="help" data-g="' + id + '">' + title + "</button>";
 }
 function openGuide(id) {
   const g = window.__guides[id];
@@ -3420,7 +3420,9 @@ async function selfTest() {
 
   /* 2) 라운드 1 — 공고 → 투찰 → 개찰 → 심사 → 계약 → 수행 → 입금 */
   const round = async (rate, tag) => {
-    if (S.screen !== "list") { await go('[data-act="scan"]', 300); await T(1700); }
+    if (S.screen === "open") { await go('[data-act="afterLose"]', 500); }
+    else if (S.screen !== "list") { await go('[data-act="scan"]', 300); await T(1700); }
+    await walk(tag + ":list");
     const nid = S.notices.map(n => n.nid).find(id => { const d = noticeDef(id); return d && eligible(d) && S.notices.find(x => x.nid === id).close > S.now; });
     rep.events.push({ step: tag + ":notice", nid: nid, eligible: S.notices.map(n => [n.nid, (() => { const d = noticeDef(n.nid); return d ? eligibility(d).map(r => r.ok) : null; })()]) });
     if (!nid) { rep.events.push({ step: tag + ":none" }); return "none"; }
@@ -3441,6 +3443,7 @@ async function selfTest() {
     if (sl) { sl.value = String(rate); sl.dispatchEvent(new Event("input")); await T(200);
       rep.events.push({ step: tag + ":slide", rate: rate, amount: S.bid.amount, odds: document.querySelector(".ro-v") ? document.querySelector(".ro-v").textContent : "", cls: (Q(".readout") || {}).className }); }
     snap(tag + ":rate");
+    if (!Q('[data-act="submitBid"]')) { rep.events.push({ step: tag + ":stuck", screen: S.screen, pg: PG.i }); return "stuck"; }
     await go('[data-act="submitBid"]', 2400);
     await walk(tag + ":open");
     const oc = S.result.outcome;
@@ -3448,7 +3451,7 @@ async function selfTest() {
     return oc;
   };
 
-  const oc1 = await round(9600, "r1");
+  const oc1 = await round(8450, "r1");
   if (oc1 === "1순위") {
     await go('[data-act="toQual"]', 400);
     await walk("qual");
@@ -3475,7 +3478,7 @@ async function selfTest() {
   /* 3) 라운드 2 — 자본이 늘고 더 큰 공고가 열렸는지 */
   rep.events.push({ step: "after-r1", capital: S.capital, perf: S.perf, wins: S.wins, rounds: S.rounds, screen: S.screen,
     notices: S.notices.map(n => { const d = noticeDef(n.nid); return { id: n.nid, name: d ? d.name : "", base: d ? d.base : 0, need: d ? d.need : null, ok: d ? eligibility(d).map(r => r.ok) : null }; }) });
-  const oc2 = await round(9700, "r2");
+  const oc2 = await round(8420, "r2");
   await go('[data-act="toEnd"]', 400);
   await walk("end");
   rep.events.push({ step: "end", capital: S.capital, wins: S.wins, perf: S.perf, rounds: S.rounds, outcome2: oc2 });
