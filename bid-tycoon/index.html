@@ -2126,7 +2126,7 @@ function hudHTML() {
   const ava = c ? '<div class="hero-ava">' + portraitMarkup(c) + "</div>"
     : '<div class="hero-ava noimg"><span>₩</span></div>';
   let h = '<div class="hud"><div class="hud-in"><div class="hero">' + ava +
-    '<div class="hero-id"><b>' + (S.company ? esc(S.company) : "입찰 타이쿤") + "</b><small>" +
+    '<div class="hero-id"><b>' + (inGame ? esc(S.company) : "입찰 타이쿤") + "</b><small>" +
     (inGame ? c.owner + " · " + fDate(S.now) : "나라장터 입찰 한 바퀴") + "</small></div></div>";
   if (inGame) {
     h += '<div class="purse"><span class="coin"></span><div><small>자본</small><b id="hudCapital">' + eok(S.capital) + "</b></div></div>" +
@@ -2236,9 +2236,9 @@ function afterRender() {
   const sc = GATE ? "intro" : S.screen;
   /* 스플래시 — 누르지 않아도 3.2초 뒤 자동 진행 */
   clearTimeout(window.__splashT);
-  if (GATE && BEAT === 0) window.__splashT = setTimeout(() => { if (GATE && BEAT === 0) { BEAT = 1; render(); } }, 3200);
+  if (GATE && BEAT === 0 && !window.__shotMode) window.__splashT = setTimeout(() => { if (GATE && BEAT === 0) { BEAT = 1; render(); } }, 3200);
   /* 오프닝 영상 — 파일이 없거나 자동재생이 막히면 이미지 스토리로 넘어간다 */
-  if (GATE && BEAT === 1) bindOpening();
+  if (GATE && BEAT === 1 && !window.__shotMode) bindOpening();
   /* 스캔 연출 */
   if (!GATE && S.screen === "scan") {
     clearTimeout(window.__scanT);
@@ -3535,6 +3535,7 @@ window.addEventListener("load", function () {
    [31d] 화면 캡처용 장면 고정 — 주소 끝 #shot=이름 (검수용 · 일반 플레이에는 영향 없음)
    ===================================================================== */
 function shotSetup(name) {
+  window.__shotMode = true;
   document.documentElement.classList.add("shot390");
   try { localStorage.removeItem(KEY); } catch (e) { }
   closeTerm();
