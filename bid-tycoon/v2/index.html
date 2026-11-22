@@ -1,0 +1,3313 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>입찰 타이쿤 — 나라장터 입찰 한 바퀴</title>
+<style>
+  /* =====================================================================
+     입찰 타이쿤 — 게임 UI 디자인 시스템
+     밝은 배경 · 큰 글씨 · 두꺼운 테두리 · 눌리는 버튼 · 금색 강조
+     ===================================================================== */
+  /* =====================================================================
+     ★ THEME — 디자인 방향이 바뀌면 이 블록만 갈아끼우면 됩니다 ★
+     색 · 간격 · 모서리 · 버튼 모양 · 그림자 · 배경이 모두 여기 모여 있습니다.
+     아래 컴포넌트 규칙은 전부 이 값을 var() 로 참조합니다.
+     ===================================================================== */
+  :root{
+    /* --- 색 --- */
+    --t-primary:#3d7bff;      /* 주 버튼 · 강조 */
+    --t-primary-deep:#2255e0;
+    --t-primary-edge:#16389b; /* 버튼 아래 두께 */
+    --t-primary-soft:#eaf1ff;
+    --t-accent:#f7b32b;       /* 보조 강조 · 현재 단계 · 코인 */
+    --t-accent-deep:#f2a413;
+    --t-accent-edge:#c98a06;
+    --t-accent-soft:#fff3d2;
+    --t-ok:#12b886; --t-ok-deep:#0a7f5c; --t-ok-soft:#eafaf3;
+    --t-fail:#e8443a; --t-fail-deep:#a82a21; --t-fail-soft:#fdeeed;
+    --t-ink:#111c31; --t-ink-2:#3c4b66; --t-muted:#6b7a93;
+    --t-line:#e2e9f6; --t-line-2:#cfdaee;
+    --t-card:#ffffff; --t-paper:#fffdf7;
+
+    /* --- 배경 --- */
+    --t-page-bg:radial-gradient(1100px 520px at 50% -140px, #ffe6ad 0%, rgba(255,230,173,0) 62%),
+                 radial-gradient(760px 420px at 8% 32%, #dfeaff 0%, rgba(223,234,255,0) 60%),
+                 linear-gradient(180deg,#eef4ff 0%, #f8f4e9 52%, #fffdf8 100%);
+    --t-hud-bg:linear-gradient(180deg,#1b2947 0%, #0e1729 100%);
+    --t-hud-fg:#ffffff; --t-hud-muted:#9fb0cc; --t-hud-line:rgba(255,255,255,.14);
+
+    /* --- 모양 --- */
+    --t-radius:20px;        /* 카드 */
+    --t-radius-lg:26px;     /* 결과 카드 */
+    --t-radius-btn:16px;    /* 버튼 */
+    --t-radius-sm:13px;     /* 작은 버튼 · 태그 */
+    --t-border:2.5px;       /* 카드 테두리 두께 */
+
+    /* --- 간격 --- */
+    --t-pad:18px;           /* 카드 안쪽 */
+    --t-gap:14px;           /* 카드 사이 */
+    --t-page:14px;          /* 좌우 여백 */
+
+    /* --- 그림자 · 버튼 스타일 --- */
+    --t-shadow:0 5px 0 #eaeff9, 0 2px 0 rgba(17,28,49,.04), 0 12px 26px -16px rgba(17,28,49,.45);
+    --t-btn-bg:linear-gradient(180deg,#4285ff 0%, #2255e0 100%);
+    --t-btn-fg:#ffffff;
+    --t-btn-edge:0 5px 0 var(--t-primary-edge), 0 14px 22px -14px rgba(22,56,155,.9);
+    --t-btn-edge-down:0 1px 0 var(--t-primary-edge), 0 4px 10px -6px rgba(22,56,155,.9);
+    --t-btn-h:56px;         /* 기본 버튼 높이 */
+
+    /* ===== 아래는 위 값을 가리키는 별칭 — 컴포넌트가 쓰는 이름 ===== */
+    --hud1:#1b2947; --hud2:#0e1729;
+    --gold:var(--t-accent); --gold-d:var(--t-accent-edge); --gold-l:var(--t-accent-soft);
+    --blue:var(--t-primary); --blue-d:var(--t-primary-edge); --blue-l:var(--t-primary-soft);
+    --mint:var(--t-ok); --mint-d:var(--t-ok-deep);
+    --red:var(--t-fail); --red-d:var(--t-fail-deep);
+    --ink:var(--t-ink); --ink2:var(--t-ink-2); --muted:var(--t-muted);
+    --line:var(--t-line); --line2:var(--t-line-2);
+    --card:var(--t-card); --paper:var(--t-paper);
+    --r:var(--t-radius);
+    --shadow:0 2px 0 rgba(17,28,49,.04), 0 12px 26px -16px rgba(17,28,49,.45);
+    --ring:0 0 0 4px rgba(61,123,255,.16);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--t-page-bg);
+    background-attachment:fixed;
+    color:var(--ink);
+    font-family:-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+    font-size:17px; line-height:1.62; -webkit-text-size-adjust:100%;
+    letter-spacing:-.01em;
+    min-height:100vh;
+    word-break:keep-all; overflow-wrap:anywhere;
+    position:relative;
+  }
+  /* 게임 화면 같은 은은한 사선 결 — 가장자리에서 사라진다 */
+  body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background-image:repeating-linear-gradient(135deg, rgba(20,32,58,.05) 0 2px, rgba(20,32,58,0) 2px 18px);
+    -webkit-mask-image:radial-gradient(120% 80% at 50% 22%, #000 0%, rgba(0,0,0,.25) 58%, transparent 82%);
+    mask-image:radial-gradient(120% 80% at 50% 22%, #000 0%, rgba(0,0,0,.25) 58%, transparent 82%)}
+  #app{max-width:1040px;margin:0 auto;padding:0 var(--t-page) 40px}
+  h1,h2,h3,h4{margin:0;line-height:1.3;letter-spacing:-.03em}
+  p{margin:0 0 10px}
+  p:last-child{margin-bottom:0}
+  a{color:var(--blue-d);text-decoration:none;border-bottom:1.5px solid #c2d3f5}
+  a:hover{border-bottom-color:var(--blue-d)}
+  small{font-size:14px}
+  .muted{color:var(--muted)}
+  .tiny{font-size:13.5px;line-height:1.55}
+  .nowrap{white-space:nowrap}
+  .num{font-variant-numeric:tabular-nums}
+
+  /* ===================== 상단 고정 정보바 (HUD) ===================== */
+  .hud{position:sticky;top:0;z-index:60;padding:8px 12px 9px;
+    background:var(--t-hud-bg);
+    color:var(--t-hud-fg);
+    border-bottom:3px solid #060c17;
+    box-shadow:0 8px 20px -10px rgba(6,12,23,.75), inset 0 -1px 0 rgba(255,255,255,.06)}
+  .hud-in{max-width:1032px;margin:0 auto;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .hud-brand{display:flex;align-items:center;gap:9px;min-width:0;flex:1 1 auto}
+  .hud-ava{width:44px;height:44px;border-radius:13px;overflow:hidden;flex:none;background:#fbf7ee;
+    border:2.5px solid var(--gold);box-shadow:0 0 0 2px rgba(0,0,0,.35)}
+  .hud-ava img{width:100%;height:100%;object-fit:cover;object-position:50% 16%;display:block}
+  .hud-nm{font-size:16.5px;font-weight:900;color:#fff;letter-spacing:-.02em;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw;line-height:1.25}
+  .hud-sub{font-size:12px;color:var(--t-hud-muted);font-weight:700;letter-spacing:.01em}
+  .hud-chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .hchip{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.075);
+    border:1.5px solid var(--t-hud-line);border-radius:var(--t-radius-sm);padding:4px 10px 5px;min-height:40px}
+  .hchip .hk{font-size:11px;font-weight:800;color:var(--t-hud-muted);letter-spacing:.02em;line-height:1.1}
+  .coin{display:block;width:18px;height:18px;border-radius:50%;flex:none;
+    background:radial-gradient(circle at 34% 30%,#ffe9a3,var(--t-accent) 58%,var(--t-accent-edge) 100%);
+    border:1.5px solid var(--t-accent-edge);box-shadow:inset 0 -2px 0 rgba(0,0,0,.16)}
+  .hchip .hv{font-size:16.5px;font-weight:900;color:#fff;line-height:1.2;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .hchip .hv.gold{color:#ffd76e}
+  .hchip .ico{font-size:14px;line-height:1;filter:saturate(1.2)}
+  .hchip.hearts{gap:3px;padding:4px 9px 5px}
+  .hearts{display:inline-flex;gap:2px;align-items:center;line-height:1}
+  .hearts i{display:block;width:15px;height:15px;background:var(--red);flex:none;
+    -webkit-mask:radial-gradient(circle at 50% 100%, transparent 0 0) no-repeat;
+    clip-path:path("M7.5 13.6C3.2 10.6 .8 8.1 .8 5.2 .8 2.9 2.5 1.2 4.7 1.2c1.2 0 2.2 .6 2.8 1.5 .6-.9 1.6-1.5 2.8-1.5 2.2 0 3.9 1.7 3.9 4 0 2.9-2.4 5.4-6.7 8.4z");
+    background:linear-gradient(180deg,#ff8a80,#e8443a);
+    transform:scale(1.05)}
+  .hearts i.off{background:#495a78;opacity:.85}
+  .hchip.btnchip{cursor:pointer;background:rgba(247,179,43,.14);border-color:rgba(247,179,43,.42)}
+  .hchip.btnchip:hover{background:rgba(247,179,43,.24)}
+  .hchip.btnchip .hv{font-size:14px;color:#ffd76e}
+  @media(max-width:600px){
+    .hud{padding:7px 10px 8px}
+    .hud-nm{max-width:52vw;font-size:15.5px}
+    .hud-chips{gap:5px;width:100%;justify-content:space-between}
+    .hchip{padding:3px 8px 4px;min-height:38px;flex:1 1 auto;justify-content:center}
+    .hchip .hv{font-size:15.5px}
+    .hchip.btnchip{flex:0 0 auto}
+  }
+
+  /* ===================== 지금 할 일 표시 ===================== */
+  .objbar{display:flex;align-items:center;gap:10px;margin:12px 0 0;padding:10px 14px;
+    background:linear-gradient(180deg,#fff8e3,#ffefc4);border:2.5px solid #f0cd84;border-radius:16px;
+    box-shadow:0 5px 0 #f4e0b4;font-size:15px;font-weight:700;color:#6b4a00}
+  .objbar .bull{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+    background:var(--gold);color:#3a2800;font-size:14px;font-weight:900}
+  .objbar b{color:#4a3300;font-weight:900}
+  .objbar .go{margin-left:auto;font-size:13px;font-weight:800;color:#8a6116;background:#fff;
+    border:1.5px solid #f0cd84;border-radius:99px;padding:2px 10px;white-space:nowrap}
+
+  /* ===================== 9단계 게이지 ===================== */
+  .stepper{margin:12px 0 0;background:#fff;border:2.5px solid var(--line);border-radius:18px;
+    padding:11px 12px 9px;box-shadow:0 5px 0 #e9eff9}
+  .strack{height:9px;border-radius:99px;background:#e8eefb;overflow:hidden;margin-bottom:9px;box-shadow:inset 0 1px 2px rgba(17,28,49,.07)}
+  .strack i{display:block;height:100%;border-radius:99px;
+    background:linear-gradient(90deg,var(--gold) 0%, #ff9f43 100%);
+    box-shadow:0 0 10px rgba(247,179,43,.55);transition:width .7s cubic-bezier(.2,.8,.2,1)}
+  .snodes{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:1px 1px 3px}
+  .snodes::-webkit-scrollbar{display:none}
+  .snodes .s{flex:none;display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;
+    border-radius:99px;background:#f4f7fd;border:1.5px solid #e4ebf7;font-size:12.5px;color:#8390a6;white-space:nowrap}
+  .snodes .s b{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#fff;
+    border:1.5px solid #dbe4f3;font-size:11.5px;color:#8390a6;font-weight:900}
+  .snodes .s em{font-style:normal;font-weight:800;letter-spacing:-.01em}
+  .snodes .s.done{color:var(--mint-d);border-color:#bfe8d8;background:#effaf5}
+  .snodes .s.done b{background:var(--mint);border-color:var(--mint);color:#fff}
+  .snodes .s.now{color:#2b1d00;border-color:var(--gold);background:linear-gradient(180deg,#fff8e3,#ffefc4);
+    box-shadow:0 3px 0 #f0d79c;padding-right:12px}
+  .snodes .s.now b{background:var(--gold);border-color:var(--gold-d);color:#3a2800;animation:nodePulse 2.2s ease-in-out infinite}
+  @keyframes nodePulse{0%,100%{box-shadow:0 0 0 0 rgba(247,179,43,.6)}50%{box-shadow:0 0 0 6px rgba(247,179,43,0)}}
+  @media(max-width:700px){
+    .snodes .s:not(.now) em{display:none}
+    .snodes .s:not(.now){padding:4px}
+    .snodes .s.now em{font-size:12.5px}
+  }
+
+  /* ===================== 공통 조각 ===================== */
+  .card{background:var(--t-card);border:var(--t-border) solid var(--line);border-radius:var(--t-radius);
+    box-shadow:var(--t-shadow);padding:var(--t-pad)}
+  .card+.card{margin-top:var(--t-gap)}
+  .card.tight{padding:14px}
+  .card.flat{box-shadow:none}
+  .card-title{display:flex;align-items:center;gap:9px;font-size:18px;font-weight:900;
+    margin-bottom:12px;color:var(--ink);letter-spacing:-.03em}
+  .card-title .ico{width:30px;height:30px;border-radius:10px;flex:none;display:grid;place-items:center;
+    background:linear-gradient(180deg,#fff3d2,#ffe2a0);border:1.5px solid #f2cf87;
+    font-size:14px;font-weight:900;color:#8a5a00}
+  .sec-head{display:flex;align-items:baseline;gap:10px;margin:20px 0 12px;flex-wrap:wrap}
+  .sec-head h2{font-size:23px;font-weight:900;letter-spacing:-.035em}
+  .sec-head .hint{font-size:14px;color:var(--muted);font-weight:700}
+
+  /* ===================== 버튼 ===================== */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;
+    background:var(--t-btn-bg);color:var(--t-btn-fg);font:inherit;
+    font-weight:900;font-size:18px;letter-spacing:-.02em;padding:14px 22px;min-height:var(--t-btn-h);
+    border-radius:var(--t-radius-btn);box-shadow:var(--t-btn-edge);
+    transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+    text-shadow:0 1px 0 rgba(0,0,0,.18)}
+  .btn:hover{filter:brightness(1.06)}
+  .btn:active{transform:translateY(4px);box-shadow:var(--t-btn-edge-down)}
+  .btn.ghost{background:linear-gradient(180deg,#ffffff,#f1f6ff);color:var(--t-primary-edge);
+    border:2.5px solid #c6d7f8;box-shadow:0 5px 0 #dbe4f7, 0 14px 22px -16px rgba(22,56,155,.6);text-shadow:none}
+  .btn.ghost:hover{background:#f7faff}
+  .btn.subtle{background:linear-gradient(180deg,#ffffff,#f5f8fd);color:var(--t-ink-2);
+    border:2.5px solid #e3e9f3;box-shadow:0 4px 0 #e6ecf6;text-shadow:none}
+  .btn.subtle:hover{background:#fff;color:var(--ink)}
+  .btn.danger{background:linear-gradient(180deg,#ff7268,var(--t-fail-deep));color:#fff;box-shadow:0 5px 0 var(--t-fail-deep)}
+  .btn.danger:hover{filter:brightness(1.05)}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;filter:grayscale(.35);box-shadow:0 3px 0 #dfe6f1}
+  .btn.wide{width:100%}
+  .btn.sm{font-size:15px;min-height:44px;padding:10px 15px;border-radius:var(--t-radius-sm);box-shadow:0 4px 0 var(--t-primary-edge)}
+  .btn.sm.ghost,.btn.sm.subtle{box-shadow:0 4px 0 #dbe4f7}
+  .btn.big-btn{font-size:20px;min-height:62px;border-radius:18px}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:var(--t-gap)}
+  .btn-row .btn{flex:1 1 auto;min-width:0}
+
+  /* 화면 아래 붙는 행동 버튼 줄 */
+  .btn-row.actions{position:sticky;bottom:0;z-index:45;margin:18px -14px 0;
+    padding:12px 14px calc(12px + env(safe-area-inset-bottom));
+    background:linear-gradient(180deg, rgba(255,253,248,.55) 0%, rgba(255,253,248,.97) 42%);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    border-top:2.5px solid var(--line);border-radius:18px 18px 0 0}
+  .btn-row.actions .btn{flex:1 1 220px}
+  .btn-row.actions .btn.sm{flex:0 1 auto}
+  .btn-row.actions .btn.subtle,.btn-row.actions .btn.ghost{flex:1 1 42%;min-height:48px;font-size:15.5px}
+  @media(max-width:520px){ .btn-row.actions{gap:7px} .btn-row.actions .btn.subtle,.btn-row.actions .btn.ghost{flex:1 1 46%} }
+
+  .tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;
+    font-size:12.5px;font-weight:800;background:#eef2f9;color:#4b5c70;white-space:nowrap;
+    border:1.5px solid transparent}
+  .tag.blue{background:var(--blue-l);color:#1b47c4;border-color:#cfe0ff}
+  .tag.green{background:#e7f9f1;color:var(--mint-d);border-color:#bfe8d8}
+  .tag.red{background:#fdeceb;color:var(--red-d);border-color:#f6cbc6}
+  .tag.amber{background:var(--gold-l);color:#8a5a00;border-color:#f0d79c}
+  .tag.line{background:#fff;border-color:var(--line2);color:var(--muted)}
+
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;font-size:16px;align-items:baseline}
+  .kv dt{color:var(--muted);white-space:nowrap;font-weight:700;font-size:14.5px}
+  .kv dd{margin:0;font-weight:800;overflow-wrap:anywhere;color:var(--ink)}
+  @media(max-width:520px){ .kv{grid-template-columns:1fr;gap:1px} .kv dd{margin-bottom:9px} }
+
+  /* ===================== 안내·질문 박스 ===================== */
+  .guide{background:linear-gradient(180deg,#f2f7ff,#eaf2ff);border:2.5px solid #cfe0ff;
+    border-radius:18px;padding:14px 16px;margin-top:14px;box-shadow:0 5px 0 #dbe6fa}
+  .guide h4{font-size:15.5px;color:#1b47c4;display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:900}
+  .guide h4 .q{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;
+    background:linear-gradient(180deg,#4285ff,#2255e0);color:#fff;font-size:12px;font-weight:900;flex:none}
+  .guide ul{margin:0;padding-left:20px}
+  .guide li{margin-bottom:6px;font-size:15px;color:#33425c}
+  .guide li:last-child{margin-bottom:0}
+  .guide p{font-size:15px;color:#33425c}
+  .quotes{margin-top:11px;border-top:2px dashed #cfe0ff;padding-top:11px}
+  .quotes .qhead{font-size:13px;font-weight:900;color:#5a6c88;margin-bottom:7px;letter-spacing:0}
+  .quote{font-size:14.5px;color:#3c4b5c;padding:6px 0 6px 12px;border-left:3px solid #b9d1f5;margin-bottom:6px}
+  .quote a{font-size:13px;white-space:nowrap}
+
+  .note{background:#f7fafd;border:2px dashed var(--line2);border-radius:14px;padding:11px 13px;
+    font-size:14.5px;color:#5a6c88}
+  .warn{background:linear-gradient(180deg,#fff8e3,#fdf0cd);border:2.5px solid #f0d79c;
+    border-radius:15px;padding:12px 14px;font-size:15px;color:#7a4d00}
+  .bad{background:linear-gradient(180deg,#fdeeed,#fbe2df);border:2.5px solid #f3c4bd;
+    border-radius:15px;padding:12px 14px;font-size:15px;color:#8f2318}
+  .good{background:linear-gradient(180deg,#eafaf3,#def6ea);border:2.5px solid #b6e5cf;
+    border-radius:15px;padding:12px 14px;font-size:15px;color:#0a5c3b}
+  .bad b,.good b,.warn b{font-weight:900}
+
+  /* ===================== 첫 화면 (타이틀) ===================== */
+  .title-wrap{min-height:calc(100vh - 24px);display:flex;flex-direction:column;align-items:center;
+    justify-content:center;padding:20px 0 26px;gap:0}
+  .title-card{position:relative;width:100%;max-width:560px;background:linear-gradient(180deg,#fffdf6,#fff8e6);
+    border:3px solid #e8cf98;border-radius:28px;padding:26px 24px 22px;text-align:center;
+    box-shadow:0 10px 0 #edd9ae, 0 30px 60px -30px rgba(120,86,10,.6)}
+  .title-card:before{content:"";position:absolute;inset:7px;border:2px dashed #eeddb6;border-radius:21px;pointer-events:none}
+  .brandmark{display:inline-flex;align-items:center;gap:6px;margin-bottom:4px}
+  .brandmark i{display:block;width:30px;height:30px;border-radius:50%;
+    background:radial-gradient(circle at 34% 30%,#ffe9a3,#f7b32b 55%,#c98a06 100%);
+    border:2.5px solid #a97404;box-shadow:inset 0 -3px 0 rgba(0,0,0,.15), 0 3px 6px rgba(169,116,4,.4);
+    font-style:normal;font-size:15px;color:#7a5100;display:grid;place-items:center;font-weight:900}
+  .brandmark i:nth-child(2){width:38px;height:38px;font-size:18px;margin-top:-6px}
+  .kicker{display:inline-block;font-size:13px;font-weight:900;color:#8a6116;background:#fff;
+    border:2px solid #f0d79c;border-radius:999px;padding:4px 14px;margin:6px 0 10px;letter-spacing:.02em}
+  .logo{font-size:44px;font-weight:900;letter-spacing:-.06em;line-height:1.05;color:#14203a;
+    text-shadow:0 3px 0 #fff, 0 6px 0 rgba(20,32,58,.12)}
+  .logo .hl{color:#1b47c4;position:relative}
+  .logo .hl:after{content:"";position:absolute;left:-2px;right:-2px;bottom:2px;height:7px;
+    background:linear-gradient(90deg,#ffd76e,#f7b32b);border-radius:4px;z-index:-1;opacity:.85}
+  .logo-sub{font-size:15px;font-weight:800;color:#8a6116;margin-top:8px;letter-spacing:.04em}
+  .title-desc{font-size:15.5px;color:#4a4230;margin:14px 0 0;line-height:1.6;max-width:400px;
+    margin-left:auto;margin-right:auto}
+  .title-modes{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:16px 0 0}
+  .title-modes .mode{border:2.5px solid #e6d7b2;border-radius:15px;background:#fff;padding:9px 10px;
+    cursor:pointer;text-align:center;font:inherit;color:#5d5033;font-weight:800;font-size:13.5px;
+    box-shadow:0 3px 0 #eee0c2;transition:.13s;line-height:1.35}
+  .title-modes .mode small{display:block;font-size:11.5px;font-weight:800;color:#a98d52;margin-top:2px}
+  .title-modes .mode .mt{display:flex;justify-content:center;align-items:center;gap:5px;flex-wrap:wrap}
+  .title-cta{margin-top:16px}
+  .title-more{margin-top:14px;border-top:2px dashed #eadaaf;padding-top:12px}
+  .title-more summary{cursor:pointer;font-size:13.5px;font-weight:900;color:#8a6116;list-style:none}
+  .title-more summary::-webkit-details-marker{display:none}
+  .title-more summary:before{content:"＋ ";font-weight:900}
+  .title-more[open] summary:before{content:"－ "}
+  .title-more .inner{padding-top:9px;text-align:left}
+  .title-modes .mode.on{border-color:var(--gold);background:linear-gradient(180deg,#fff8e3,#ffefc4);
+    color:#3a2800;box-shadow:0 3px 0 #edd092}
+  .title-avatars{display:flex;justify-content:center;gap:16px;margin:16px 0 2px}
+  .ta{display:flex;flex-direction:column;align-items:center;gap:5px}
+  .ta img{width:62px;height:62px;border-radius:50%;object-fit:cover;object-position:50% 14%;
+    border:3px solid #fff;box-shadow:0 0 0 2.5px var(--gold), 0 5px 10px -4px rgba(120,86,10,.55);
+    background:#fbf7ee}
+  .ta span{font-size:12.5px;font-weight:900;color:#8a6116;letter-spacing:.02em}
+  @media(max-width:420px){ .ta img{width:52px;height:52px} .title-avatars{gap:12px} }
+
+  /* ===================== 업종 카드 ===================== */
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:820px){ .grid3{grid-template-columns:1fr} }
+  .pick{position:relative;background:linear-gradient(180deg,#ffffff,#fffdf7);border:3px solid var(--line);
+    border-radius:22px;padding:13px;cursor:pointer;text-align:left;font:inherit;color:inherit;display:block;
+    width:100%;box-shadow:0 7px 0 #e8eef8, 0 16px 30px -22px rgba(17,28,49,.55);
+    transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease}
+  .pick:hover{border-color:#c2d3f5;transform:translateY(-2px);box-shadow:0 9px 0 #e8eef8}
+  .pick:active{transform:translateY(3px);box-shadow:0 3px 0 #e8eef8}
+  .pick.on{border-color:var(--gold);background:linear-gradient(180deg,#fffdf5,#fff4d8);
+    box-shadow:0 7px 0 #f0cf8c, 0 20px 34px -18px rgba(201,138,6,.55);
+    animation:pickPop .5s cubic-bezier(.2,1.5,.4,1)}
+  @keyframes pickPop{0%{transform:scale(.97)}55%{transform:scale(1.02)}100%{transform:scale(1)}}
+  .pick.on:after{content:"✓";position:absolute;top:-13px;right:14px;width:30px;height:30px;border-radius:50%;
+    display:grid;place-items:center;background:linear-gradient(180deg,#ffd76e,#f7b32b);
+    border:2.5px solid #a97404;color:#3a2800;font-size:16px;font-weight:900;
+    box-shadow:0 3px 0 #c98a06;animation:badgeDrop .5s .1s cubic-bezier(.2,1.5,.4,1) both}
+  @keyframes badgeDrop{from{transform:translateY(-26px) scale(.6);opacity:0}to{transform:none;opacity:1}}
+  .pick .head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+  .pick .nm{font-size:19px;font-weight:900;color:#14203a;letter-spacing:-.03em}
+  .pick .who{font-size:14px;color:var(--muted);margin-bottom:9px;min-height:0;font-weight:700}
+  .pick .own{font-size:14px;color:#3c4b66;margin:-2px 0 7px}
+  .pick .own b{color:#14203a;font-weight:900}
+  .pick .first{margin-top:10px;font-size:13.5px;color:#8a5a00;background:var(--gold-l);
+    border:2px dashed #eed092;border-radius:12px;padding:7px 10px;font-weight:700}
+  .pick.on .first{background:#fff;border-color:#e8c88a}
+  .pick .diff{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:900;
+    color:#3d5166;background:#f0f5fa;border-radius:999px;padding:3px 10px;white-space:nowrap;border:1.5px solid #e2eaf5}
+  .pick.on .diff{background:#fff;color:#8a5a00;border-color:#eed092}
+  .dots{display:inline-flex;gap:3px}
+  .dots i{width:9px;height:9px;border-radius:50%;background:#dde5ee;display:block}
+  .dots i.f{background:linear-gradient(180deg,#4285ff,#2255e0);box-shadow:0 1px 0 #16389b}
+  .mini{display:grid;grid-template-columns:auto 1fr;gap:3px 8px;font-size:13.5px;color:#4b5c70}
+  .mini dt{color:#93a0b5;font-weight:800}
+  .mini dd{margin:0;font-weight:800;color:#33465b}
+
+  /* 캐릭터 초상 */
+  .portrait{position:relative;border-radius:16px;overflow:hidden;background:#fbf7ee;
+    border:2.5px solid #e7e0d2;aspect-ratio:4/3;display:grid;place-items:center;margin-bottom:10px}
+  .portrait img{width:100%;height:100%;object-fit:cover;object-position:50% 22%;display:block}
+  .portrait .ph{display:none;text-align:center;padding:10px}
+  .portrait .ph .ico{font-size:30px;line-height:1;margin-bottom:6px;opacity:.5}
+  .portrait .ph .t{font-size:13px;color:#9a8f7c}
+  .portrait.no-img img{display:none}
+  .portrait.no-img .ph{display:block}
+  .pick .portrait{aspect-ratio:16/11;margin:-2px 0 10px;border-radius:15px}
+  .pick .portrait:after{content:"";position:absolute;inset:0;pointer-events:none;
+    box-shadow:inset 0 -26px 30px -18px rgba(60,45,10,.22)}
+  .portrait.cover img{object-fit:cover;object-position:50% 16%}
+  .portrait.face{aspect-ratio:1/1;width:100%;margin:0}
+  .portrait.face img{object-fit:contain;object-position:50% 40%}
+  .pk-body{min-width:0}
+  .prof{width:80px;flex:none;border-radius:16px;overflow:hidden;border:2.5px solid #e7e0d2;background:#fbf7ee;
+    box-shadow:0 4px 0 #efe8d8}
+  .prof .portrait{border:0;border-radius:0;margin:0}
+  @media(max-width:820px){
+    .pick{display:flex;gap:12px;align-items:stretch;padding:11px}
+    .pick .portrait{width:104px;flex:none;aspect-ratio:1/1.2;margin:0}
+    .pick .pk-body{flex:1;min-width:0;display:flex;flex-direction:column}
+    .pick .who{margin-bottom:5px}
+    .pick .mini{gap:2px 8px}
+    .pick .first{margin-top:auto}
+    .pick .head{flex-wrap:wrap;gap:6px}
+  }
+
+  /* 설문 */
+  .quiz{border:2.5px solid var(--line);border-radius:16px;padding:13px;background:#fbfdff}
+  .quiz .qtext{font-weight:800;font-size:15.5px;margin-bottom:9px;color:var(--ink)}
+  .quiz .opts{display:flex;gap:8px;flex-wrap:wrap}
+  .opt{font:inherit;font-size:15.5px;padding:11px 15px;border-radius:14px;border:2.5px solid var(--line);
+    background:#fff;cursor:pointer;color:#33425c;font-weight:800;min-height:48px;transition:.12s;
+    box-shadow:0 3px 0 #eaeff9}
+  .opt:hover{border-color:#c2d3f5;background:#fbfdff}
+  .opt:active{transform:translateY(2px);box-shadow:none}
+  .opt.on{background:linear-gradient(180deg,#4285ff,#2255e0);color:#fff;border-color:#1b47c4;
+    box-shadow:0 3px 0 #16389b;text-shadow:0 1px 0 rgba(0,0,0,.18)}
+
+  /* ===================== 공고 목록 ===================== */
+  .notice{position:relative;display:block;width:100%;text-align:left;font:inherit;color:inherit;
+    cursor:pointer;background:#fff;border:2.5px solid var(--line);border-radius:20px;padding:15px;
+    box-shadow:0 6px 0 #e9eff9, 0 14px 26px -20px rgba(17,28,49,.5);
+    transition:transform .14s ease, box-shadow .14s ease, border-color .14s ease}
+  .notice:hover{border-color:#c2d3f5;transform:translateY(-2px);box-shadow:0 8px 0 #e9eff9}
+  .notice:active{transform:translateY(2px);box-shadow:0 2px 0 #e9eff9}
+  .notice+.notice{margin-top:12px}
+  .notice:before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:6px;border-radius:0 6px 6px 0;
+    background:linear-gradient(180deg,#4285ff,#2255e0)}
+  .notice.locked:before{background:linear-gradient(180deg,#c7d2e3,#a9b7cc)}
+  .notice.locked{background:#fbfcfe}
+  .notice.locked .nm{color:#5d6b82}
+  .notice .row1{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;padding-left:6px}
+  .notice .nm{font-weight:900;font-size:17px;color:#14203a;line-height:1.38;letter-spacing:-.03em}
+  .notice .meta{display:flex;gap:9px;flex-wrap:wrap;font-size:14px;color:var(--muted);margin-top:9px;padding-left:6px;font-weight:700}
+  .notice .meta b{color:#2b3a52;font-weight:900}
+  .dday{display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:900;color:#7a4d00;
+    background:linear-gradient(180deg,#fff3d2,#ffe2a0);border:2px solid #f0cd84;border-radius:12px;
+    padding:3px 10px;white-space:nowrap;box-shadow:0 3px 0 #f0dcb2}
+  .dday.soon{color:#8f2318;background:linear-gradient(180deg,#ffe4e0,#ffcdc6);border-color:#f2a49b;box-shadow:0 3px 0 #f6cdc7}
+
+  /* ===================== 표 ===================== */
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border:2px solid var(--line);border-radius:16px}
+  table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:440px;background:#fff}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1.5px solid #eef2f7;white-space:nowrap}
+  th{background:#f6f9fe;color:#5a6c88;font-weight:900;font-size:13px}
+  tr:last-child td{border-bottom:none}
+  tr.mine td{background:#eef7ff;font-weight:900;color:#1b47c4}
+  td.r{text-align:right;font-variant-numeric:tabular-nums}
+  .rankbadge{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:8px;
+    background:#eef2f7;font-size:12.5px;font-weight:900;color:#4b5c70}
+  .rankbadge.one{background:linear-gradient(180deg,#ffd76e,#f7b32b);color:#3a2800;box-shadow:0 2px 0 #c98a06}
+
+  /* ===================== 투찰 ===================== */
+  .money-in{display:flex;align-items:center;gap:10px;border:3px solid #cdd9ee;border-radius:18px;
+    padding:6px 16px;background:#fff;box-shadow:inset 0 3px 0 #f1f5fc;transition:.15s}
+  .money-in:focus-within{border-color:var(--gold);box-shadow:0 0 0 6px rgba(247,179,43,.16), inset 0 3px 0 #fff8e6}
+  .money-in input{border:0;outline:0;font:inherit;font-size:26px;font-weight:900;padding:10px 0;flex:1;min-width:0;
+    text-align:right;letter-spacing:-.03em;color:#14203a;background:transparent;font-variant-numeric:tabular-nums}
+  .money-in .unit{color:#8a99b3;font-size:19px;font-weight:900}
+  .gauge{height:14px;border-radius:99px;background:#e8eefb;overflow:hidden;margin-top:12px;position:relative;
+    box-shadow:inset 0 2px 3px rgba(17,28,49,.09)}
+  .gauge i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#22c58b,#12b886);
+    transition:width .4s ease}
+  .gauge i.mid{background:linear-gradient(90deg,#ffd76e,#f7a413)}
+  .gauge i.low{background:linear-gradient(90deg,#ff8a80,#e8443a)}
+  .scaleline{position:relative;height:34px;margin-top:4px;font-size:12px;color:#93a0b5}
+  .scaleline span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+  .scaleline span:after{content:"";display:block;width:1px;height:6px;background:#cbd6e2;margin:2px auto 0}
+
+  .picks{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  .pn{font:inherit;font-size:17px;font-weight:900;padding:10px 0;border-radius:14px;border:2.5px solid var(--line);
+    background:linear-gradient(180deg,#fff,#f4f8ff);cursor:pointer;color:#33425c;transition:.12s;min-height:48px;
+    box-shadow:0 4px 0 #e6ecf7}
+  .pn:hover{border-color:#c2d3f5;background:#fbfdff}
+  .pn:active{transform:translateY(2px);box-shadow:0 1px 0 #e6ecf7}
+  .pn.on{background:linear-gradient(180deg,#ffd76e,#f3a712);border-color:#d99406;color:#3a2800;
+    box-shadow:0 4px 0 #c98a06;animation:coinPop .35s cubic-bezier(.2,1.6,.4,1)}
+  @keyframes coinPop{0%{transform:scale(.9)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+  .pn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+
+  .pricechips{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+  .chip{font:inherit;font-size:13.5px;padding:8px 12px;border-radius:12px;border:2px solid var(--line);
+    background:#fff;cursor:pointer;color:#4b5c70;font-weight:800;min-height:44px;box-shadow:0 3px 0 #eaeff9}
+  .chip:hover{border-color:var(--gold);color:#8a5a00;background:#fffdf5}
+  .chip:active{transform:translateY(2px);box-shadow:none}
+
+  .big{font-size:28px;font-weight:900;letter-spacing:-.04em;color:#14203a;line-height:1.18}
+  .big small{font-size:15px;font-weight:800;color:var(--muted);letter-spacing:0}
+  @media(max-width:420px){ .big{font-size:23px} }
+
+  .statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(146px,1fr));gap:10px}
+  .stat{background:linear-gradient(180deg,#fbfdff,#f1f6ff);border:2.5px solid #e6edf9;border-radius:16px;
+    padding:11px 14px;box-shadow:0 3px 0 #eaf0fa}
+  .stat .k{font-size:13px;color:#6b7a93;margin-bottom:2px;font-weight:800}
+  .stat .v{font-size:22px;font-weight:900;color:#14203a;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  .stat .v small{font-size:13px;font-weight:800;color:var(--muted)}
+
+  /* 값이 바뀌면 튀어 오르는 표시 */
+  @keyframes numBump{0%{transform:scale(1)}35%{transform:scale(1.18);color:#0a7f5c}
+    100%{transform:scale(1)}}
+  .bump{animation:numBump .6s cubic-bezier(.2,1.4,.4,1)}
+  @keyframes deltaUp{0%{opacity:0;transform:translateY(6px)}25%{opacity:1}100%{opacity:0;transform:translateY(-26px)}}
+  .delta{position:absolute;right:8px;top:2px;font-size:14px;font-weight:900;color:#0a7f5c;
+    pointer-events:none;animation:deltaUp 1.6s ease-out both}
+  .delta.down{color:#c0261c}
+  .stat.rel{position:relative;overflow:visible}
+
+  .checklist{list-style:none;margin:0;padding:0}
+  .checklist li{border:2.5px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:9px;
+    display:flex;align-items:flex-start;gap:11px;cursor:pointer;font-size:15.5px;background:#fff;
+    font-weight:700;color:#33425c;box-shadow:0 3px 0 #eaeff9;transition:.12s}
+  .checklist li:hover{border-color:#c2d3f5}
+  .checklist li.on{border-color:#9fd8bf;background:#f3fdf8;color:#0a5c3b;
+    box-shadow:0 3px 0 #c9ecd9}
+  .checklist .box{width:24px;height:24px;border-radius:7px;border:2.5px solid #c3cedb;flex:none;
+    display:grid;place-items:center;font-size:14px;color:#fff;margin-top:0;background:#fff;font-weight:900}
+  .checklist li.on .box{background:linear-gradient(180deg,#22c58b,#0f9d68);border-color:#0a7f5c;
+    animation:coinPop .35s cubic-bezier(.2,1.6,.4,1)}
+
+  .calc{font-family:ui-monospace, SFMono-Regular, Menlo, monospace;font-size:13.5px;background:#f6f9fc;
+    border:2px solid var(--line);border-radius:13px;padding:12px 14px;overflow-x:auto;white-space:pre;color:#33465b;line-height:1.6}
+
+  /* 토스트 */
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(14px);opacity:0;
+    background:linear-gradient(180deg,#22304d,#101a2e);color:#fff;font-size:15px;font-weight:800;
+    padding:12px 20px;border-radius:16px;transition:.24s;z-index:120;max-width:90vw;text-align:center;
+    pointer-events:none;border:2px solid rgba(247,179,43,.5);box-shadow:0 14px 30px -12px rgba(0,0,0,.6)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* 모달 */
+  .modal-bg{position:fixed;inset:0;background:rgba(10,18,32,.55);z-index:100;display:grid;place-items:center;padding:18px;
+    -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+  .modal{background:linear-gradient(180deg,#fffdf8,#fff);border:3px solid #e8dfc8;border-radius:24px;
+    max-width:480px;width:100%;padding:22px;box-shadow:0 10px 0 #e8dfc8, 0 30px 60px -20px rgba(10,18,32,.6)}
+  .modal h3{font-size:20px;margin-bottom:8px;color:#14203a;font-weight:900;letter-spacing:-.03em}
+  .modal p{font-size:15px;color:#3c4b5c}
+
+  /* 결과 카드 */
+  .result-card{position:relative;overflow:hidden;background:linear-gradient(155deg,#16233c 0%, #1e3a64 58%, #2a5aa4 100%);
+    color:#fff;border:3px solid #0b1324;border-radius:26px;padding:24px;
+    box-shadow:0 10px 0 #0b1324, 0 30px 50px -26px rgba(11,19,36,.9)}
+  .result-card:before{content:"";position:absolute;right:-70px;top:-90px;width:280px;height:280px;border-radius:50%;
+    background:radial-gradient(circle, rgba(247,179,43,.35), rgba(247,179,43,0) 68%);pointer-events:none}
+  .result-card .rc-top{padding-right:110px}
+  .result-card .rc-top{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;
+    font-weight:800;color:#a9bcd8;letter-spacing:.03em}
+  .result-card h2{font-size:27px;margin:8px 0 3px;letter-spacing:-.04em;font-weight:900;color:#fff}
+  .result-card .rsub{font-size:14px;color:#b6c6de;font-weight:700}
+  .result-card .rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:10px;margin:18px 0 4px}
+  .result-card .rgrid .k{font-size:12.5px;color:#9fb2cd;font-weight:800}
+  .result-card .rgrid .v{font-size:22px;font-weight:900;letter-spacing:-.03em;color:#fff}
+  .result-card .rline{border-top:1.5px solid rgba(255,255,255,.2);margin-top:16px;padding-top:14px;font-size:14px;color:#dbe5f3}
+  .result-card .slogan{margin-top:12px;font-size:16px;font-weight:800;line-height:1.55;color:#fff3d2}
+
+  /* 도장 */
+  .stampbig{position:absolute;right:16px;top:12px;transform:rotate(-11deg);color:#7ff0c0;
+    border:5px double currentColor;border-radius:12px;padding:4px 12px 2px;font-size:23px;font-weight:900;
+    letter-spacing:.08em;line-height:1.2;opacity:.95;
+    animation:stampIn .8s cubic-bezier(.3,1.4,.5,1) both;z-index:2}
+  .stampbig.fail{color:#ffb2ab}
+  .result-card .stampbig{top:44px;right:16px}
+  .stampbig small{display:block;font-size:10.5px;letter-spacing:.05em;text-align:center;font-weight:800}
+
+  .footer{margin-top:30px;text-align:center;font-size:12.5px;color:#93a0b5;line-height:1.7}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+  /* ===================== 공고문 문서 ===================== */
+  .doc{background:#fffdf8;border:2px solid #e3dccb;border-radius:14px;overflow:hidden;
+    box-shadow:inset 0 0 0 4px #fffdf8, inset 0 0 0 5.5px #efe8d8;color:#26221c}
+  .doc-head{padding:22px 18px 15px;text-align:center;border-bottom:2.5px solid #d8cfb9}
+  .doc-org{font-size:13px;letter-spacing:.18em;color:#7a6f57;font-weight:700}
+  .doc-title{font-size:25px;font-weight:900;letter-spacing:.28em;margin:5px 0 3px;color:#1e1b15}
+  .doc-sub{font-size:13px;color:#7a6f57}
+  .doc-no{display:inline-block;margin-top:9px;font-size:12.5px;color:#5d5545;border:1.5px solid #d8cfb9;
+    border-radius:6px;padding:2px 9px;background:#fbf7ec;font-weight:700}
+  .doc-body{padding:6px 18px 18px}
+  .art{border-bottom:1.5px solid #ece5d4;padding:13px 0}
+  .art:last-child{border-bottom:none}
+  .art>h5{margin:0;font-size:16px;font-weight:900;color:#1e1b15;display:flex;align-items:center;gap:8px;
+    cursor:pointer;user-select:none}
+  .art>h5 .tg{font-size:11.5px;color:#8a7f68;border:1.5px solid #ddd4bf;border-radius:5px;padding:0 5px;
+    font-weight:800;background:#fbf7ec}
+  .art>h5:after{content:"접기";margin-left:auto;font-size:12px;color:#9a8f78;font-weight:800;
+    background:#f7f2e4;border-radius:99px;padding:1px 9px}
+  .art.closed>h5:after{content:"펼치기"}
+  .art.closed>.art-c{display:none}
+  .art-c{padding-top:9px}
+  .doct{width:100%;border-collapse:collapse;font-size:15px;min-width:0;background:transparent}
+  .doct th,.doct td{border:1.5px solid #e6dfcd;padding:8px 10px;vertical-align:top;white-space:normal;background:transparent}
+  .doct th{background:#f7f3e7;color:#5d5545;font-weight:800;width:30%;text-align:left;font-size:14px}
+  .doct td{color:#26221c}
+  .doc p{font-size:15px;margin:0 0 7px;color:#332e26}
+  .doc ol,.doc ul{margin:4px 0 7px;padding-left:20px;font-size:15px;color:#332e26}
+  .doc li{margin-bottom:4px}
+  .doc .hl{background:#fff2c9;box-shadow:0 0 0 2px #fff2c9;border-radius:2px;font-weight:800}
+  .doc .mark{background:#eaf7ef;box-shadow:0 0 0 2px #eaf7ef;border-radius:2px}
+  .doc-foot{padding:12px 18px 16px;border-top:2px dashed #d8cfb9;background:#fbf8ee}
+  .doc-foot .t1{font-size:12.5px;color:#6b6353;margin-bottom:3px}
+  .doc-foot .t2{font-size:12.5px;color:#8a7f68}
+  .docwrap>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;
+    font-size:18px;font-weight:900;color:var(--ink);padding:2px 0}
+  .docwrap>summary::-webkit-details-marker{display:none}
+  .docwrap>summary .ico{width:30px;height:30px;border-radius:10px;flex:none;display:grid;place-items:center;
+    background:linear-gradient(180deg,#fff3d2,#ffe2a0);border:1.5px solid #f2cf87;font-size:14px;font-weight:900;color:#8a5a00}
+  .docwrap>summary .arrow{margin-left:auto;font-size:14px;font-weight:900;color:#8a99b3;
+    background:#f2f6fd;border-radius:99px;padding:2px 10px}
+  .docwrap>summary .arrow:after{content:"펼치기"}
+  .docwrap[open]>summary .arrow:after{content:"접기"}
+  .docwrap>summary .hintx{display:none}
+  .doc-tools{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 10px}
+  .doc-tools .btn{padding:7px 12px;min-height:40px;font-size:13.5px;border-radius:11px;box-shadow:0 3px 0 #dbe4f7}
+
+  /* ===================== 조건 5개 찾기 ===================== */
+  .watch{border:2.5px solid var(--line);border-radius:16px;padding:14px;background:#fbfdff}
+  .watch .wq{margin-bottom:12px}
+  .watch .wq:last-child{margin-bottom:0}
+  .watch .wt{font-size:15px;font-weight:800;margin-bottom:7px;display:flex;gap:7px;align-items:baseline;color:#26334a}
+  .watch .wn{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:7px;background:#e7eff8;
+    color:#1b47c4;font-size:12px;font-weight:900;flex:none}
+  .watch .wq.right .wn{background:linear-gradient(180deg,#22c58b,#0f9d68);color:#fff}
+  .watch .wq.wrong .wn{background:linear-gradient(180deg,#ff7268,#d93a2f);color:#fff}
+  .watch .opts{gap:7px}
+  .watch .opt{font-size:14px;padding:8px 12px;min-height:44px}
+  .watch .opt.right{background:#eafaf3;border-color:#9fd8bf;color:#0a5c3b;font-weight:900}
+  .watch .opt.wrong{background:#fdeeed;border-color:#f2b7b0;color:#a82a21;text-decoration:line-through}
+
+  /* ===================== 타이쿤 장면 ===================== */
+  .scene{--p:0;position:relative;border-radius:18px;overflow:hidden;border:2.5px solid var(--line);
+    background:linear-gradient(180deg,#eef4fb,#f7fafd);margin:12px auto;box-shadow:0 5px 0 #e9eff9;
+    max-width:640px}
+  .scene svg{display:block;width:100%;height:auto}
+  .scene .cap{position:absolute;left:10px;bottom:9px;font-size:12.5px;color:#3d4c60;
+    background:rgba(255,255,255,.92);border-radius:9px;padding:3px 10px;font-weight:800;
+    border:1.5px solid #dbe4f2}
+  .scene .badge{position:absolute;right:10px;top:9px;font-size:12px;font-weight:900;color:#0a5c3b;
+    background:rgba(255,255,255,.94);border:2px solid #bfe3d0;border-radius:999px;padding:2px 10px}
+  .sx,.sy,.syin,.sc{transform-box:fill-box;transition:transform .95s cubic-bezier(.22,.8,.2,1), opacity .55s ease}
+  .sx{transform-origin:left center;transform:scaleX(var(--p))}
+  .sy{transform-origin:center bottom;transform:scaleY(var(--p))}
+  .syin{transform-origin:center top;transform:scaleY(var(--p))}
+  .roll{transform-box:fill-box;transform-origin:center;transform:scale(calc(1 - var(--p)*.52));transition:transform 1.1s ease}
+  .fade{transition:opacity .55s ease;opacity:max(0,min(1,calc((var(--p) - var(--from,0)) * var(--k,4))))}
+  .slide{transform-box:fill-box;transition:transform .8s cubic-bezier(.22,.8,.2,1), opacity .5s ease;
+    opacity:max(0,min(1,calc((var(--p) - var(--from,0)) * var(--k,4))));
+    transform:translate(calc((1 - min(1,max(0,calc((var(--p) - var(--from,0)) * var(--k,4))))) * 26px), calc((1 - min(1,max(0,calc((var(--p) - var(--from,0)) * var(--k,4))))) * 26px))}
+  @keyframes spinRoll{to{transform:rotate(360deg)}}
+  .rot{animation:spinRoll 1.9s linear infinite;transform-box:fill-box;transform-origin:center}
+  .rot.fast{animation-duration:.9s}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+  .bob{animation:bob 2.4s ease-in-out infinite}
+  @keyframes glowPulse{0%,100%{opacity:.55}50%{opacity:1}}
+  .glow{animation:glowPulse 1.8s ease-in-out infinite}
+  @keyframes craneSwing{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.2deg)}}
+  .crane{transform-box:fill-box;transform-origin:bottom center;animation:craneSwing 4.5s ease-in-out infinite}
+
+  /* ===================== 공통 연출 ===================== */
+  @keyframes stampIn{0%{transform:translateY(-46px) scale(1.7) rotate(-11deg);opacity:0}
+    62%{transform:translateY(0) scale(1) rotate(-11deg);opacity:1}
+    74%{transform:translateY(3px) scale(.94) rotate(-11deg)}
+    100%{transform:translateY(0) scale(1) rotate(-11deg);opacity:.95}}
+  .stamp{animation:stampIn .75s cubic-bezier(.3,1.3,.5,1) both}
+  @keyframes sealIn{0%{transform:scale(2.4) rotate(-14deg);opacity:0}70%{opacity:.95}100%{transform:scale(1) rotate(-8deg);opacity:.9}}
+  .seal{animation:sealIn .8s .25s ease-out both;transform-origin:center}
+  @keyframes envelopeFly{0%{transform:translate(0,0) rotate(-8deg) scale(1);opacity:0}
+    12%{opacity:1}70%{transform:translate(210px,-58px) rotate(10deg) scale(.6);opacity:1}
+    100%{transform:translate(280px,-78px) rotate(14deg) scale(.18);opacity:0}}
+  .env-fly{animation:envelopeFly 1.8s cubic-bezier(.5,0,.3,1) both}
+  @keyframes serverPing{0%{box-shadow:0 0 0 0 rgba(17,99,173,.45)}100%{box-shadow:0 0 0 16px rgba(17,99,173,0)}}
+  .env-target{animation:serverPing .9s 1.5s ease-out 2}
+  @keyframes rowIn{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:none}}
+  .tw.anim tbody tr{animation:rowIn .5s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes sheetDrop{from{opacity:0;transform:translateY(-26px) scale(.985)}to{opacity:1;transform:none}}
+  .sheet-drop{animation:sheetDrop .6s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes fastHand{to{transform:rotate(360deg)}}
+  .clk .hand{transform-box:fill-box;transform-origin:50% 92%;animation:fastHand 1.1s linear infinite}
+  .clk .hand.slow{animation-duration:6s}
+  @keyframes flashIn{0%{background:#fff8d8}100%{background:transparent}}
+  .flash{animation:flashIn 1.4s ease-out both}
+  @keyframes popIn{0%{transform:scale(.9);opacity:0}100%{transform:scale(1);opacity:1}}
+  .pop{animation:popIn .4s cubic-bezier(.2,1.3,.4,1) both}
+
+  /* ===================== 용어 ===================== */
+  .term{display:inline;padding:0 1px;margin:0;border:0;background:none;font:inherit;color:#134a9c;
+    cursor:help;border-bottom:2px dotted #6f9fe0;line-height:inherit;text-align:inherit;letter-spacing:inherit;
+    font-weight:800}
+  .term:hover{background:#e8f2fb;border-bottom-color:var(--blue)}
+  .term.new{background:linear-gradient(transparent 58%, #ffe3bf 58%)}
+  .termbox{position:fixed;left:50%;transform:translateX(-50%);top:68px;width:min(490px,calc(100vw - 24px));
+    background:linear-gradient(180deg,#fffdf8,#fff);border:3px solid #e8dfc8;border-radius:22px;
+    box-shadow:0 10px 0 #e8dfc8, 0 26px 50px -18px rgba(11,19,36,.55);
+    z-index:110;padding:16px;animation:sheetUp .32s cubic-bezier(.2,.9,.3,1) both;max-height:46vh;overflow-y:auto}
+  @keyframes sheetUp{from{transform:translate(-50%,-14px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+  .termbox .tb-k{font-size:11.5px;font-weight:900;color:#1b47c4;letter-spacing:.05em;margin-bottom:3px}
+  .termbox h4{font-size:19px;color:#14203a;margin-bottom:2px;font-weight:900}
+  .termbox .tb-s{font-size:15px;color:#3c4b5c;font-weight:800;margin-bottom:8px}
+  .termbox .tb-d{font-size:15px;color:#4b5c70;margin-bottom:9px}
+  .termbox .tb-d p{margin:0 0 5px}
+  .termbox .tb-a{font-size:13px;color:#5b6b7d;background:#f6f8fb;border:2px dashed var(--line2);
+    border-radius:12px;padding:9px 11px;margin-bottom:10px}
+  .termbox .tb-a a{font-size:12.5px}
+  .termbox .tb-b{display:flex;gap:8px}
+  .termbox .tb-b .btn{flex:1;padding:8px 12px;min-height:46px;font-size:15px}
+  .gl{list-style:none;margin:0;padding:0;max-height:58vh;overflow-y:auto}
+  .gl li{border-bottom:1.5px solid #eef2f7;padding:11px 0}
+  .gl li:last-child{border-bottom:none}
+  .gl .gt{font-weight:900;font-size:15.5px;color:#14203a}
+  .gl .gs{font-size:14px;color:#4b5c70;margin-top:2px}
+  .gl .gw{font-size:12.5px;color:#93a0b5;margin-top:3px;font-weight:700}
+  .gl .empty{color:var(--muted);font-size:14.5px;padding:16px 0;text-align:center}
+
+  /* ===================== 모드 선택 ===================== */
+  .modes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:560px){ .modes{grid-template-columns:1fr} }
+  .mode{border:2.5px solid var(--line);border-radius:16px;padding:13px;background:#fff;cursor:pointer;
+    text-align:left;font:inherit;color:inherit;box-shadow:0 4px 0 #eaeff9;transition:.13s}
+  .mode.on{border-color:var(--gold);background:linear-gradient(180deg,#fffdf5,#fff4d8);box-shadow:0 4px 0 #f0cf8c}
+  .mode .mt{font-weight:900;font-size:16px;color:#14203a;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .mode .ms{font-size:14px;color:#6b7a93;margin-top:3px;font-weight:700}
+
+  /* 화면 머리말 (단계 이름 배지) */
+  .stagebadge{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:900;color:#8a5a00;
+    background:var(--gold-l);border:2px solid #f0cd84;border-radius:99px;padding:3px 12px;margin-bottom:8px}
+
+  /* 흐름 칩 */
+  .flow{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 4px}
+  .flow span{font-size:12.5px;color:#4b5c70;background:#fff;border:1.5px solid var(--line);
+    border-radius:9px;padding:4px 9px;font-weight:800}
+  .flow span.on{background:linear-gradient(180deg,var(--gold),var(--gold-d));color:#fff;border-color:var(--gold-d)}
+
+  /* 개찰 결과 큰 연출 */
+  .res-hero{position:relative;overflow:hidden;border:3px solid #0b1324;border-radius:var(--t-radius-lg);
+    padding:26px 18px 22px;text-align:center;background:linear-gradient(180deg,#f4fdf9,#dff7ec);
+    box-shadow:0 8px 0 #0b1324, 0 22px 38px -22px rgba(11,19,36,.7)}
+  .res-hero.lose{background:linear-gradient(180deg,#fff5f3,#ffe3de)}
+  .res-badge{width:76px;height:76px;margin:0 auto 10px;border-radius:50%;display:grid;place-items:center;
+    font-size:40px;font-weight:900;background:linear-gradient(180deg,#22c58b,#0f9d68);color:#fff;
+    border:4px solid #0a7f5c;box-shadow:0 6px 0 #0a7f5c;animation:popIn .5s cubic-bezier(.2,1.5,.4,1) both}
+  .res-hero.lose .res-badge{background:linear-gradient(180deg,#ff7268,#d93a2f);border-color:#a82a21;box-shadow:0 6px 0 #a82a21}
+  .res-word{font-size:34px;font-weight:900;letter-spacing:-.04em;color:#0a7f5c;line-height:1.2}
+  .res-hero.lose .res-word{color:#a82a21}
+
+  @media(max-width:560px){
+    .hchip.opt2{display:none}
+    .hud-own{display:none}
+    .scene{max-width:100%}
+    .res-hero{padding:20px 14px 18px}
+    .res-word{font-size:27px}
+    .res-badge{width:62px;height:62px;font-size:32px}
+    #app{padding-bottom:80px}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;
+      transition-duration:.001ms !important;scroll-behavior:auto !important}
+  }
+  @media(max-width:560px){
+    body{font-size:16.5px}
+    #app{padding:0 11px 30px}
+    .card{padding:14px;border-radius:17px}
+    .doc-body{padding:4px 11px 13px}
+    .doc-head{padding:16px 11px 12px}
+    .doc-title{font-size:20px;letter-spacing:.16em}
+    .doct th{width:34%;font-size:13px}
+    .doct td,.doct th{padding:6px 7px}
+    .doct{font-size:14.5px}
+    .doc p,.doc li{font-size:14.5px}
+    .btn-row.actions{margin-left:-11px;margin-right:-11px;padding-left:11px;padding-right:11px}
+    .logo{font-size:37px}
+    .title-card{padding:22px 16px 18px;border-radius:24px}
+    .sec-head h2{font-size:20px}
+    .stat .v{font-size:20px}
+    .big{font-size:23px}
+    .result-card{padding:18px;border-radius:22px}
+    .result-card h2{font-size:23px}
+    .stampbig{position:static;display:inline-block;margin-bottom:8px;font-size:20px}
+  }
+  /* =====================================================================
+     ★★★ ③ 타이쿤 테마 레이어 (2026-11-22) ★★★
+     Idle Billionaire Tycoon — 돈이 쌓이는 상단 HUD · 금색 숫자 · 두꺼운 카드
+     Life Simulator: Road to Riches — 단계 해금 사다리 · 상태 게이지
+     (규칙·수치·문구는 손대지 않고 화면 껍데기만 바꾼다)
+     ===================================================================== */
+  :root{
+    --t-page-bg:
+      radial-gradient(980px 560px at 50% -200px, rgba(247,179,43,.34) 0%, rgba(247,179,43,0) 62%),
+      radial-gradient(720px 440px at 4% 16%, rgba(61,123,255,.20) 0%, rgba(61,123,255,0) 60%),
+      radial-gradient(780px 470px at 98% 76%, rgba(18,184,134,.14) 0%, rgba(18,184,134,0) 62%),
+      linear-gradient(180deg,#0b1428 0%, #111e37 44%, #080f1d 100%);
+    --t-card:#fffdf7; --t-paper:#fffdf7;
+    --t-line:#f0dcae; --t-line-2:#e2ca93;
+    --t-shadow:0 7px 0 #06101f, 0 2px 0 rgba(0,0,0,.4), 0 22px 34px -22px rgba(0,0,0,.95);
+    --t-btn-bg:linear-gradient(180deg,#ffd15c 0%, #f59a00 100%);
+    --t-btn-fg:#3a2200;
+    --t-btn-edge:0 6px 0 #a35d00, 0 16px 24px -14px rgba(245,154,0,.85);
+    --t-btn-edge-down:0 1px 0 #a35d00, 0 5px 12px -8px rgba(245,154,0,.8);
+  }
+  body{color:#e8efff}
+  body:before{background-image:repeating-linear-gradient(135deg, rgba(255,255,255,.045) 0 2px, rgba(255,255,255,0) 2px 20px);
+    -webkit-mask-image:radial-gradient(120% 82% at 50% 20%, #000 0%, rgba(0,0,0,.35) 60%, transparent 84%);
+    mask-image:radial-gradient(120% 82% at 50% 20%, #000 0%, rgba(0,0,0,.35) 60%, transparent 84%)}
+  .sec-head h2{color:#fff}
+  .sec-head .hint{color:#9db0d0}
+  .footer{color:#8296b6}
+  #app>.tiny.muted,#app>div>.tiny.muted{color:#9db0d0}
+  /* 밝은 바탕을 그대로 쓰는 표·입력칸은 글자를 어둡게 되돌린다 */
+  table{color:#26334a}
+  .docwrap>summary{color:#e8efff}
+  .docwrap>summary .arrow{background:rgba(255,255,255,.12);color:#cbd8ef}
+  /* 화면 아래 조작 바 — 게임 컨트롤 바 */
+  .btn-row.actions{background:linear-gradient(180deg, rgba(11,20,40,.55) 0%, rgba(9,16,31,.97) 46%);
+    border-top:2.5px solid #f0cd84;border-radius:18px 18px 0 0;
+    box-shadow:0 -10px 24px -14px rgba(0,0,0,.9)}
+
+  /* --------------------- 상단 HUD : 금고 --------------------- */
+  .hud{padding:9px 12px 10px;border-bottom:3px solid #f7b32b;
+    background:linear-gradient(180deg,#12213c 0%,#0a1526 62%,#070f1c 100%);
+    box-shadow:0 12px 26px -12px rgba(0,0,0,.95), inset 0 -1px 0 rgba(247,179,43,.55), inset 0 1px 0 rgba(255,255,255,.10)}
+  .hud-ava{border:2.5px solid #ffd76e;box-shadow:0 0 0 3px rgba(0,0,0,.55), 0 0 16px rgba(247,179,43,.4)}
+  .hud-nm{color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.55)}
+  .hchip{background:linear-gradient(180deg,rgba(255,255,255,.11),rgba(255,255,255,.035));
+    border:1.5px solid rgba(255,255,255,.17);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+  /* 자본 = 금고. 이 게임에서 가장 큰 숫자 */
+  .moneyhero{display:flex;align-items:center;gap:9px;flex:none;padding:4px 14px 5px;border-radius:15px;
+    background:linear-gradient(180deg,#4a3206 0%, #241705 100%);
+    border:2.5px solid #f7b32b;box-shadow:0 4px 0 #05101d, 0 0 20px rgba(247,179,43,.38), inset 0 1px 0 rgba(255,255,255,.22)}
+  .moneyhero .hk{font-size:10.5px;font-weight:900;color:#f3cd7a;letter-spacing:.06em;line-height:1.1}
+  .moneyhero .hv{font-size:23px;font-weight:900;color:#ffe08a;line-height:1.15;letter-spacing:-.03em;
+    font-variant-numeric:tabular-nums;text-shadow:0 2px 0 rgba(0,0,0,.6), 0 0 14px rgba(255,209,92,.45)}
+  .coin{width:22px;height:22px;box-shadow:inset 0 -2px 0 rgba(0,0,0,.2), 0 0 10px rgba(247,179,43,.45)}
+  /* 성장 진행 바 — 머리 위에 늘 떠 있는 라운드 게이지 */
+  .xpbar{max-width:1032px;margin:8px auto 0;height:9px;border-radius:99px;position:relative;
+    background:rgba(255,255,255,.09);border:1.5px solid rgba(255,255,255,.16);overflow:hidden}
+  .xpbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#f7b32b 0%,#ff8a3d 60%,#ffd76e 100%);
+    box-shadow:0 0 12px rgba(247,179,43,.85);transition:width .6s cubic-bezier(.2,.8,.2,1)}
+  .xpbar b{position:absolute;right:8px;top:-2px;font-size:10px;font-weight:900;color:#0b1428;
+    background:#ffd76e;border-radius:99px;padding:0 7px;line-height:13px}
+
+  /* --------------------- 카드 = 게임 티켓 --------------------- */
+  .card{background:linear-gradient(180deg,#fffdf7 0%, #fff7e4 100%);border:3px solid #f0dcae;
+    color:#131f36;box-shadow:var(--t-shadow)}
+  .pick,.notice,.mode,.quiz,.watch,.checklist li,.money-in,.termbox,.modal,.title-card,.calc,.lv{color:#131f36}
+  .card-title{color:#131f36;font-size:19px}
+  .card-title .ico{box-shadow:0 3px 0 #d9bd7d}
+
+  /* 9단계 게이지 */
+  .stepper{background:linear-gradient(180deg,#fffdf7,#fff6e0);border:3px solid #f0dcae;
+    box-shadow:0 6px 0 #06101f, 0 16px 26px -20px rgba(0,0,0,.9)}
+  .strack{height:11px;background:#efe3c6;box-shadow:inset 0 2px 3px rgba(120,86,10,.18)}
+  .snodes .s{background:#fdf8ec;border-color:#efe2c4;color:#9c8b6b}
+  .snodes .s b{background:#fff;border-color:#ece0c6;color:#9c8b6b}
+  .snodes .s.done{color:#0a7f5c;border-color:#bfe8d8;background:#effaf5}
+  .snodes .s.now{box-shadow:0 3px 0 #d9a94a, 0 0 14px rgba(247,179,43,.5)}
+
+  /* 지금 할 일 */
+  .objbar{box-shadow:0 5px 0 #b98a2a, 0 0 18px rgba(247,179,43,.22);border-width:3px}
+
+  /* 버튼 : 금색 = 기본, 초록 = 돈 되는 큰 행동 */
+  .btn{color:var(--t-btn-fg);text-shadow:0 1px 0 rgba(255,255,255,.42)}
+  .btn.ghost{background:linear-gradient(180deg,#fffdf5,#ffedc6);color:#7a5100;border:2.5px solid #f0cd84;box-shadow:0 5px 0 #c99b46}
+  .btn.subtle{background:linear-gradient(180deg,#fffdf7,#f6efdd);color:#5d5033;border:2.5px solid #e6d9b9;box-shadow:0 4px 0 #cfc0a0}
+  .btn.big-btn{background:linear-gradient(180deg,#3ad981 0%, #0fa85b 100%);color:#04240f;
+    box-shadow:0 6px 0 #06713d, 0 18px 26px -14px rgba(15,168,91,.8);text-shadow:0 1px 0 rgba(255,255,255,.3)}
+  .btn.danger{color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.3)}
+  .btn:disabled{opacity:.55;filter:grayscale(.5);box-shadow:0 3px 0 #c9bda0}
+  .tag.blue{background:#eaf1ff;color:#1b47c4}
+  .tag.green{background:#e7f9f1;color:#0a7f5c}
+  .tag.amber{background:#fff3d2;color:#8a5a00}
+
+  /* 공고 = 티켓 */
+  .notice{background:linear-gradient(180deg,#fffdf7,#fff5dd);border:3px solid #f0dcae;
+    box-shadow:0 6px 0 #06101f, 0 18px 28px -22px rgba(0,0,0,.9)}
+  .notice:hover{border-color:#f7b32b;transform:translateY(-2px);box-shadow:0 8px 0 #06101f}
+  .notice:active{transform:translateY(2px);box-shadow:0 2px 0 #06101f}
+  .notice:before{width:7px;box-shadow:0 0 12px rgba(247,179,43,.5)}
+  .notice.locked{background:linear-gradient(180deg,#f6f2e6,#eae4d2);border-color:#ddd2b4}
+  .notice .meta b{color:#2b3a52}
+  .dday{box-shadow:0 3px 0 #c99b46}
+  .stat{background:linear-gradient(180deg,#fff8e4,#ffeece);border:2.5px solid #f2d69a;box-shadow:0 4px 0 #d9bd7d}
+  .stat .k{color:#8a7350}
+  .stat .v{color:#131f36}
+  .pick{background:linear-gradient(180deg,#fffdf7,#fff6e2);border:3px solid #f0dcae;
+    box-shadow:0 7px 0 #06101f, 0 20px 30px -22px rgba(0,0,0,.9)}
+  .pick.on{background:linear-gradient(180deg,#fff9e6,#ffefc4)}
+  .pick .nm{color:#131f36}
+  .big{color:#131f36}
+
+  /* --------------------- NEW : 성장 사다리 (Life Simulator) --------------------- */
+  .ladder-wrap{margin-top:12px}
+  .ladder-head{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:900;color:#7a5100;
+    background:linear-gradient(180deg,#fff3d2,#ffe4a8);border:2.5px solid #f0cd84;border-radius:14px;
+    padding:7px 12px;box-shadow:0 4px 0 #c99b46}
+  .ladder-head .ico{display:grid;place-items:center;width:22px;height:22px;border-radius:8px;
+    background:#7a5100;color:#ffe08a;font-size:12px;font-weight:900}
+  .ladder{margin-top:9px}
+  .lv{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:16px;
+    background:linear-gradient(180deg,#fffdf7,#fff6e2);border:2.5px solid #f0dcae;
+    box-shadow:0 4px 0 #d9bd7d;margin-top:9px}
+  .lv:first-child{margin-top:0}
+  .lv .no{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:12px;
+    font-size:17px;font-weight:900;color:#3a2200;background:linear-gradient(180deg,#ffd76e,#f7a413);
+    border:2.5px solid #b98407;box-shadow:0 3px 0 #b98407}
+  .lv .bd{min-width:0;flex:1}
+  .lv .nm{font-weight:900;font-size:15.5px;color:#22304c;line-height:1.35;letter-spacing:-.02em}
+  .lv .req{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+  .lv .req span{font-size:11.5px;font-weight:900;padding:2px 8px;border-radius:99px;flex:none;white-space:nowrap;
+    background:#eafaf3;color:#0a7f5c;border:1.5px solid #bfe8d8}
+  .lv .req span.no{background:#fdeceb;color:#a82a21;border-color:#f6cbc6}
+  .lv .go2{margin-left:auto;flex:none;font-size:12px;font-weight:900;color:#8a6116;background:#fff;
+    border:2px solid #f0cd84;border-radius:99px;padding:3px 10px;white-space:nowrap}
+  .lv.open{border-color:#f7b32b;box-shadow:0 4px 0 #c99b46, 0 0 16px rgba(247,179,43,.28)}
+  .lv.open .go2{background:linear-gradient(180deg,#3ad981,#0fa85b);color:#04240f;border-color:#06713d}
+  .lv.lock{background:linear-gradient(180deg,#f4f0e4,#e7e0cd);border-color:#d8cdb0;box-shadow:0 4px 0 #c4b795}
+  .lv.lock .no{background:linear-gradient(180deg,#d3cbb8,#a89d84);border-color:#8a7f66;box-shadow:0 3px 0 #8a7f66;color:#fff}
+  .lv.lock .nm{color:#6b6250}
+
+  /* --------------------- NEW : 상태 게이지 --------------------- */
+  .gauges{margin-top:12px;display:grid;gap:10px}
+  .grow{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px}
+  .grow .gk{font-size:12.5px;font-weight:900;color:#8a7350;white-space:nowrap}
+  .gbar{height:13px;border-radius:99px;background:#efe3c6;overflow:hidden;
+    box-shadow:inset 0 2px 3px rgba(120,86,10,.2);position:relative}
+  .gbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#3ad981,#0fa85b);
+    box-shadow:0 0 10px rgba(15,168,91,.45);transition:width .7s cubic-bezier(.2,.8,.2,1)}
+  .gbar i.gold{background:linear-gradient(90deg,#ffd76e,#f59300);box-shadow:0 0 10px rgba(247,179,43,.55)}
+  .gbar i.blue{background:linear-gradient(90deg,#7fb0ff,#2b6cf6);box-shadow:0 0 10px rgba(43,108,246,.45)}
+  .grow .gv{font-size:13.5px;font-weight:900;color:#131f36;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+  /* --------------------- NEW : 사무소(직원) 카드 --------------------- */
+  .mgr{display:flex;align-items:center;gap:11px;padding:11px;border-radius:16px;
+    background:linear-gradient(180deg,#1d2c4a 0%, #101c33 100%);border:2.5px solid #f7b32b;
+    box-shadow:0 5px 0 #06101f, 0 0 16px rgba(247,179,43,.18);color:#fff}
+  .mgr .ph2{width:52px;height:52px;border-radius:14px;overflow:hidden;flex:none;background:#fbf7ee;
+    border:2px solid #ffd76e;box-shadow:0 0 0 3px rgba(0,0,0,.4)}
+  .mgr .ph2 img{width:100%;height:100%;object-fit:cover;object-position:50% 14%;display:block}
+  .mgr .t1{font-size:15px;font-weight:900;color:#fff;letter-spacing:-.02em}
+  .mgr .t2{font-size:12px;font-weight:800;color:#a9bcd8;margin-top:1px}
+  .mgr .tag{margin-left:auto;flex:none;background:#fff3d2;color:#8a5a00;border-color:#f0cd84}
+
+  .card.lockstep{background:linear-gradient(180deg,#f6f1e4,#e9e2cf);border-color:#d8cdb0}
+  .card.lockstep .card-title{color:#6b6250}
+  .card.lockstep .picks,.card.lockstep .money-in,.card.lockstep .pricechips{opacity:.62;filter:grayscale(.3)}
+
+  /* 결과 연출 */
+  .res-hero{background:linear-gradient(180deg,#f4fdf9,#d8f6e7);border:3px solid #06101f;
+    box-shadow:0 9px 0 #06101f, 0 26px 40px -24px rgba(0,0,0,.95)}
+  .res-hero.lose{background:linear-gradient(180deg,#fff5f3,#ffe0da)}
+  .result-card{box-shadow:0 10px 0 #06101f, 0 30px 50px -26px rgba(0,0,0,.95)}
+
+  /* 돈이 들어오거나 나갈 때 — 금색 코인이 튀어 오른다 */
+  @keyframes coinFly{0%{opacity:0;transform:translateY(6px) scale(.7)}
+    22%{opacity:1;transform:translateY(-4px) scale(1.06)}
+    100%{opacity:0;transform:translateY(-34px) scale(.85)}}
+  .coinfly{position:absolute;right:10px;top:-2px;font-size:16px;font-weight:900;color:#b98407;
+    pointer-events:none;animation:coinFly 1.7s ease-out both}
+  @keyframes glowUp{0%,100%{box-shadow:0 4px 0 #05101d, 0 0 20px rgba(247,179,43,.38)}
+    50%{box-shadow:0 4px 0 #05101d, 0 0 30px rgba(255,224,138,.85)}}
+  .moneyhero.bump{animation:glowUp .9s ease-in-out 2}
+
+  @media(max-width:600px){
+    .hud{padding:7px 10px 9px}
+    .moneyhero{order:-1;padding:4px 11px 5px}
+    .moneyhero .hv{font-size:21px}
+    .hchip.opt3{display:none}
+    .lv{padding:10px}
+    .lv .no{width:31px;height:31px;font-size:15px}
+    .lv .nm{font-size:14.5px}
+    .mgr .ph2{width:44px;height:44px}
+  }
+
+</style>
+
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script>
+"use strict";
+/* =====================================================================
+   입찰 타이쿤 — 나라장터 입찰 한 바퀴 (프로토타입)
+   단일 실행 · 인터넷 연결 없음 · 브라우저 저장만 사용
+   규칙 출처: work/procurement/나라장터_입찰_전과정_20261122.md
+             work/api/조달청_입찰자_상담질문_20261122.md
+   ===================================================================== */
+
+/* ---------------------------------------------------------------
+   [1] 규칙 수치 — 화면의 문서와 판정이 모두 이 값 하나를 본다
+   --------------------------------------------------------------- */
+const RULES = {
+  base: Date.UTC(2026, 2, 3, 9, 0),   // 게임 첫날 2026-03-03(화) 09:00
+  capRate: 1.02,                       // 기초금액 102% 미만만 접수 — 게임 설정. 일부 공고의 전자입찰 유의서 기준을 단순화한 값이며, 상한은 공고마다 다름
+  bidBondRate: 0.05,                   // 입찰보증금 5% 이상 (영 §37①)
+  contractBondRate: 0.10,              // 계약보증금 10% 이상 (영 §50①)
+  contractBondExempt: 50000000,        // 5천만원 이하 면제 + 지급확약서 (영 §50⑥3·⑩)
+  lateCapRate: 0.30,                   // 지체상금 상한 30% (영 §74③)
+  qualDocDays: 5,                      // 적격심사 서류 5일 (물품 세부기준 §3)
+  qualReviewDays: 3,                   // 심사 처리 3영업일 (게임용 설정 — 통과 뒤 낙찰자 결정 통지)
+  qualFixDays: 7,                      // 보완 7일
+  qualReexamDays: 3,                   // 재심사 요청 3일 (적격심사기준 §9③)
+  contractDays: 10,                    // 낙찰통지 후 10일 내 계약
+  inspectDays: 14,                     // 검사 14일 (영 §55①)
+  payDays: 5,                          // 청구 후 5일 (영 §58①, 공휴일·토요일 제외)
+  invoiceBounceDays: 6,               // 검사 전 발행 → 반송 후 다시 청구까지 (게임용 설정)
+  sanctionMonths: 6,                   // 계약 미체결 6개월 (별표2 제13호 가목)
+  collusionMonths: 6,                  // 단순 담합 6개월 (별표2 제4호)
+  collusionLeadMonths: 24,             // 담합 주도 낙찰 2년
+  nonPriceScore: 30,                   // 비가격 배점 — 게임용 설정
+  rivalSpread: 0.088,                  // 경쟁자 투찰률 폭 (게임용 설정)
+  roundsFull: 3,
+  roundsQuick: 1
+};
+const GS = "게임용 설정";
+const HOLIDAYS = new Set(["2026-03-02", "2026-05-05", "2026-05-25", "2026-06-03", "2026-08-17", "2026-09-24", "2026-09-25", "2026-10-05", "2026-10-09", "2026-12-25"]);
+
+/* ---------------------------------------------------------------
+   [2] 캐릭터 초상 이미지 경로 — 한 곳에서 관리
+   --------------------------------------------------------------- */
+const PORTRAITS = {
+  goods: "assets/char_print.png",
+  service: "assets/char_event.png",
+  works: "assets/char_build.png"
+};
+
+/* ---------------------------------------------------------------
+   [3] 캐릭터 3종 (업종 = 난이도)
+       「입찰타이쿤_캐릭터_설계」 문서가 나오면 이 배열만 바꾸면 된다.
+   --------------------------------------------------------------- */
+const CHARACTERS = [
+  {
+    id: "goods", name: "물품", diff: 1, diffLabel: "쉬움", owner: "윤정호 사장", shop: "종이한장 인쇄소",
+    who: "1인 인쇄소 · 사무용품",
+    line: "서류가 가장 적습니다. 실적 요건이 없어 오늘 등록해도 다음 날 투찰할 수 있습니다.",
+    start: { capital: 35000000, perf: 0, staff: 1, license: "없음 (사업자등록만)", ownProd: false },
+    credit: "BBB",
+    lateRate: 0.00075, lateLabel: "1,000분의 0.75 (하루)",
+    qualScore: 85, qualBasis: "물품구매적격심사 세부기준 §9①",
+    lowerBound: 0.82495, lowerLabel: "82.495%", lowerBasis: "조달청 일반 물품 (2026.5.26 이후 공고분, 2차 자료 기준)",
+    costRate: 0.78, rivals: [3, 4],
+    firstGate: "낙찰 뒤 적격심사 85점 · 서류 5일"
+  },
+  {
+    id: "service", name: "용역", diff: 2, diffLabel: "보통", owner: "서영란 사장", shop: "무대뒤편 기획",
+    who: "행사 기획 · 운영 소기업",
+    line: "실적은 있지만 자본이 얇습니다. 계약보증금 10%와 지체상금 1.25/1,000이 첫 관문입니다.",
+    start: { capital: 55000000, perf: 120000000, staff: 4, license: "없음 (업종 등록)", ownProd: false },
+    credit: "BBB",
+    lateRate: 0.00125, lateLabel: "1,000분의 1.25 (하루)",
+    qualScore: 85, qualBasis: "적격심사기준 §8① — 게임은 85점으로 단순화",
+    lowerBound: 0.82495, lowerLabel: "82.495%", lowerBasis: "게임용 설정 — 물품 기준을 그대로 적용",
+    costRate: 0.80, rivals: [4, 5],
+    firstGate: "계약보증금 10% · 지체상금 1.25/1,000"
+  },
+  {
+    id: "works", name: "공사", diff: 3, diffLabel: "어려움", owner: "김태오 대표", shop: "(주)해질녘건설",
+    who: "건설 소기업 (토목·조경)",
+    line: "면허와 시공능력이 필요하고 경쟁이 셉니다. 통과점수 95점, 지체상금 0.5/1,000, 상한 30%.",
+    start: { capital: 90000000, perf: 320000000, staff: 8, license: "건설업 등록 (토목)", ownProd: false },
+    credit: "BBB",
+    lateRate: 0.0005, lateLabel: "1,000분의 0.5 (하루)",
+    qualScore: 95, qualBasis: "적격심사기준 §8① · 조달청 업무처리절차",
+    lowerBound: 0.875, lowerLabel: "87.5%", lowerBasis: "게임용 설정 — 95점 통과선을 이 게임의 산식으로 되계산",
+    costRate: 0.85, rivals: [5, 6],
+    firstGate: "면허·시공능력 · 계약보증금 10% · 통과점수 95점"
+  }
+];
+
+/* ---------------------------------------------------------------
+   [4] 용어 사전 — 자료에 나온 뜻과 수치만 사용
+   --------------------------------------------------------------- */
+const GLOSSARY = {
+  basePrice: {
+    t: "기초금액", s: "예정가격을 만들기 위한 기준 금액. 입찰 전에 공개됩니다.",
+    d: ["발주기관이 마감 5일 전까지 정해 공개하는 기준 금액입니다.",
+        "예정가격은 이 금액의 ±2% 안에서 만들어지므로, 투찰가는 기초금액을 기준으로 계산합니다."],
+    where: "공고문 1항 · 투찰 화면",
+    ask: { q: "기초금액이 안 보일 때 어떻게 해야 하나요?", u: "https://kin.naver.com/qna/detail.naver?dirId=61401&docId=492760096" }
+  },
+  yejeong: {
+    t: "예정가격", s: "개찰 때 공개되는 ‘발주기관이 생각한 진짜 가격’. 이보다 비싸면 낙찰 대상이 아닙니다.",
+    d: ["기초금액 ±2% 안에서 만든 예비가격 15개 중, 입찰자들이 뽑은 번호로 4개를 골라 평균한 값입니다.",
+        "개찰 후에 공개됩니다. 예정가격을 넘는 금액은 아무리 낮아도 낙찰 대상이 되지 않습니다."],
+    where: "투찰 · 개찰 화면",
+    ask: { q: "나라장터 입찰기준이 되는 기초금액에 대해 알려주세요..", u: "https://kin.naver.com/qna/detail.naver?dirId=4&docId=147718215" }
+  },
+  yebi: {
+    t: "예비가격(복수예비가격)", s: "기초금액 ±2% 안에서 미리 만들어 밀봉해 둔 15개의 가격.",
+    d: ["조달청 전자입찰에서는 입찰자가 예비가격번호 2개를 반드시 추첨합니다.",
+        "가장 많이 뽑힌 번호 4개의 가격을 평균해 예정가격을 정합니다. 동수면 낮은 번호가 먼저입니다."],
+    where: "투찰 화면 ①",
+    ask: { q: "나라장터 입찰 방법[입찰/투찰 금액 산출] 급해요 ~", u: "https://kin.naver.com/qna/detail.naver?dirId=40204&docId=144748976" }
+  },
+  qual: {
+    t: "적격심사", s: "가격이 낮은 순서대로 회사의 일할 능력을 심사해 낙찰자를 정하는 방법.",
+    d: ["1순위라고 바로 낙찰이 아닙니다. 서류를 내고 심사를 통과해야 낙찰자가 됩니다.",
+        "조달청 물품은 85점 이상, 공사는 95점 이상이 통과선입니다. 떨어지면 차순위에게 기회가 갑니다."],
+    where: "공고문 8항 · 적격심사 화면",
+    ask: { q: "신규업체는 나라장터 투찰 시에 적격심사건은 투찰 못하나….", u: "https://kin.naver.com/qna/detail.naver?dirId=60219&docId=494085458" }
+  },
+  lowerBound: {
+    t: "낙찰하한율", s: "이 비율보다 낮게 쓰면 1순위여도 심사 대상이 되지 않는 선.",
+    d: ["예정가격에 대한 비율로 따집니다. 조달청 일반 물품은 실무상 82.495% 선입니다.",
+        "이보다 낮으면 ‘싸게 쓴’ 것이 아니라 ‘심사 대상이 아닌’ 것이 됩니다."],
+    where: "공고문 7항 · 투찰 화면",
+    ask: { q: "나라장터 입찰 - 낙찰하한가 질문", u: "https://kin.naver.com/qna/detail.naver?dirId=40204&docId=418067706" }
+  },
+  bidBond: {
+    t: "입찰보증금", s: "입찰에 참가할 때 거는 담보. 입찰금액의 5% 이상입니다.",
+    d: ["조달청은 신용거래불량자 등 예외를 빼고 지급각서 제출로 면제해 줍니다.",
+        "면제받아도, 낙찰받고 정당한 이유 없이 계약하지 않으면 그 금액을 현금으로 냅니다."],
+    where: "공고문 4항 · 참가 신청",
+    ask: { q: "나라장터 입찰보증금 납부 방법", u: "https://kin.naver.com/qna/detail.naver?dirId=60212&docId=430303903" }
+  },
+  memo: {
+    t: "지급각서", s: "보증금을 현금 대신 ‘나중에 내겠다’는 문서로 대신 내는 것.",
+    d: ["면제가 아니라 ‘지금은 안 내고 나중에 낸다’는 약속입니다.",
+        "계약을 어기면 각서에 적힌 금액을 현금으로 징수합니다."],
+    where: "공고문 4항 · 참가 신청",
+    ask: { q: "나라장터 입찰시 입찰보증금을 지급각서로 면제된다고 명시….", u: "https://kin.naver.com/qna/detail.naver?dirId=60212&docId=421863747" }
+  },
+  contractBond: {
+    t: "계약보증금", s: "계약을 지키겠다고 거는 담보. 계약금액의 10% 이상입니다.",
+    d: ["계약체결일까지 내야 합니다. 내지 않으면 계약을 체결할 수 없습니다.",
+        "계약금액이 5천만원 이하면 면제할 수 있지만, 이때도 지급확약서는 내야 합니다."],
+    where: "공고문 4항 · 계약 화면",
+    ask: { q: "국가계약 계약보증금, 면제받았는데 납품 포기하면 부담이 ….", u: "https://kin.naver.com/qna/detail.naver?dirId=60215&docId=496013804" }
+  },
+  ownProd: {
+    t: "직접생산확인", s: "중소기업자간 경쟁제품을 ‘내가 직접 만든다’는 것을 확인받는 증명.",
+    d: ["공장·생산시설·생산인력 실태조사를 거쳐 발급되고, 유효기간은 2년입니다.",
+        "이 증명이 없으면 공고의 참가자격에서 막힙니다. 내 업종이라도 예외가 아닙니다."],
+    where: "공고문 3항",
+    ask: { q: "[내공100] 나라장터 입찰시 필요한 직접생산확인증명서 발급 …", u: "https://kin.naver.com/qna/detail.naver?dirId=404&docId=307497258" }
+  },
+  joint: {
+    t: "공동수급(공동계약)", s: "두 회사 이상이 함께 입찰하고 함께 수행하는 것.",
+    d: ["공동수급협정서를 입찰참가신청 서류와 함께 내야 합니다.",
+        "공고에서 공동수급을 허용하지 않았는데 단독으로만 낼 수 있고, 그 반대도 마찬가지입니다."],
+    where: "공고문 5항",
+    ask: { q: "나라장터 공동수급인데 단독입찰하면 부적격탈락인가요?", u: "https://kin.naver.com/qna/detail.naver?dirId=61401&docId=482496587" }
+  },
+  late: {
+    t: "지체상금", s: "납품·공사를 늦게 끝냈을 때 계약금액에 비례해 무는 돈.",
+    d: ["계약금액 × 지체상금률 × 지체일수로 계산합니다. 협상 대상이 아닙니다.",
+        "물품 0.75/1,000, 용역 1.25/1,000, 공사 0.5/1,000 (하루). 상한은 계약금액의 30%입니다."],
+    where: "공고문 9항 · 수행 화면",
+    ask: { q: "나라장터 지체상금 문의드립니다.", u: "https://kin.naver.com/qna/detail.naver?dirId=410&docId=479644242" }
+  },
+  sanction: {
+    t: "부정당업자 제재", s: "계약을 어긴 업체에 1개월~2년 입찰 참가를 막는 처분.",
+    d: ["정당한 이유 없이 계약을 체결하지 않으면 6개월입니다.",
+        "제재를 받으면 다른 중앙관서 입찰도 못 하고, 그 사실이 나라장터에 게시됩니다."],
+    where: "공고문 10항 · 결과 화면",
+    ask: { q: "전기공사업 면허로..입찰 포기하고..부정당업체 제재 1개월 …", u: "https://kin.naver.com/qna/detail.naver?dirId=40402&docId=495979374" }
+  },
+  invalid: {
+    t: "입찰 무효", s: "형식이나 자격이 어긋나 아예 없는 입찰로 처리되는 것.",
+    d: ["참가자격 없음, 보증금 미납, 마감 후 도착, 같은 사람이 2통 제출, 산출내역서 미제출 등이 사유입니다.",
+        "무효가 되면 순위에도 들지 못합니다."],
+    where: "공고문 10항 · 개찰 화면",
+    ask: { q: "나라장터 낙찰후 입찰무효", u: "https://kin.naver.com/qna/detail.naver?dirId=60212&docId=467847787" }
+  },
+  yuchal: {
+    t: "유찰·재공고", s: "입찰자가 없거나 낙찰자가 없어 다시 공고하는 것.",
+    d: ["한 번 유찰됐다고 바로 수의계약으로 바뀌지 않습니다.",
+        "재공고해서 또 입찰자·낙찰자가 없어야 수의계약으로 갈 수 있고, 가격·조건은 올릴 수 없습니다(보증금·기한 제외, 국가계약법 시행령 제27조 ②)."],
+    where: "개찰 화면",
+    ask: { q: "나라장터 입찰시 2회 유찰과 관련하여 질문드립니다.", u: "https://kin.naver.com/qna/detail.naver?dirId=40204&docId=308386842" }
+  },
+  inspect: {
+    t: "검사", s: "납품한 물건이 계약대로인지 발주기관이 확인하는 절차.",
+    d: ["이행완료 통지를 받은 날부터 14일 안에 검사합니다.",
+        "검사에 합격해야 대금을 청구할 수 있습니다."],
+    where: "공고문 9항 · 수행 화면",
+    ask: { q: "계약규격 변경 납품 및 납품 거부 시 관련 처리 방법 등 질의", u: "https://kin.naver.com/qna/detail.naver?dirId=60105&docId=493990105" }
+  },
+  pay: {
+    t: "대금 지급", s: "검사가 끝나고 청구서를 받은 날부터 5일 안에 지급됩니다.",
+    d: ["공휴일과 토요일은 빼고 셉니다.",
+        "청구서가 반송되면 반송일부터 다시 청구한 날까지는 지급기간에 넣지 않습니다."],
+    where: "공고문 9항 · 수행 화면",
+    ask: { q: "나라장터 대금 청구 후 세금계산서 수정", u: "https://kin.naver.com/qna/detail.naver?dirId=40309&docId=441345109" }
+  },
+  method: {
+    t: "적격심사·최저가", s: "낙찰자를 정하는 두 가지 큰 방식.",
+    d: ["적격심사는 가격 순서대로 회사 능력을 심사해 통과자를 뽑습니다.",
+        "최저가는 이름 그대로 가장 낮은 가격입니다. 공고문의 ‘낙찰자 결정방법’을 먼저 봐야 합니다."],
+    where: "공고문 2항",
+    ask: { q: "나라장터 입찰관련 문의", u: "https://kin.naver.com/qna/detail.naver?dirId=60207&docId=472924389" }
+  },
+  silyeok: {
+    t: "실적(실적증명)", s: "최근 몇 년 동안 해낸 사업 금액. 참가자격과 심사 점수에 쓰입니다.",
+    d: ["공고마다 요구 금액이 다릅니다. 없으면 아예 참가할 수 없는 공고도 있습니다.",
+        "발주기관에 실적증명서를 발급받아 내야 인정됩니다."],
+    where: "공고문 3항",
+    ask: { q: "실적증명서 없으면 조달청입찰 못 하나요?", u: "https://kin.naver.com/qna/detail.naver?dirId=8030301&docId=491516218" }
+  },
+  sijeong: {
+    t: "시공능력평가액", s: "공사를 해낼 능력을 돈으로 평가한 값. 공사 공고에서 요구합니다.",
+    d: ["공사 입찰에서 발주기관이 요구하는 경우가 있습니다. 공고문 참가자격을 확인하십시오.",
+        "이 게임에서는 ‘면허·시공능력 요건’으로만 단순하게 다룹니다 (" + GS + ")."],
+    where: "공고문 3항",
+    ask: { q: "신규 종합건설업(토목공사업) 나라장터 입찰가능금액 질문", u: "https://kin.naver.com/qna/detail.naver?dirId=60103&docId=471971840" }
+  }
+};
+
+/* ---------------------------------------------------------------
+   [5] 회사 이름 재료
+   --------------------------------------------------------------- */
+const NAME_PARTS = {
+  region: ["서울", "강동", "천호", "암사", "성남", "분당", "한강", "중앙", "대명", "한빛",
+           "대성", "신우", "우성", "미래", "한결", "다온", "정우", "세종", "동양", "한성"],
+  field: {
+    goods: ["인쇄", "사무용품", "오피스", "문구", "페이퍼", "기획인쇄", "프린트"],
+    service: ["이벤트", "행사", "클린", "시설관리", "홍보", "서비스", "컴퍼니"],
+    works: ["건설", "토목", "포장", "조경", "산업개발", "이엔지", "종합건설"]
+  },
+  suffix: ["", "", "", "상사", "기업", "산업", "유통"]
+};
+
+/* ---------------------------------------------------------------
+   [6] 공고 — 업종별 4건. 1번이 ‘공고문 전문’이 붙는 대표 공고.
+   --------------------------------------------------------------- */
+const NOTICES = {
+  goods: [
+    {
+      id: "g1", flagship: true, docNo: "제2026-14호",
+      name: "2026년 구정 홍보용 현수막·배너 인쇄물 제조구매",
+      org: "한빛구청", demand: "한빛구청 홍보담당관", place: "한빛구청 3층 입찰실",
+      base: 52300000, method: "제한경쟁입찰(총액)", award: "적격심사", priceHow: "복수예비가격",
+      need: { capital: 30000000, perf: 0, license: false, ownProd: true },
+      deliverDays: 30, contractKind: "물품 제조·구매",
+      lb: 0.82495, lbLabel: "82.495%", lbBasis: "조달청 일반 물품",
+      spec: "현수막 1,200×700mm 120매, 배너 600×1,800mm 40조, 안내판 20개. 원단·잉크 규격은 규격서 참조.",
+      note: "내 업종(인쇄)이지만 직접생산확인증명서가 없으면 참가자격에서 막힙니다."
+    },
+    {
+      id: "g2", docNo: "제2026-15호",
+      name: "2026년 사무용 복사용지(백상지) 구매",
+      org: "한빛구청", demand: "한빛구청 총무과", place: "한빛구청 3층 입찰실",
+      base: 42000000, method: "일반경쟁입찰(총액)", award: "적격심사", priceHow: "복수예비가격",
+      need: { capital: 30000000, perf: 0, license: false, ownProd: false },
+      deliverDays: 30, contractKind: "물품 제조·구매",
+      lb: 0.82495, lbLabel: "82.495%", lbBasis: "조달청 일반 물품",
+      spec: "A4 80g 2,400박스, A3 80g 400박스.",
+      note: "직접생산확인을 요구하지 않습니다. 1인 사업자도 참가할 수 있습니다."
+    },
+    {
+      id: "g3", docNo: "제2026-16호",
+      name: "2026년 상반기 청사 문구·사무용품 구매",
+      org: "한빛구청", demand: "한빛구청 총무과", place: "한빛구청 3층 입찰실",
+      base: 18400000, method: "일반경쟁입찰(총액)", award: "적격심사", priceHow: "복수예비가격",
+      need: { capital: 20000000, perf: 0, license: false, ownProd: false },
+      deliverDays: 20, contractKind: "물품 제조·구매",
+      lb: 0.82495, lbLabel: "82.495%", lbBasis: "조달청 일반 물품",
+      spec: "필기구·파일·라벨 등 42종. 품목별 수량은 규격서 참조.",
+      note: "규모가 작아 계약금액이 5천만원 이하가 되면 계약보증금이 면제됩니다."
+    },
+    {
+      id: "g4", docNo: "제2026-17호",
+      name: "방역물품(손소독제·보건용 마스크) 구매",
+      org: "한빛구청 보건소", demand: "한빛구청 보건소", place: "한빛구청 3층 입찰실",
+      base: 33100000, method: "일반경쟁입찰(총액)", award: "적격심사", priceHow: "복수예비가격",
+      need: { capital: 30000000, perf: 0, license: false, ownProd: false },
+      deliverDays: 35, contractKind: "물품 제조·구매",
+      lb: 0.82495, lbLabel: "82.495%", lbBasis: "조달청 일반 물품",
+      spec: "손소독제 500mL 3,000개, 보건용 마스크 20,000매.",
+      note: "물품은 지체상금률이 1,000분의 0.75입니다."
+    }
+  ],
+  service: [
+    {
+      id: "s1", flagship: true, docNo: "제2026-08호",
+      name: "2026 한빛 봄맞이 시민축제 행사 운영 용역",
+      org: "한빛문화재단", demand: "한빛문화재단 사업팀", place: "한빛문화재단 2층 회의실",
+      base: 88000000, method: "제한경쟁입찰(총액)", award: "적격심사", priceHow: "복수예비가격",
+      need: { capital: 50000000, perf: 100000000, license: false, ownProd: false },
+      deliverDays: 90, contractKind: "용역",
+      lb: 0.82495, lbLabel: "82.495%", lbBasis: GS + " — 물품 기준을 그대로 적용",
+      spec: "무대·음향·조명 설치, 현수막·부스 12개, 진행요원 20명, 관객석 300석. 행사일은 계약 후 통보.",
+      note: "용역은 지체상금률이 1,000분의 1.25로 물품보다 높습니다."
+    },
+    {
+      id: "s2", docNo: "제2026-09호",
+      name: "2026년 지역축제 홍보물 제작·배포 용역",
+      org: "한빛문화재단", demand: "한빛문화재단 홍보팀", place: "한빛문화재단 2층 회의실",
+      base: 45000000, method: "일반경쟁입찰(총액)", award: "적격심사", priceHow: "복수예비가격",
+      need: { capital: 40000000, perf: 50000000, license: false, ownProd: false },
+      deliverDays: 60, contractKind: "용역",
+      lb: 0.82495, lbLabel: "82.495%", lbBasis: GS + " — 물품 기준을 그대로 적용",
+      spec: "리플릿 20,000부, 포스터 500장, 현수막 30매 제작·배포.",
+      note: "실적 요건이 낮아 첫 낙찰에 알맞습니다."
+    },
+    {
+      id: "s3", docNo: "제2026-10호",
+      name: "공공도서관 시설관리 용역(연간)",
+      org: "한빛교육지원청", demand: "한빛교육지원청 시설과", place: "한빛교육지원청 대회의실",
+      base: 121000000, method: "제한경쟁입찰", award: "적격심사", priceHow: "복수예비가격",
+      need: { capital: 80000000, perf: 200000000, license: false, ownProd: false },
+      deliverDays: 120, contractKind: "용역",
+      lb: 0.82495, lbLabel: "82.495%", lbBasis: GS + " — 물품 기준을 그대로 적용",
+      spec: "도서관 3개관 청소·시설 점검·주차 관리.",
+      note: "자본 요건이 높습니다. 공고문 참가자격을 먼저 확인하십시오."
+    },
+    {
+      id: "s4", docNo: "제2026-11호",
+      name: "어린이집 실내 환경개선 청소·방역 용역",
+      org: "한빛구청 육아종합지원센터", demand: "한빛구청 육아종합지원센터", place: "한빛구청 3층 입찰실",
+      base: 35000000, method: "일반경쟁입찰(총액)", award: "적격심사", priceHow: "복수예비가격",
+      need: { capital: 30000000, perf: 30000000, license: false, ownProd: false },
+      deliverDays: 45, contractKind: "용역",
+      lb: 0.82495, lbLabel: "82.495%", lbBasis: GS + " — 물품 기준을 그대로 적용",
+      spec: "관내 어린이집 18개소 실내 청소·소독.",
+      note: "규모가 작아 계약보증금이 면제될 수 있습니다."
+    }
+  ],
+  works: [
+    {
+      id: "w1", flagship: true, docNo: "제2026-21호",
+      name: "한빛동 어린이공원 노후시설 정비공사",
+      org: "한빛구청", demand: "한빛구청 공원녹지과", place: "한빛구청 3층 입찰실",
+      base: 186000000, method: "제한경쟁입찰(지역제한)", award: "적격심사", priceHow: "복수예비가격",
+      need: { capital: 80000000, perf: 300000000, license: true, ownProd: false },
+      deliverDays: 100, contractKind: "공사",
+      lb: 0.875, lbLabel: "87.5%", lbBasis: GS + " — 95점 통과선을 되계산한 값",
+      spec: "놀이시설 교체 12종, 파고라 2동, 배수로 120m, 조경 식재 320㎡.",
+      note: "공사는 A값(간접비 제외 금액)을 빼고 낙찰률을 따집니다. 이 게임은 같은 산식으로 단순화했습니다."
+    },
+    {
+      id: "w2", docNo: "제2026-22호",
+      name: "한빛구청 청사 외벽 도장공사",
+      org: "한빛구청", demand: "한빛구청 시설관리과", place: "한빛구청 3층 입찰실",
+      base: 62000000, method: "제한경쟁입찰(지역제한)", award: "적격심사", priceHow: "복수예비가격",
+      need: { capital: 150000000, perf: 400000000, license: true, ownProd: false },
+      deliverDays: 60, contractKind: "공사",
+      lb: 0.875, lbLabel: "87.5%", lbBasis: GS + " — 95점 통과선을 되계산한 값",
+      spec: "외벽 3,200㎡ 도장, 발판 설치 포함.",
+      note: "자본·실적 요건이 높습니다. 지금 회사로는 참가자격이 모자랍니다."
+    },
+    {
+      id: "w3", docNo: "제2026-23호",
+      name: "한빛동 배수로 정비공사",
+      org: "한빛구청", demand: "한빛구청 건설과", place: "한빛구청 3층 입찰실",
+      base: 96000000, method: "제한경쟁입찰", award: "적격심사", priceHow: "복수예비가격",
+      need: { capital: 50000000, perf: 100000000, license: true, ownProd: false },
+      deliverDays: 90, contractKind: "공사",
+      lb: 0.875, lbLabel: "87.5%", lbBasis: GS + " — 95점 통과선을 되계산한 값",
+      spec: "배수로 240m 정비, 그레이팅 교체 60개.",
+      note: "규모가 작아 첫 낙찰에 알맞습니다."
+    },
+    {
+      id: "w4", docNo: "제2026-24호",
+      name: "한빛구청 소규모 도로 포장공사",
+      org: "한빛구청", demand: "한빛구청 건설과", place: "한빛구청 3층 입찰실",
+      base: 148000000, method: "제한경쟁입찰(지역제한)", award: "적격심사", priceHow: "복수예비가격",
+      need: { capital: 70000000, perf: 200000000, license: true, ownProd: false },
+      deliverDays: 100, contractKind: "공사",
+      lb: 0.875, lbLabel: "87.5%", lbBasis: GS + " — 95점 통과선을 되계산한 값",
+      spec: "아스콘 포장 1,800㎡, 측구 180m.",
+      note: "공사는 지체상금률이 1,000분의 0.5로 가장 낮습니다."
+    }
+  ]
+};
+
+/* ---------------------------------------------------------------
+   [7] 실제 상담 질문 (네이버 지식인 원문 제목 그대로 / 링크 유지)
+   --------------------------------------------------------------- */
+const ASK = {
+  start: [
+    { q: "4대보험 미가입 무보수 대표 나라장터 입찰가능한가요", u: "https://kin.naver.com/qna/detail.naver?dirId=60212&docId=452466198" },
+    { q: "조달청 나라장터 입찰할 때 법인 공동인증서 필요하나요?", u: "https://kin.naver.com/qna/detail.naver?dirId=410&docId=494118282" }
+  ],
+  notice: [
+    { q: "기초금액이 안 보일 때 어떻게 해야 하나요?", u: "https://kin.naver.com/qna/detail.naver?dirId=61401&docId=492760096" },
+    { q: "나라장터 입찰공고게재 시 직접생산확인증명서 항목(필수인…", u: "https://kin.naver.com/qna/detail.naver?dirId=60207&docId=379186567" }
+  ],
+  bond: [
+    { q: "나라장터 입찰시 입찰보증금을 지급각서로 면제된다고 명시….", u: "https://kin.naver.com/qna/detail.naver?dirId=60212&docId=421863747" },
+    { q: "나라장터 입찰포기하면 입찰보증금 내야하나요", u: "https://kin.naver.com/qna/detail.naver?dirId=60212&docId=381932643" }
+  ],
+  bid: [
+    { q: "나라장터 입찰 - 낙찰하한가 질문", u: "https://kin.naver.com/qna/detail.naver?dirId=40204&docId=418067706" },
+    { q: "입찰 마감 시간 경과로 미입찰시 보증금 청구 여부", u: "https://kin.naver.com/qna/detail.naver?dirId=60212&docId=469367512" }
+  ],
+  open: [
+    { q: "개찰일시가 지났는데 개찰 결과가 안 나오는 경우", u: "https://kin.naver.com/qna/detail.naver?dirId=40204&docId=495438561" },
+    { q: "나라장터 낙찰후 입찰무효", u: "https://kin.naver.com/qna/detail.naver?dirId=60212&docId=467847787" }
+  ],
+  qual: [
+    { q: "나라장터 입찰에 됐는데 적격심사 자기평가 및 심사표랑 용…", u: "https://kin.naver.com/qna/detail.naver?dirId=60219&docId=453079852" },
+    { q: "신규업체는 나라장터 투찰 시에 적격심사건은 투찰 못하나….", u: "https://kin.naver.com/qna/detail.naver?dirId=60219&docId=494085458" }
+  ],
+  contract: [
+    { q: "국가계약 계약보증금, 면제받았는데 납품 포기하면 부담이 ….", u: "https://kin.naver.com/qna/detail.naver?dirId=60215&docId=496013804" },
+    { q: "입찰가격오류시 계약포기후 불이익", u: "https://kin.naver.com/qna/detail.naver?dirId=30702&docId=357913747" }
+  ],
+  perform: [
+    { q: "나라장터 지체상금 문의드립니다.", u: "https://kin.naver.com/qna/detail.naver?dirId=410&docId=479644242" },
+    { q: "나라장터 대금 청구 후 세금계산서 수정", u: "https://kin.naver.com/qna/detail.naver?dirId=40309&docId=441345109" }
+  ],
+  fail: [
+    { q: "나라장터 낙찰 포기시 불이익", u: "https://kin.naver.com/qna/detail.naver?dirId=60212&docId=477019148" },
+    { q: "국가계약 재공고 입찰도 유찰, 수의계약하면서 가격을 올릴 ….", u: "https://kin.naver.com/qna/detail.naver?dirId=60215&docId=496011816" }
+  ]
+};
+
+/* ---------------------------------------------------------------
+   [8] 나와 비슷한 유형 찾기
+   --------------------------------------------------------------- */
+const QUIZ = [
+  { q: "회사는 몇 명 규모인가요?", opts: [["나 혼자 (또는 가족 1~2명)", "goods"], ["직원이 3~5명 있다", "service"], ["직원이 10명 가까이 된다", "works"]] },
+  { q: "최근 3년 공공기관 사업 실적은?", opts: [["거의 없다", "goods"], ["5천만원 ~ 1억원 정도", "service"], ["1억원을 넘는다", "works"]] },
+  { q: "하고 싶은 일은?", opts: [["물건을 만들고 납품한다", "goods"], ["행사·청소 같은 서비스를 한다", "service"], ["도로·건물을 시공한다", "works"]] }
+];
+/* =====================================================================
+   [9] 조판 도우미
+   ===================================================================== */
+const WD = ["일", "월", "화", "수", "목", "금", "토"];
+const p2 = n => String(n).padStart(2, "0");
+const won = n => Math.round(n).toLocaleString("ko-KR");
+const wonP = n => Number(n).toLocaleString("ko-KR", { maximumFractionDigits: 2 });
+const eok = n => {
+  const v = Math.round(n);
+  const s = v < 0 ? "-" : "";
+  const a = Math.abs(v);
+  if (a >= 100000000) {
+    const e = Math.floor(a / 100000000), m = Math.round((a % 100000000) / 10000);
+    return s + e + "억" + (m ? " " + m.toLocaleString("ko-KR") + "만" : "") + "원";
+  }
+  if (a >= 10000) return s + Math.round(a / 10000).toLocaleString("ko-KR") + "만원";
+  return s + won(a) + "원";
+};
+const pct = (r, d = 2) => (r * 100).toFixed(d) + "%";
+/* 추정가격은 부가가치세를 뺀 금액 (국가계약법 시행령 §9②) — 기초금액은 부가세를 더한 금액 */
+const vatExcluded = n => Math.floor(n / 1.1);
+const dISO = ms => { const d = new Date(ms); return d.getUTCFullYear() + "-" + p2(d.getUTCMonth() + 1) + "-" + p2(d.getUTCDate()); };
+const fDate = ms => { const d = new Date(ms); return d.getUTCFullYear() + ". " + p2(d.getUTCMonth() + 1) + ". " + p2(d.getUTCDate()) + ". (" + WD[d.getUTCDay()] + ")"; };
+const fDT = ms => { const d = new Date(ms); return fDate(ms) + " " + p2(d.getUTCHours()) + ":" + p2(d.getUTCMinutes()); };
+const fTime = ms => p2(new Date(ms).getUTCHours()) + ":" + p2(new Date(ms).getUTCMinutes());
+const addDays = (ms, d) => ms + d * 86400000;
+const diffDays = (a, b) => Math.round((b - a) / 86400000);
+const isBn = ms => { const w = new Date(ms).getUTCDay(); return w === 0 || w === 6 || HOLIDAYS.has(dISO(ms)); };
+function addBizDays(ms, n) {
+  let t = ms, c = 0, guard = 0;
+  while (c < n && guard++ < 400) { t = addDays(t, 1); if (!isBn(t)) c++; }
+  return t;
+}
+/* 주말·공휴일이면 다음 영업일 같은 시각으로 */
+function nextBiz(ms) {
+  let t = ms, guard = 0;
+  while (isBn(t) && guard++ < 30) t = addDays(t, 1);
+  return t;
+}
+/* a 다음날부터 b(마감일)까지 남은 영업일 수 — 토·일·공휴일은 세지 않는다 */
+function bizDaysLeft(a, b) {
+  let c = 0, t = a, guard = 0;
+  while (t < b && guard++ < 400) { t = addDays(t, 1); if (t <= b && !isBn(t)) c++; }
+  return c;
+}
+/* 주말·공휴일이면 그 앞 영업일로 — ‘14일 이내’ 같은 기한을 넘기지 않게 */
+function prevBiz(ms) {
+  let t = ms, guard = 0;
+  while (isBn(t) && guard++ < 30) t = addDays(t, -1);
+  return t;
+}
+/* 날짜만 보고 세는 D-day — 03.03 09:00 에서 03.06 마감이면 D-3 */
+const dayKey = ms => { const d = new Date(ms); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()); };
+const dDay = (from, to) => Math.max(0, Math.round((dayKey(to) - dayKey(from)) / 86400000));
+/* 받침에 따라 ‘로 / 으로’ */
+function josaRo(word) {
+  const s = String(word || "").trim();
+  if (!s) return "로";
+  const code = s.charCodeAt(s.length - 1);
+  if (code < 0xac00 || code > 0xd7a3) return "로";
+  const jong = (code - 0xac00) % 28;
+  return (jong === 0 || jong === 8) ? "로" : "으로";
+}
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const rnd = (a, b) => a + Math.random() * (b - a);
+const int = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const charOf = id => CHARACTERS.find(c => c.id === id);
+const shuffle = a => { const r = a.slice(); for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; } return r; };
+/* 용어 표시 — 처음 만나면 풀이 상자가 열린다 */
+const T = (key, label) => '<button class="term' + (S && S.learned && S.learned.indexOf(key) >= 0 ? " seen" : "") +
+  '" data-term="' + key + '">' + (label || (GLOSSARY[key] ? GLOSSARY[key].t : key)) + "</button>";
+
+/* =====================================================================
+   [10] 게임 상태
+   ===================================================================== */
+const KEY = "bidTycoon.v1";
+let S = null;
+function freshState() {
+  return {
+    v: 1, screen: "intro", mode: "full", charId: null, company: "", nameMode: "auto",
+    now: RULES.base, capital: 0, perf: 0, credit: "BBB", staff: 1, license: "", ownProd: false,
+    bondChoice: "memo", rounds: 0, wins: 0, fails: 0, sanctioned: [], earned: 0,
+    notices: [], noticeId: null, phase: "list", bid: null, rivals: [], draw: null,
+    result: null, qual: null, contract: null, perform: null,
+    quiz: [null, null, null], learned: [], undoLeft: 1, careless: false, readOk: false,
+    watch: null, ending: null, autoName: "", typedName: "", stampFx: null, autoRun: false
+  };
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }
+function load() { try { const r = localStorage.getItem(KEY); if (!r) return null; const o = JSON.parse(r); return (o && o.v === 1) ? o : null; } catch (e) { return null; } }
+function resetGame() { try { localStorage.removeItem(KEY); } catch (e) { } S = freshState(); render(); }
+const CH = () => charOf(S.charId);
+const ROUNDS = () => (S.mode === "quick" ? RULES.roundsQuick : RULES.roundsFull);
+
+/* =====================================================================
+   [11] 회사 이름
+   ===================================================================== */
+function genName(charId) {
+  const f = NAME_PARTS.field[charId];
+  const used = new Set([S.company].concat(S.rivals.map(r => r.name)).filter(Boolean));
+  for (let i = 0; i < 80; i++) {
+    const n = pick(NAME_PARTS.region) + pick(f) + pick(NAME_PARTS.suffix);
+    if (!used.has(n)) return n;
+  }
+  return pick(NAME_PARTS.region) + pick(f) + int(2, 9);
+}
+function validateName(raw) {
+  const v = String(raw || "");
+  if (v.length === 0) return { ok: false, msg: "회사 이름을 입력해 주세요." };
+  if (/\s/.test(v)) return { ok: false, msg: "빈칸(띄어쓰기)은 넣을 수 없습니다." };
+  if (!/^[가-힣a-zA-Z0-9]+$/.test(v)) return { ok: false, msg: "한글·영문·숫자만 쓸 수 있습니다." };
+  if (v.length < 2) return { ok: false, msg: "2자 이상이어야 합니다." };
+  if (v.length > 20) return { ok: false, msg: "20자까지 쓸 수 있습니다. (지금 " + v.length + "자)" };
+  return { ok: true, msg: "사용할 수 있는 이름입니다." };
+}
+function rivalName(charId) { return pick(NAME_PARTS.region) + pick(NAME_PARTS.field[charId]) + pick(NAME_PARTS.suffix); }
+
+/* =====================================================================
+   [12] 공고 목록
+   ===================================================================== */
+/* 공고마다 마감까지 남은 날과 시각이 하나로 고정되어 있다 —
+   판이 바뀌어 목록 순서가 돌아도 같은 공고의 마감은 같은 규칙을 따른다. */
+const CLOSE_PLAN = [
+  { d: 3, h: 11, m: 0 },
+  { d: 4, h: 14, m: 0 },
+  { d: 6, h: 10, m: 0 },
+  { d: 5, h: 16, m: 0 }
+];
+function buildNotices() {
+  const all = NOTICES[S.charId];
+  const cut = (S.rounds % 2 === 0) ? 0 : 1;
+  const rot = all.slice(cut).concat(all.slice(0, cut));
+  const three = (S.mode === "quick" ? rot.slice(0, 2) : rot.slice(0, 3));
+  const d = new Date(S.now);
+  const mid = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0);
+  S.notices = three.map(n => {
+    const idx = all.findIndex(x => x.id === n.id);
+    const plan = CLOSE_PLAN[idx % CLOSE_PLAN.length];
+    const raw = mid + plan.d * 86400000 + plan.h * 3600000 + plan.m * 60000;
+    return { nid: n.id, close: nextBiz(raw) };
+  });
+  S.noticeId = null;
+  S.bid = null;
+  S.watch = null;
+  S.readOk = false;
+}
+const noticeDef = nid => NOTICES[S.charId].find(n => n.id === nid);
+function noticeOf() {
+  const it = S.notices.find(n => n.nid === S.noticeId);
+  if (!it) return null;
+  return Object.assign({}, noticeDef(it.nid), { close: it.close, nid: it.nid });
+}
+
+/* =====================================================================
+   [13] 참가자격
+   ===================================================================== */
+function eligibility(n) {
+  const rows = [], need = n.need || {};
+  if (need.capital) rows.push({ label: "자본금 " + eok(need.capital) + " 이상", ok: S.capital >= need.capital, mine: "내 자본 " + eok(S.capital) });
+  if (need.perf) rows.push({ label: "최근 3년 실적 " + eok(need.perf) + " 이상", ok: S.perf >= need.perf, mine: "내 실적 " + (S.perf ? eok(S.perf) : "없음") });
+  if (need.license) rows.push({ label: "건설업 등록(면허) 보유", ok: !!(S.license && S.license.indexOf("건설업") === 0), mine: S.license || "없음" });
+  if (need.ownProd) rows.push({ label: "직접생산확인증명서 보유", ok: !!S.ownProd, mine: S.ownProd ? "보유 (유효기간 2년)" : "없음" });
+  return rows;
+}
+const eligible = n => eligibility(n).every(r => r.ok);
+
+/* =====================================================================
+   [14] 개찰 계산
+   ===================================================================== */
+function makeRivals(n) {
+  const c = CH(), cnt = int(c.rivals[0], c.rivals[1]), out = [];
+  const used = new Set([S.company]);
+  for (let i = 0; i < cnt; i++) {
+    let nm = rivalName(S.charId), g = 0;
+    while (used.has(nm) && g++ < 50) nm = rivalName(S.charId);
+    used.add(nm);
+    const r = rivalFloor(n) + Math.random() * RULES.rivalSpread;
+    out.push({ name: nm, amount: Math.round(n.base * r / 1000) * 1000 });
+  }
+  return out;
+}
+/* 경쟁자의 최저 투찰률 — 예정가격이 최대 +2%까지 올라가도 하한 아래로 떨어지지 않는 선 */
+function rivalFloor(n) { return n.lb * 1.02 + 0.008; }
+function safeBand(n) {
+  return { low: Math.ceil(n.base * (n.lb * 1.02 + 0.002) / 1000) * 1000,
+           high: Math.floor(n.base * (n.lb * 1.02 + 0.007) / 1000) * 1000 };
+}
+function drawYejeong(n) {
+  const prices = [];
+  for (let i = 0; i < 15; i++) prices.push(Math.round(n.base * (1 + rnd(-0.02, 0.02)) / 1000) * 1000);
+  const picks = S.bid.picks.slice();
+  S.rivals.forEach(() => { picks.push(int(1, 15)); picks.push(int(1, 15)); });
+  const cnt = {};
+  picks.forEach(p => cnt[p] = (cnt[p] || 0) + 1);
+  const order = Object.keys(cnt).map(Number).sort((a, b) => (cnt[b] - cnt[a]) || (a - b));
+  const top = order.slice(0, 4), filled = top.slice();
+  let g = 0;
+  while (filled.length < 4 && g++ < 30) filled.push(int(1, 15));
+  const list = filled.map(k => prices[k - 1]);
+  const avg = list.reduce((s, v) => s + v, 0) / list.length;
+  return { prices, picks, counts: cnt, top: filled, list, avg, yejeong: Math.ceil(avg) };
+}
+function priceScore(amount, yejeong) {
+  const r = amount / yejeong * 100;
+  return Math.max(0, Math.round((70 - 2 * Math.abs(90 - r)) * 100) / 100);
+}
+function lateFee(amount, rate, days) {
+  const raw = Math.round(amount * rate * days), cap = Math.round(amount * RULES.lateCapRate);
+  return { raw, cap, fee: Math.min(raw, cap), capped: raw > cap };
+}
+
+/* =====================================================================
+   [15] 공고문 전문 — 판정에 쓰는 값이 그대로 문서에 나온다
+   ===================================================================== */
+function docHTML(n) {
+  const c = CH();
+  const cap = Math.floor(n.base * RULES.capRate);
+  const bondAmt = Math.round(n.base * RULES.bidBondRate);
+
+  const attr = n.need.ownProd
+    ? "「중소기업제품 구매촉진 및 판로지원에 관한 법률」 제9조에 따른 <b>직접생산확인증명서(인쇄물)</b>를 보유한 자"
+    : null;
+  const attrLic = n.need.license ? "「건설산업기본법」에 따른 <b>건설업 등록(토목·조경)</b>을 하고 시공능력을 갖춘 자" : null;
+  const attrPerf = n.need.perf ? "최근 3년간 공공기관 수행실적 <b>" + won(n.need.perf) + "원</b> 이상인 자" : null;
+  const attrCap = n.need.capital ? "자본금 <b>" + won(n.need.capital) + "원</b> 이상인 자" : null;
+
+  const sec = (id, title, inner, tag) =>
+    '<section class="art" data-sec="' + id + '"><h5>' + title + (tag ? '<span class="tg">' + tag + "</span>" : "") +
+    '</h5><div class="art-c">' + inner + "</div></section>";
+
+  let h = '<div class="doc">';
+  h += '<div class="doc-head"><div class="doc-org">' + n.org + "</div>" +
+    '<div class="doc-title">입 찰 공 고 서</div>' +
+    '<div class="doc-sub">국가종합전자조달시스템(나라장터) 게재</div>' +
+    '<div class="doc-no">공고번호 ' + n.docNo + " · 가상 공고</div></div>";
+  h += '<div class="doc-body">';
+
+  /* 1 */
+  h += sec("s1", "1. 입찰에 부치는 사항",
+    '<table class="doct"><tbody>' +
+    "<tr><th>공 고 명</th><td><b>" + n.name + "</b></td></tr>" +
+    "<tr><th>발주기관</th><td>" + n.org + " (수요기관: " + n.demand + ")</td></tr>" +
+    "<tr><th>사업 내용</th><td>" + n.spec + "</td></tr>" +
+    "<tr><th>추정가격</th><td>" + won(vatExcluded(n.base)) + "원 <span class='tiny muted'>(부가가치세 제외)</span></td></tr>" +
+    "<tr><th>" + T("basePrice", "기초금액") + "</th><td><b>" + won(n.base) + "원</b> <span class='tiny muted'>(부가가치세 포함)</span></td></tr>" +
+    "<tr><th>납품·이행 기한</th><td>계약일부터 <b>" + n.deliverDays + "일</b></td></tr>" +
+    "<tr><th>계약종류</th><td>" + n.contractKind + "</td></tr>" +
+    "</tbody></table>" +
+    '<p class="tiny muted">※ 추정가격은 부가가치세를 뺀 금액이고, 기초금액은 여기에 부가가치세를 더해 정한 금액입니다. 예정가격과 투찰가는 기초금액을 기준으로 계산합니다.</p>', "필수");
+
+  /* 2 */
+  h += sec("s2", "2. 계약방법 및 낙찰자 결정방법",
+    "<p>가. 계약방법: <b>" + n.method + "</b>, 전자입찰(나라장터)로만 접수합니다.</p>" +
+    "<p>나. 낙찰자 결정방법: <b>" + T("method", "적격심사") + "</b> — 입찰가격이 낮은 순서대로 계약이행능력을 심사하여 통과한 자를 낙찰자로 결정합니다.</p>" +
+    "<p>다. 가격 산정 방식: <b>" + n.priceHow + "</b> (기초금액의 ±2% 범위)</p>" +
+    '<p class="tiny muted">예정가격을 넘는 금액은 낙찰 대상이 아닙니다. 1순위는 낙찰 확정이 아니라 심사 순서입니다.</p>');
+
+  /* 3 */
+  let a3 = "<p>다음 각 호를 모두 갖춘 자이어야 합니다.</p><ol>";
+  a3 += "<li>입찰공고일 전일부터 사업자등록을 하고 계속 유지하고 있는 자</li>";
+  if (attr) a3 += "<li>" + attr + "</li>";
+  if (attrLic) a3 += "<li>" + attrLic + "</li>";
+  if (attrPerf) a3 += "<li>" + (n.need.perf ? T("silyeok", "실적") : "실적") + " 요건: " + attrPerf + "</li>";
+  if (attrCap) a3 += "<li>" + attrCap + "</li>";
+  a3 += "<li>4대보험 중 1개 이상 가입자 명부를 제출할 수 있는 자 (대표 제외 상시근로자 1명 이상)</li>";
+  a3 += "<li>「국가를 당사자로 하는 계약에 관한 법률」에 따른 " + T("sanction", "부정당업자 제재") + " 기간 중이 아닌 자</li>";
+  a3 += "</ol>";
+  if (n.need.ownProd) a3 += '<p class="tiny" style="color:#8f2318">※ 직접생산확인증명서가 없으면 나라장터에서 투찰 자체가 되지 않습니다. (유효기간 2년)</p>';
+  h += sec("s3", "3. 입찰참가자격", a3, "필수");
+
+  /* 4 */
+  h += sec("s4", "4. 입찰보증금 및 계약보증금",
+    "<p>가. " + T("bidBond", "입찰보증금") + ": 입찰금액의 <b>100분의 5 이상</b>(약 " + won(bondAmt) + "원). 다만 조달청은 신용거래불량자 등 예외를 제외하고 " + T("memo", "지급각서") + " 제출로 <b>면제</b>합니다.</p>" +
+    "<p>나. 면제받은 자가 정당한 이유 없이 계약을 체결하지 아니하는 경우에는 보증금에 해당하는 금액을 현금으로 징수합니다.</p>" +
+    "<p>다. " + T("contractBond", "계약보증금") + ": 계약금액의 <b>100분의 10 이상</b>. 다만 계약금액이 <b>5천만원 이하</b>인 경우 면제할 수 있으며, 이 경우 <b>지급확약서</b>를 제출하여야 합니다.</p>" +
+    '<p class="tiny muted">※ 계약보증금 면제는 ‘계약금액’ 5천만원 이하를 기준으로 합니다. 이 공고의 기초금액은 ' + won(n.base) + "원(부가세 포함)이므로, 낙찰금액이 5천만원을 넘으면 계약보증금이 적용됩니다.</p>", "필수");
+
+  /* 5 */
+  h += sec("s5", "5. " + T("joint", "공동수급") + " 및 현장설명",
+    "<p>가. 공동수급: <b>불허</b>합니다. 단독으로만 입찰할 수 있습니다.</p>" +
+    "<p>나. 현장설명: <b>실시하지 않습니다.</b> 규격서·과업지시서로 갈음합니다.</p>");
+
+  /* 6 */
+  h += sec("s6", "6. 입찰서 제출 및 개찰",
+    '<table class="doct"><tbody>' +
+    "<tr><th>입찰서 제출기간</th><td>" + fDT(addDays(n.close, -3)) + " ~ <b>" + fDT(n.close) + "</b></td></tr>" +
+    "<tr><th>제출 개시</th><td>게시 후 제출 개시 시각은 <b>공고마다 다릅니다</b>. 이 게임은 마감 3일 전 같은 시각부터 제출하는 것으로 단순화했습니다.</td></tr>" +
+    "<tr><th>제출 방법</th><td>나라장터 전자입찰서만 접수 (메일·팩스·방문 접수 불가)</td></tr>" +
+    "<tr><th>마감 판정</th><td>내 컴퓨터 시각이 아니라 <b>서버에 접수된 시각</b>으로 판정합니다. 마감 후에는 접수되지 않습니다.</td></tr>" +
+    "<tr><th>개찰 일시</th><td>" + fDT(n.close) + "</td></tr>" +
+    "<tr><th>개찰 장소</th><td>" + n.place + " (전자개찰)</td></tr>" +
+    "</tbody></table>" +
+    '<p class="tiny muted">같은 아이피(IP)에서는 1통만 낼 수 있습니다. 같은 사항에 동일인이 2통 이상 제출하면 무효입니다.</p>', "필수");
+
+  /* 7 */
+  h += sec("s7", "7. " + T("yejeong", "예정가격") + " 결정",
+    "<p>가. " + T("yebi", "예비가격") + ": 기초금액의 ±2% 범위 안에서 서로 다른 15개의 가격을 작성·밀봉합니다.</p>" +
+    "<p>나. 입찰자는 예비가격번호 <b>2개를 반드시 추첨</b>하여야 하며, 추첨하지 않으면 투찰할 수 없습니다.</p>" +
+    "<p>다. 가장 많이 추첨된 번호 4개의 예비가격을 산술평균하여 예정가격으로 합니다. (동수인 경우 낮은 번호 순)</p>" +
+    "<p>라. 투찰 상한: 기초금액의 <b>102% 미만</b> — " + won(cap) + "원 미만만 시스템이 접수합니다. <span class='tiny muted'>(이 공고 기준 · 공고에 따라 다를 수 있습니다)</span></p>" +
+    "<p>마. " + T("lowerBound", "낙찰하한율") + ": 예정가격 대비 <b>" + n.lbLabel + "</b>. 이보다 낮으면 1순위이어도 심사 대상이 되지 않습니다. <span class=\"tiny muted\">(" + n.lbBasis + ")</span></p>", "필수");
+
+  /* 8 */
+  h += sec("s8", "8. " + T("qual", "적격심사") + " 기준 및 제출서류",
+    "<p>가. 통과점수: <b>" + c.qualScore + "점 이상</b> <span class=\"tiny muted\">(" + c.qualBasis + ")</span></p>" +
+    "<p>나. 서류 제출: 통보를 받은 날부터 <b>5일 이내</b>(공휴일 제외) 나라장터로 제출. 부족한 서류는 <b>7일 이내</b> 보완.</p>" +
+    "<p>다. 제출서류: ① 적격심사 자기평가 및 심사표 ② 신용평가등급 확인서 ③ 국세·지방세 납세증명서 ④ 실적증명서(해당 시) ⑤ 4대보험 가입자 명부</p>" +
+    "<p>라. 정당한 사유 없이 서류를 내지 않거나 심사를 포기하면 <b>차순위 입찰자</b>에게 기회가 넘어가고, 계약을 체결하지 않은 자로서 <b>6개월</b> 입찰참가자격 제한을 받을 수 있습니다.</p>" +
+    "<p>마. 부적격 통보를 받으면 <b>3일 이내</b> 재심사를 요청할 수 있으나, <b>새로운 서류를 덧붙일 수는 없습니다.</b></p>" +
+    '<p class="tiny muted">※ 서류 5종 구성은 게임에서 단순화한 것입니다 (' + GS + "). 실제 서류는 공고문 붙임을 따릅니다.</p>", "필수");
+
+  /* 9 */
+  h += sec("s9", "9. 계약 체결·이행 및 대금 지급",
+    "<p>가. 계약: 낙찰통지를 받은 날부터 <b>10일 이내</b>에 계약서를 작성하고 기명날인합니다.</p>" +
+    "<p>나. " + T("late", "지체상금") + ": 지체일수 1일마다 계약금액의 <b>" + c.lateLabel.replace(" (하루)", "") + "</b>. 상한은 계약금액의 <b>30%</b>입니다.</p>" +
+    "<p>다. " + T("inspect", "검사") + ": 이행완료 통지를 받은 날부터 <b>14일 이내</b>에 실시합니다.</p>" +
+    "<p>라. " + T("pay", "대금 지급") + ": 검사 완료 후 청구를 받은 날부터 <b>5일 이내</b>(공휴일·토요일 제외)에 지급합니다.</p>" +
+    "<p>마. 하도급: 승인이 필요한 경우 사전 승인을 받아야 하며, 승인 없는 하도급은 <b>6개월</b> 제재 사유입니다.</p>");
+
+  /* 10 */
+  h += sec("s10", "10. 유의사항 및 " + T("sanction", "부정당업자 제재"),
+    "<p>가. 입찰서에는 <b>산출내역서</b>를 함께 제출하여야 합니다. 내지 않거나 금액이 다르면 " + T("invalid", "입찰 무효") + "입니다.</p>" +
+    "<p>나. 제출한 입찰서는 <b>교환·변경·취소할 수 없습니다.</b> 정정공고가 나도 이미 낸 입찰서는 그대로 유효합니다.</p>" +
+    "<p>다. 담합, 서류 위조·허위 제출, 승인 없는 하도급 등은 <b>6개월 ~ 2년</b>의 입찰참가자격 제한 사유입니다.</p>" +
+    "<p>라. " + T("yuchal", "유찰·재공고") + ": 재공고 후에도 입찰자·낙찰자가 없을 때 수의계약으로 전환될 수 있으며, 가격·조건은 변경되지 않습니다<b>(보증금·기한 제외, 국가계약법 시행령 제27조 ②)</b>. <span class='tiny muted'>(전환 조건과 재공고 횟수는 계약방법·공고에 따라 다릅니다)</span></p>", "필수");
+
+  /* 11 */
+  h += sec("s11", "11. 문의처",
+    "<p>" + n.org + " 계약담당자 (전화 02-000-0000, 평일 09:00~18:00)</p>" +
+    '<p class="tiny muted">이 공고문은 게임을 위해 만든 가상 문서입니다. 기관명·공고번호·연락처는 실제와 관계가 없습니다.</p>');
+
+  h += "</div>";
+  h += '<div class="doc-foot"><div class="t1">※ 실제 공고문에는 이 밖에 붙임 서류·과업지시서·시방서가 따로 있습니다.</div>' +
+    '<div class="t2">' + n.org + " · " + n.docNo + " · 게임용 가상 공고문</div></div></div>";
+  return h;
+}
+
+/* =====================================================================
+   [16] 조건 5개 찾기
+   ===================================================================== */
+function buildWatch(n) {
+  const c = CH();
+  const items = [];
+  let right, wrongs;
+  if (n.need.ownProd) { right = "직접생산확인증명서를 보유한 자"; wrongs = ["실적 3억원 이상인 자", "건설업 등록을 한 자"]; }
+  else if (n.need.license) { right = "건설업 등록을 하고 시공능력을 갖춘 자"; wrongs = ["실적 5천만원 이상인 자", "직접생산확인증명서를 보유한 자"]; }
+  else if (n.need.perf) { right = "최근 3년 실적 " + eok(n.need.perf) + " 이상인 자"; wrongs = ["직접생산확인증명서를 보유한 자", "건설업 등록을 한 자"]; }
+  else { right = "자본금 " + eok(n.need.capital) + " 이상인 자"; wrongs = ["실적 1억원 이상인 자", "건설업 등록을 한 자"]; }
+  items.push({ n: 1, q: "참가자격 — 이 공고가 추가로 요구하는 것은?", right, opts: shuffle([right].concat(wrongs)) });
+  items.push({ n: 2, q: "입찰보증금 — 어떻게 내야 합니까?", right: "지급각서를 제출하면 면제된다", opts: shuffle(["지급각서를 제출하면 면제된다", "현금 5%만 인정된다", "보증금은 없다"]) });
+  items.push({ n: 3, q: "마감 — 언제까지, 무엇을 기준으로?", right: fDT(n.close) + " · 서버에 도착한 시각", opts: shuffle([fDT(n.close) + " · 서버에 도착한 시각", fDT(n.close) + " · 내 컴퓨터 시각", fDate(n.close) + " 18:00 · 서버 시각"]) });
+  items.push({ n: 4, q: "적격심사 — 통과점수는?", right: c.qualScore + "점 이상", opts: shuffle([c.qualScore + "점 이상", "70점 이상", "가장 낮은 가격이면 무조건 낙찰"]) });
+  items.push({ n: 5, q: "납기 — 언제까지 넘겨야 합니까?", right: "계약일부터 " + n.deliverDays + "일", opts: shuffle(["계약일부터 " + n.deliverDays + "일", "계약일부터 " + (n.deliverDays + 30) + "일", "납기 제한 없음"]) });
+  return { items, ans: {} };
+}
+function watchDone() {
+  if (!S.watch) return false;
+  return S.watch.items.every(it => S.watch.ans[it.n] === it.right);
+}
+function watchScore() {
+  if (!S.watch) return 0;
+  return S.watch.items.filter(it => S.watch.ans[it.n] === it.right).length;
+}
+/* =====================================================================
+   [17] 타이쿤 장면 — 업종별 ‘일하는 그림’
+   ===================================================================== */
+const SCENE_CAPS = {
+  goods: [[0, "종이 롤을 인쇄기에 겁니다"], [0.28, "인쇄 중 — 잉크가 원단에 올라갑니다"], [0.6, "재단·건조 중"], [0.85, "납품 상자에 담았습니다"]],
+  service: [[0, "빈 행사장입니다"], [0.22, "무대를 세웁니다"], [0.45, "현수막과 조명을 답니다"], [0.66, "관객석 의자를 채웁니다"], [0.88, "관객이 들어왔습니다"]],
+  works: [[0, "터를 고릅니다"], [0.18, "땅을 파냅니다"], [0.4, "기초를 놓습니다"], [0.62, "골조를 올립니다"], [0.86, "마감 공사까지 끝났습니다"]]
+};
+function sceneSVG(kind, target, extra) {
+  target = (target === undefined) ? 0.35 : target;
+  let inner = "";
+  if (kind === "goods") {
+    inner =
+      '<rect width="640" height="300" fill="#eef4fb"/>' +
+      '<rect y="238" width="640" height="62" fill="#e3ebf4"/>' +
+      '<line x1="0" y1="238" x2="640" y2="238" stroke="#cfdae6" stroke-width="2"/>' +
+      '<rect x="26" y="60" width="120" height="10" rx="4" fill="#d7e2ee"/>' +
+      '<rect x="26" y="76" width="74" height="8" rx="3" fill="#dfe8f2"/>' +
+      '<g class="roll"><circle cx="106" cy="176" r="54" fill="#fff" stroke="#c8d5e3" stroke-width="2"/>' +
+      '<circle cx="106" cy="176" r="17" fill="#cfd8e2"/><circle cx="106" cy="176" r="7" fill="#b6c3d1"/></g>' +
+      '<rect x="96" y="228" width="7" height="14" fill="#b8c6d5"/><rect x="109" y="228" width="7" height="14" fill="#b8c6d5"/>' +
+      '<rect x="120" y="166" width="140" height="20" fill="#fff" stroke="#d7e0ea"/>' +
+      '<rect x="248" y="112" width="204" height="120" rx="12" fill="#cfdae7" stroke="#b3c2d3" stroke-width="2"/>' +
+      '<rect x="260" y="100" width="180" height="18" rx="6" fill="#bccbdb"/>' +
+      '<rect x="300" y="107" width="100" height="8" rx="3" fill="#8fa3b8"/>' +
+      '<rect x="272" y="130" width="156" height="42" rx="6" fill="#eaf1f8" stroke="#c6d5e4"/>' +
+      '<rect x="286" y="138" width="30" height="26" rx="3" fill="#1163ad" class="slide" style="--from:.04;--k:3"/>' +
+      '<circle cx="300" cy="220" r="11" fill="#93a6ba" class="rot"/>' +
+      '<circle cx="340" cy="220" r="11" fill="#93a6ba" class="rot fast"/>' +
+      '<rect x="262" y="232" width="176" height="8" rx="3" fill="#b3c2d3"/>' +
+      '<g class="sx"><rect x="452" y="146" width="152" height="70" rx="3" fill="#d9483b"/>' +
+      '<rect x="468" y="160" width="96" height="9" rx="2" fill="#fff" opacity=".93"/>' +
+      '<rect x="468" y="177" width="122" height="6" rx="2" fill="#fff" opacity=".72"/>' +
+      '<rect x="468" y="190" width="70" height="6" rx="2" fill="#fff" opacity=".72"/></g>' +
+      '<g class="fade" style="--from:.5;--k:5"><rect x="466" y="244" width="40" height="30" fill="#d9b98f" stroke="#c09a6b"/><line x1="486" y1="244" x2="486" y2="274" stroke="#c09a6b"/></g>' +
+      '<g class="fade" style="--from:.68;--k:5"><rect x="512" y="244" width="40" height="30" fill="#d9b98f" stroke="#c09a6b"/><line x1="532" y1="244" x2="532" y2="274" stroke="#c09a6b"/></g>' +
+      '<g class="fade" style="--from:.86;--k:6"><rect x="558" y="244" width="40" height="30" fill="#d9b98f" stroke="#c09a6b"/><line x1="578" y1="244" x2="578" y2="274" stroke="#c09a6b"/></g>';
+  } else if (kind === "service") {
+    let chairs = "";
+    for (let r = 0; r < 4; r++) {
+      for (let c = 0; c < 6; c++) {
+        const x = 168 + c * 52 + r * 3, y = 252 + r * 11;
+        const from = (0.42 + r * 0.05).toFixed(2);
+        chairs += '<g class="fade" style="--from:' + from + ';--k:7"><rect x="' + x + '" y="' + y + '" width="26" height="9" rx="2" fill="#9fb3c8"/>' +
+          '<rect x="' + x + '" y="' + (y + 9) + '" width="26" height="4" rx="1" fill="#8ba0b6"/></g>';
+      }
+    }
+    let heads = "";
+    for (let c = 0; c < 6; c++) {
+      heads += '<circle class="fade" style="--from:' + (0.86 + c * 0.012).toFixed(2) + ';--k:8" cx="' + (181 + c * 52) + '" cy="246" r="7" fill="#6f8499"/>';
+    }
+    inner =
+      '<rect width="640" height="300" fill="#eef4fb"/>' +
+      '<rect y="246" width="640" height="54" fill="#e3ebf4"/>' +
+      '<rect x="60" y="60" width="520" height="120" rx="6" fill="#f7fbff" stroke="#dbe6f2"/>' +
+      '<polygon class="fade glow" style="--from:.34;--k:5" points="230,124 180,246 300,246" fill="#ffd98a" opacity=".55"/>' +
+      '<polygon class="fade glow" style="--from:.34;--k:5" points="410,124 360,246 480,246" fill="#ffd98a" opacity=".55"/>' +
+      '<rect x="186" y="92" width="268" height="9" rx="4" fill="#8fa3b8"/>' +
+      '<rect x="196" y="112" width="248" height="44" rx="3" fill="#1163ad" class="syin"/>' +
+      '<g class="fade" style="--from:.3;--k:6"><rect x="222" y="126" width="150" height="8" rx="2" fill="#fff" opacity=".9"/>' +
+      '<rect x="222" y="140" width="112" height="6" rx="2" fill="#fff" opacity=".65"/></g>' +
+      '<g class="fade" style="--from:.32;--k:6"><circle cx="232" cy="120" r="8" fill="#ffd36e" class="glow"/>' +
+      '<circle cx="320" cy="120" r="8" fill="#ffd36e" class="glow"/>' +
+      '<circle cx="408" cy="120" r="8" fill="#ffd36e" class="glow"/></g>' +
+      '<rect x="150" y="196" width="340" height="50" fill="#c7d6e5" class="sy"/>' +
+      '<rect x="150" y="240" width="340" height="8" fill="#a9bccf"/>' +
+      '<g class="fade" style="--from:.36;--k:6"><rect x="150" y="170" width="26" height="40" rx="3" fill="#40566c"/>' +
+      '<rect x="464" y="170" width="26" height="40" rx="3" fill="#40566c"/></g>' +
+      chairs + heads;
+  } else {
+    inner =
+      '<rect width="640" height="300" fill="#eaf1f9"/>' +
+      '<rect y="238" width="640" height="62" fill="#d9e2ec"/>' +
+      '<rect x="60" y="60" width="70" height="46" rx="4" fill="#f7fbff" stroke="#dbe6f2"/>' +
+      '<rect x="510" y="40" width="90" height="66" rx="4" fill="#f7fbff" stroke="#dbe6f2"/>' +
+      /* 흙막이 · 터파기 */
+      '<rect x="96" y="216" width="330" height="60" fill="#e4d6bd"/>' +
+      '<rect x="118" y="220" width="286" height="26" fill="#b09b74" class="fade" style="--from:.02;--k:6"/>' +
+      '<rect x="118" y="220" width="286" height="8" fill="#9c8763" class="fade" style="--from:.02;--k:6"/>' +
+      /* 기초 */
+      '<rect x="132" y="206" width="258" height="16" fill="#aab7c5" class="sx"/>' +
+      /* 건물 골조 */
+      '<g class="sy"><rect x="140" y="70" width="242" height="136" fill="#e9eff6" stroke="#c2d0de" stroke-width="2"/>' +
+      '<rect x="140" y="70" width="242" height="10" fill="#cfdbe8"/>' +
+      '<line x1="140" y1="112" x2="382" y2="112" stroke="#c2d0de"/>' +
+      '<line x1="140" y1="154" x2="382" y2="154" stroke="#c2d0de"/>' +
+      '<line x1="216" y1="70" x2="216" y2="206" stroke="#dbe4ee"/>' +
+      '<line x1="292" y1="70" x2="292" y2="206" stroke="#dbe4ee"/></g>' +
+      /* 창 */
+      '<g class="fade" style="--from:.62;--k:5">' +
+      '<rect x="152" y="82" width="26" height="18" fill="#a9c8e4"/><rect x="188" y="82" width="26" height="18" fill="#a9c8e4"/><rect x="232" y="82" width="26" height="18" fill="#a9c8e4"/><rect x="268" y="82" width="26" height="18" fill="#a9c8e4"/><rect x="312" y="82" width="26" height="18" fill="#a9c8e4"/><rect x="348" y="82" width="26" height="18" fill="#a9c8e4"/>' +
+      '<rect x="152" y="124" width="26" height="18" fill="#a9c8e4"/><rect x="188" y="124" width="26" height="18" fill="#a9c8e4"/><rect x="232" y="124" width="26" height="18" fill="#a9c8e4"/><rect x="268" y="124" width="26" height="18" fill="#a9c8e4"/><rect x="312" y="124" width="26" height="18" fill="#a9c8e4"/><rect x="348" y="124" width="26" height="18" fill="#a9c8e4"/></g>' +
+      /* 크레인 */
+      '<g class="crane"><rect x="430" y="34" width="16" height="204" fill="#d9a441"/>' +
+      '<rect x="286" y="26" width="286" height="10" rx="3" fill="#d9a441"/>' +
+      '<rect x="548" y="36" width="26" height="22" fill="#b98a2f"/>' +
+      '<rect x="430" y="8" width="16" height="20" fill="#b98a2f"/>' +
+      '<line x1="356" y1="36" x2="356" y2="120" stroke="#7b8894" stroke-width="2"/>' +
+      '<rect x="347" y="120" width="18" height="14" fill="#7b8894"/></g>' +
+      '<rect x="424" y="200" width="28" height="38" fill="#c1912f"/>' +
+      /* 안전 펜스 */
+      '<g class="fade" style="--from:.82;--k:6"><rect x="96" y="232" width="332" height="4" fill="#e8b23c"/>' +
+      '<rect x="96" y="232" width="4" height="22" fill="#e8b23c"/><rect x="200" y="232" width="4" height="22" fill="#e8b23c"/>' +
+      '<rect x="310" y="232" width="4" height="22" fill="#e8b23c"/><rect x="424" y="232" width="4" height="22" fill="#e8b23c"/></g>';
+  }
+  return '<div class="scene" data-scene="' + kind + '" data-target="' + target + '" aria-hidden="true">' +
+    '<svg viewBox="0 0 640 300" preserveAspectRatio="xMidYMid meet">' + inner + "</svg>" +
+    '<div class="cap"></div></div>';
+}
+function runScenes(root) {
+  (root || document).querySelectorAll(".scene").forEach(el => {
+    const target = parseFloat(el.dataset.target || "0.35");
+    const cap = el.querySelector(".cap");
+    const caps = SCENE_CAPS[el.dataset.scene] || [];
+    const setCap = p => { if (!cap) return; let t = caps.length ? caps[0][1] : ""; caps.forEach(c => { if (p >= c[0]) t = c[1]; }); cap.textContent = t; };
+    el.style.setProperty("--p", "0");
+    setCap(0);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      el.style.setProperty("--p", String(target));
+      setCap(target);
+    }));
+  });
+}
+/* =====================================================================
+   [18] 화면 틀
+   ===================================================================== */
+const app = () => document.getElementById("app");
+const STEPS = ["회사 차리기", "공고 읽기", "보증금", "투찰", "개찰", "적격심사", "계약", "수행·대금", "사고·제재"];
+function stepsHTML(cur) {
+  const p = Math.round(cur / (STEPS.length - 1) * 100);
+  return '<div class="stepper"><div class="strack"><i style="width:' + Math.max(6, p) + '%"></i></div>' +
+    '<div class="snodes">' + STEPS.map((s, i) =>
+      '<span class="s ' + (i < cur ? "done" : i === cur ? "now" : "") + '"><b>' + (i + 1) + "</b><em>" + s + "</em></span>").join("") + "</div></div>";
+}
+/* 화면 맨 위에 항상 붙어 있는 정보바 — 라운드·예산·남은 기회가 한 줄로 보인다 */
+function topbar() {
+  const inGame = !!(S.charId && S.company);
+  const c = S.charId ? CH() : null;
+  const rounds = ROUNDS(), left = Math.max(0, rounds - S.rounds);
+  const hearts = Array.from({ length: rounds }, (_, i) => '<i class="' + (i < left ? "" : "off") + '"></i>').join("");
+  const ava = c
+    ? '<div class="hud-ava">' + portraitMarkup(c) + "</div>"
+    : '<div class="hud-ava" style="display:grid;place-items:center;background:linear-gradient(180deg,#ffe9a3,#f7b32b);color:#7a5100;font-weight:900;font-size:19px">₩</div>';
+  const sub = inGame
+    ? '<span class="hud-own">' + c.owner + " · </span>오늘 " + fDate(S.now) + ' <span style="opacity:.8">(게임 속 날짜)</span>'
+    : "나라장터 입찰 한 바퀴";
+  const pctDone = Math.round(Math.min(1, S.rounds / Math.max(1, rounds)) * 100);
+  const chips = inGame
+    ? '<div class="hud-chips">' +
+        '<div class="moneyhero" id="moneyHero"><span class="coin"></span><div><div class="hk">자본</div>' +
+          '<div class="hv" id="hudCapital">' + eok(S.capital) + "</div></div></div>" +
+        '<div class="hchip"><div><div class="hk">남은 기회</div><div class="hv">' +
+          '<span class="hearts">' + hearts + "</span> " + left + "/" + rounds + "</div></div></div>" +
+        '<div class="hchip opt3"><div><div class="hk">도전</div><div class="hv">' + Math.min(S.rounds + 1, rounds) + "/" + rounds + "</div></div></div>" +
+        '<div class="hchip opt2"><div><div class="hk">낙찰</div><div class="hv">' + S.wins + "</div></div></div>" +
+        '<button class="hchip btnchip" data-act="glossary"><div><div class="hk">배운 용어</div><div class="hv">' + S.learned.length + "개</div></div></button>" +
+      "</div>"
+    : "";
+  return '<div class="hud"><div class="hud-in"><div class="hud-brand">' + ava +
+    '<div style="min-width:0"><div class="hud-nm">' + (S.company ? esc(S.company) : "입찰 타이쿤") +
+      (inGame ? ' <span class="tag blue" style="font-size:11px;vertical-align:2px;padding:2px 7px;border-radius:7px">' + c.name + "</span>" : "") +
+      '</div><div class="hud-sub">' + sub + "</div></div></div>" + chips + "</div>" +
+    (inGame ? '<div class="xpbar"><i style="width:' + Math.max(5, pctDone) + '%"></i><b>' + Math.min(S.rounds + 1, rounds) + "/" + rounds + "</b></div>" : "") +
+    "</div>";
+}
+/* 지금 할 일 — 붕어빵 타이쿤의 ‘다음’ 줄과 같은 자리 */
+function objbar(text) {
+  return '<div class="objbar"><span class="bull">▶</span><span>' + text + "</span></div>";
+}
+function guide(title, lines, askKey, foot) {
+  let h = '<div class="guide"><h4><span class="q">?</span>' + title + "</h4>";
+  if (lines && lines.length) h += "<ul>" + lines.map(l => "<li>" + l + "</li>").join("") + "</ul>";
+  if (askKey && ASK[askKey]) {
+    h += '<div class="quotes"><div class="qhead">실제로 이런 질문이 올라옵니다 · 네이버 지식인</div>' +
+      ASK[askKey].map(a => '<div class="quote">\u201C' + a.q + '\u201D<br><a href="' + a.u + '" target="_blank" rel="noopener">질문 원문 보기</a></div>').join("") +
+      '<div class="tiny muted" style="margin-top:7px">링크가 열리지 않아도 게임 진행에는 영향이 없습니다. 질문 원문은 위에 그대로 적어 두었습니다. (인터넷 연결 없이 실행하면 링크가 열리지 않습니다.)</div>' + "</div>";
+  }
+  if (foot) h += '<p class="tiny muted" style="margin-top:9px">' + foot + "</p>";
+  return h + "</div>";
+}
+function chrome(body, opts) {
+  opts = opts || {};
+  let h = (opts.bar === false ? "" : topbar()) + (opts.obj || "") + body;
+  h += '<div class="footer">입찰 타이쿤 · 나라장터 입찰 전 과정 체험 (프로토타입)<br>' +
+    "규칙과 수치는 「나라장터 입찰 전 과정 조사」에서 가져왔고, 자료에 없는 값은 ‘게임용 설정’으로 표시했습니다.<br>" +
+    "※ 이 게임의 판정은 게임 내 설정 기준입니다. 실제 입찰에서는 해당 공고문과 나라장터 유의사항을 반드시 확인하십시오.</div>";
+  return h;
+}
+function toast(msg) {
+  const t = document.getElementById("toast");
+  if (!t) return;
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("show"), 2600);
+}
+function modal(html) { document.getElementById("modal-root").innerHTML = '<div class="modal-bg" data-act="closeModal"><div class="modal pop" data-stop="1">' + html + "</div></div>"; }
+function closeModal() { document.getElementById("modal-root").innerHTML = ""; }
+
+function render() {
+  const sc = S.screen;
+  const changed = window.__lastScreen !== sc;
+  window.__lastScreen = sc;
+  let h = "";
+  if (sc === "intro") h = screenIntro();
+  else if (sc === "sector") h = screenSector();
+  else if (sc === "name") h = screenName();
+  else if (sc === "dashboard") h = screenDashboard();
+  else if (sc === "list") h = screenList();
+  else if (sc === "detail") h = screenDetail();
+  else if (sc === "bid") h = screenBid();
+  else if (sc === "open") h = screenOpen();
+  else if (sc === "qual") h = screenQual();
+  else if (sc === "contract") h = screenContract();
+  else if (sc === "perform") h = screenPerform();
+  else if (sc === "end") h = screenEnd();
+  else h = screenIntro();
+  app().innerHTML = h;
+  save();
+  if (changed) { try { window.scrollTo({ top: 0, behavior: "auto" }); } catch (e) { window.scrollTo(0, 0); } }
+  afterRender();
+}
+function afterRender() {
+  runScenes();
+  /* 지금 화면에 새 용어가 있으면 풀이 상자를 연다 (모바일에서는 3초 뒤 자동으로 닫힌다) */
+  const isMob = window.matchMedia && window.matchMedia("(max-width:560px)").matches;
+  document.querySelectorAll(".term.new").forEach(t => { if (isMob && t.scrollIntoView) t.scrollIntoView({ block: "center", behavior: "smooth" }); });
+  /* 자본금이 바뀌면 숫자가 튀어 오르고 +/− 금액이 떠오른다 */
+  const capEl = document.getElementById("capVal");
+  const prevCap = window.__capSeen;
+  if (capEl && prevCap !== undefined && prevCap !== S.capital) {
+    capEl.classList.remove("bump");
+    void capEl.offsetWidth;
+    capEl.classList.add("bump");
+    const box = document.getElementById("capStat");
+    if (box) {
+      const diff = S.capital - prevCap;
+      const d = document.createElement("span");
+      d.className = "delta" + (diff < 0 ? " down" : "");
+      d.textContent = (diff > 0 ? "+" : "−") + eok(Math.abs(diff));
+      box.appendChild(d);
+      setTimeout(() => d.remove(), 1700);
+    }
+  }
+  window.__capSeen = S.capital;
+  /* 자본이 바뀌면 상단 금고가 반짝인다 */
+  const mh = document.getElementById("moneyHero");
+  if (mh && window.__capSeenPrev !== undefined && window.__capSeenPrev !== S.capital) {
+    mh.classList.remove("bump"); void mh.offsetWidth; mh.classList.add("bump");
+  }
+  window.__capSeenPrev = S.capital;
+  const nowStep = document.querySelector(".snodes .now");
+  if (nowStep) {
+    const wrap = nowStep.parentNode;
+    if (wrap && wrap.scrollTo) wrap.scrollTo({ left: Math.max(0, nowStep.offsetLeft - wrap.clientWidth / 2 + nowStep.clientWidth / 2), behavior: "smooth" });
+  }
+  if (S.screen === "name") bindNameInput();
+  if (S.screen === "bid") bindBidInput();
+  document.querySelectorAll(".term:not(.seen)").forEach(t => t.classList.add("new"));
+  const key = S.screen + "|" + (S.noticeId || "");
+  const autoOK = ["detail", "qual", "contract"].indexOf(S.screen) >= 0;
+  if (autoOK && !document.getElementById("termbox") && window.__termKey !== key) {
+    const first = document.querySelector(".term.new");
+    if (first) { window.__termKey = key; setTimeout(() => { if (!document.getElementById("termbox")) showTerm(first.dataset.term); }, isMob ? 900 : 500); }
+  }
+}
+
+/* =====================================================================
+   [19] 용어 풀이 상자
+   ===================================================================== */
+function showTerm(key) {
+  const g = GLOSSARY[key];
+  if (!g) return;
+  if (S.learned.indexOf(key) < 0) { S.learned.push(key); save(); }
+  document.querySelectorAll('.term[data-term="' + key + '"]').forEach(t => { t.classList.add("seen"); t.classList.remove("new"); });
+  const rest = Array.from(new Set(Array.from(document.querySelectorAll(".term.new")).map(t => t.dataset.term))).filter(k => k !== key);
+  const box = document.createElement("div");
+  box.className = "termbox"; box.id = "termbox";
+  box.innerHTML =
+    '<div class="tb-k">용어 풀이 · 처음 나온 말입니다</div>' +
+    "<h4>" + g.t + "</h4>" +
+    '<div class="tb-s">' + g.s + "</div>" +
+    '<div class="tb-d">' + g.d.map(x => "<p>" + x + "</p>").join("") + "</div>" +
+    '<div class="tb-a">이걸 몰라서 실제로 이런 질문이 올라옵니다<br><b>\u201C' + g.ask.q + '\u201D</b><br><a href="' + g.ask.u + '" target="_blank" rel="noopener">질문 원문 보기</a><br><span class="tiny muted">링크가 열리지 않아도 게임 진행에는 영향이 없습니다. 질문 원문은 위에 있습니다.</span></div>' +
+    '<div class="tiny muted" style="margin-bottom:10px">나온 곳 · ' + g.where + ' · 배운 용어 ' + S.learned.length + "개" +
+    (rest.length ? " · 이 화면에 새 용어가 더 있습니다(점선이 그어진 말)" : "") + "</div>" +
+    '<div class="tb-b"><button class="btn subtle" data-act="closeTerm">닫기</button>' +
+    (rest.length ? '<button class="btn" data-act="nextTerm">다음 용어</button>' : "") + "</div>";
+  const old = document.getElementById("termbox");
+  if (old) old.remove();
+  document.body.appendChild(box);
+  clearTimeout(window.__termT);
+  window.__termT = setTimeout(() => { const b = document.getElementById("termbox"); if (b) b.remove(); }, 9000);
+}
+function closeTerm() { const b = document.getElementById("termbox"); if (b) b.remove(); }
+function openGlossary() {
+  const keys = S.learned.slice().reverse();
+  const list = keys.length
+    ? '<ul class="gl">' + keys.map(k => { const g = GLOSSARY[k]; if (!g) return ""; return '<li><div class="gt">' + g.t + '</div><div class="gs">' + g.s + '</div><div class="gw">나온 곳 · ' + g.where + "</div></li>"; }).join("") + "</ul>"
+    : '<div class="gl"><p class="empty">아직 배운 용어가 없습니다. 화면에서 점선이 그어진 말을 눌러 보십시오.</p></div>';
+  modal("<h3>배운 용어 " + S.learned.length + "개</h3>" +
+    '<p class="tiny muted" style="margin-bottom:10px">게임에서 한 번이라도 풀이를 본 말만 모았습니다.</p>' + list +
+    '<div class="btn-row"><button class="btn subtle wide" data-act="closeModal">닫기</button></div>');
+}
+
+/* =====================================================================
+   [20] 시작 화면
+   ===================================================================== */
+function screenIntro() {
+  const saved = load();
+  const hasSave = saved && saved.company && saved.screen && ["intro", "end"].indexOf(saved.screen) < 0;
+  const modeBtn = (v, label, tag, cls, desc) =>
+    '<button class="mode ' + (S.mode === v ? "on" : "") + '" data-act="mode" data-v="' + v + '">' +
+      '<div class="mt">' + label + ' <span class="tag ' + cls + '">' + tag + "</span></div>" +
+      '<div class="ms">' + desc + "</div></button>";
+  const body =
+    '<div class="title-wrap">' +
+      '<div class="title-card">' +
+        '<div class="brandmark"><i>₩</i></div>' +
+        '<span class="kicker">나라장터 입찰 한 바퀴</span>' +
+        '<div class="logo">입찰 <span class="hl">타이쿤</span></div>' +
+        '<div class="logo-sub">BID TYCOON</div>' +
+        '<p class="title-desc">작은 회사를 하나 차립니다. 그리고 나라장터 입찰을 <b>처음부터 끝까지 직접</b> 겪어 봅니다. 서류를 갖추고, 공고문을 읽고, 값을 써서 넣고, 개찰에서 순위를 보고, 계약하고, 일을 해내고, 돈을 받습니다.</p>' +
+        '<div class="title-avatars">' + CHARACTERS.map(c =>
+          '<div class="ta"><img src="' + PORTRAITS[c.id] + '" alt="' + c.shop + " " + c.owner + '"><span>' + c.name + "</span></div>").join("") + "</div>" +
+        '<div class="title-modes">' +
+          modeBtn("quick", "빠른 판(체험판)", "3분", "green", "공고 2건 중 1건, 입찰 1번. 공고 확인 → 투찰 → 개찰까지만 빠르게 봅니다.") +
+          modeBtn("full", "전체 판", "10분", "blue", "입찰 3번. 개찰 → 적격심사 → 계약 → 납품 → 대금까지 다 겪습니다.") +
+        "</div>" +
+        '<div class="title-cta">' +
+          (hasSave
+            ? '<button class="btn big-btn wide" data-act="continue">이어서 하기 (' + esc(saved.company) + ")</button>" +
+              '<button class="btn subtle wide" style="margin-top:9px" data-act="newGame">새로 시작</button>'
+            : '<button class="btn big-btn wide" data-act="newGame">시작하기</button>') +
+        "</div>" +
+        (hasSave ? '<p class="tiny muted" style="margin-top:9px">‘새로 시작’을 누르면 저장된 판이 지워집니다.</p>' : "") +
+        '<details class="title-more"><summary>이 게임에서 하는 일</summary><div class="inner">' +
+          '<div class="flow">' + STEPS.map((s, i) => '<span class="' + (i === 0 ? "on" : "") + '">' + (i + 1) + ". " + s + "</span>").join("") + "</div>" +
+          '<div class="note" style="margin-top:10px">나라장터는 정부와 공공기관이 물건과 서비스를 사는 곳입니다. 이 게임은 인터넷에 연결하지 않고, 판정은 모두 게임 안의 규칙으로 계산합니다. 결과는 이 브라우저에만 저장되고 실제 입찰은 하지 않습니다.</div>' +
+          '<div class="note" style="margin-top:8px">※ 날짜는 <b>게임 속 날짜</b>입니다. 실제 달력과 상관없이 ' + fDate(RULES.base) + " " + fTime(RULES.base) + "에 시작해 판이 바뀌면 며칠씩 흐르며, 실제 공모전 마감일(2026. 11. 22.)과는 관계없습니다.</div>" +
+          '<div class="note" style="margin-top:8px">빠른 판(약 3분) · 공고 2건 중 1건, 입찰 1번. 공고 확인 → 투찰 → 개찰까지만 빠르게 봅니다.<br>전체 판 · 입찰 3번. 개찰 → 적격심사 → 계약 → 납품 → 대금까지 다 겪습니다.</div>' +
+          guide("이 게임에서 하는 일",
+            ["업종을 고르면 그게 곧 난이도입니다. 물품(쉬움) · 용역(보통) · 공사(어려움).",
+             "공고문을 실제 문서처럼 끝까지 읽을 수 있습니다. 놓친 조건은 나중에 실제로 실패로 돌아옵니다.",
+             "처음 나오는 전문용어는 그 자리에서 풀이가 열리고, ‘배운 용어’에 차곡차곡 쌓입니다.",
+             "한 번이라도 조건을 맞추면 낙찰 → 적격심사 → 계약 → 납품 → 대금까지 끝까지 갈 수 있습니다."],
+            "start") +
+        "</div></details>" +
+      "</div>" +
+    "</div>";
+  return chrome(body, { bar: false });
+}
+
+/* =====================================================================
+   [21] 업종 고르기
+   ===================================================================== */
+function screenSector() {
+  const cards = CHARACTERS.map(c => {
+    const dots = [1, 2, 3].map(i => '<i class="' + (i <= c.diff ? "f" : "") + '"></i>').join("");
+    return '<button class="pick ' + (S.charId === c.id ? "on" : "") + '" data-act="pickChar" data-id="' + c.id + '">' +
+      '<div class="portrait cover">' + portraitMarkup(c) + "</div>" +
+      '<div class="pk-body">' +
+      '<div class="head"><span class="nm">' + c.name + '</span>' +
+        '<span class="diff"><span class="dots">' + dots + "</span>" + c.diffLabel + "</span></div>" +
+      '<div class="own"><b>' + c.shop + "</b> · " + c.owner + "</div>" +
+      '<div class="who">' + c.who + "</div>" +
+      '<dl class="mini"><dt>자본</dt><dd>' + eok(c.start.capital) + "</dd>" +
+      "<dt>실적</dt><dd>" + (c.start.perf ? eok(c.start.perf) : "없음") + "</dd>" +
+      "<dt>인력</dt><dd>" + c.start.staff + "명</dd>" +
+      "<dt>면허</dt><dd>" + c.start.license + "</dd></dl>" +
+      '<div class="first">첫 관문 · ' + c.firstGate + "</div></div></button>";
+  }).join("");
+
+  const rec = recommendSector();
+  const quiz = QUIZ.map((q, qi) =>
+    '<div class="quiz" style="margin-bottom:10px"><div class="qtext">' + (qi + 1) + ". " + q.q + "</div>" +
+    '<div class="opts">' + q.opts.map(o =>
+      '<button class="opt ' + (S.quiz[qi] === o[1] ? "on" : "") + '" data-act="quiz" data-q="' + qi + '" data-v="' + o[1] + '">' + o[0] + "</button>").join("") + "</div></div>").join("");
+
+  const body =
+    stepsHTML(0) +
+    objbar("<b>업종을 고르세요</b> · 업종이 곧 난이도입니다") +
+    '<div class="sec-head"><h2>업종을 고르세요</h2><span class="hint">업종이 곧 난이도입니다 · 물품 쉬움 / 용역 보통 / 공사 어려움</span></div>' +
+    '<div class="grid3">' + cards + "</div>" +
+    '<div class="card" style="margin-top:16px">' +
+      '<div class="card-title"><span class="ico">?</span>나와 비슷한 유형 찾기</div>' +
+      '<p class="tiny muted" style="margin-bottom:12px">세 가지만 고르면 어울리는 업종을 골라 드립니다. 원하는 업종을 직접 골라도 됩니다.</p>' +
+      quiz + (rec ? '<div class="good" style="margin-top:6px">추천 업종 · <b>' + charOf(rec).name + " (" + charOf(rec).diffLabel + ")</b> — " + charOf(rec).line + "</div>" : "") +
+    "</div>" +
+    guide("업종마다 준비할 것이 다릅니다",
+      ["물품은 세부품명 등록, 용역은 업종 등록, 공사는 건설업 등록이 필요합니다.",
+       "1인 사업자는 4대보험 가입자 명부(상시근로자 1명 이상)에서 막히는 경우가 많습니다.",
+       "등록 처리에 8근무시간이 걸립니다. 마감 하루 전에 시작하면 늦습니다."],
+      "start") +
+    '<div class="btn-row actions"><button class="btn big-btn" data-act="toName" ' + (S.charId ? "" : "disabled") + ">회사 이름 짓기</button></div>";
+  return chrome(body);
+}
+function portraitMarkup(c, cls) {
+  const src = PORTRAITS[c.id] || "";
+  if (!src) return '<div class="ph"><div class="t">' + c.name + " \u00b7 " + c.who + "</div></div>";
+  return '<img class="' + (cls || "") + '" src="' + src + '" alt="' + c.shop + " " + c.owner + '"' +
+    ' onerror="this.closest(&quot;.portrait&quot;).classList.add(&quot;no-img&quot;)" loading="lazy">';
+}
+function recommendSector() {
+  if (S.quiz.some(v => !v)) return null;
+  const cnt = { goods: 0, service: 0, works: 0 };
+  S.quiz.forEach(v => cnt[v]++);
+  return Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0];
+}
+
+/* =====================================================================
+   [22] 회사 이름
+   ===================================================================== */
+function screenName() {
+  const c = CH();
+  if (!c) { S.screen = "sector"; return screenSector(); }
+  if (!S.autoName) S.autoName = genName(S.charId);
+  const auto = '<div class="card flat" style="background:#f7fafd;border-style:dashed">' +
+    '<div class="tiny muted" style="margin-bottom:2px">이런 이름은 어떠세요</div>' +
+    '<div class="big" id="autoName">' + esc(S.autoName) + "</div>" +
+    '<div class="btn-row" style="margin-top:10px">' +
+      '<button class="btn ghost sm" data-act="reroll">다시 뽑기</button>' +
+      '<button class="btn" data-act="useAuto">이 이름 쓰기</button></div></div>';
+  const manual = '<div class="card flat" style="background:#f7fafd;border-style:dashed">' +
+    '<label class="tiny muted" for="nameInput" style="display:block;margin-bottom:5px">회사 이름 (2~20자)</label>' +
+    '<div class="money-in"><input id="nameInput" type="text" maxlength="24" placeholder="예) 한빛인쇄" value="' + esc(S.typedName || "") + '" autocomplete="off" spellcheck="false"><span class="unit">호</span></div>' +
+    '<div id="nameHint" class="tiny" style="margin-top:7px;color:var(--muted)">한글·영문·숫자만, 빈칸 없이 2~20자</div>' +
+    '<div class="btn-row" style="margin-top:10px"><button class="btn" data-act="useManual">이 이름 쓰기</button></div></div>';
+  const body =
+    stepsHTML(0) +
+    objbar("<b>회사 이름을 정하세요</b> · 이 이름이 계약서·개찰표까지 따라갑니다") +
+    '<div class="sec-head"><h2>회사 이름을 정하세요</h2><span class="hint">' + c.name + " · " + c.who + "</span></div>" +
+    '<div class="card">' +
+      '<div class="opts" style="margin-bottom:14px">' +
+        '<button class="opt ' + (S.nameMode === "auto" ? "on" : "") + '" data-act="modeName" data-m="auto">자동으로 뽑기</button>' +
+        '<button class="opt ' + (S.nameMode === "manual" ? "on" : "") + '" data-act="modeName" data-m="manual">직접 입력</button>' +
+      "</div>" +
+      (S.nameMode === "auto" ? auto : manual) +
+      '<div class="note" style="margin-top:14px">게임 안에서만 쓰는 가상 이름이며, 실제 사업자 등록과는 아무 관계가 없습니다.</div>' +
+    "</div>" +
+    guide("이 이름은 어디까지 따라갑니까",
+      ["입찰 참가 신청서, 투찰 화면, 개찰 결과표, 적격심사 대상자 통보문, 계약서, 제재 안내문, 결과 카드에 계속 나옵니다.",
+       "실제 나라장터에서는 사업자등록증의 상호와 똑같이 써야 합니다. 다르면 ‘상호·대표자 변경등록 누락’으로 입찰이 무효가 될 수 있습니다."]);
+  return chrome(body);
+}
+function bindNameInput() {
+  const inp = document.getElementById("nameInput");
+  if (!inp) return;
+  inp.addEventListener("input", () => {
+    S.typedName = inp.value;
+    const v = validateName(inp.value), h = document.getElementById("nameHint");
+    if (!h) return;
+    h.textContent = v.msg;
+    h.style.color = v.ok ? "var(--green)" : (inp.value.length ? "var(--red)" : "var(--muted)");
+  });
+  inp.addEventListener("keydown", e => { if (e.key === "Enter") { const b = document.querySelector('[data-act="useManual"]'); if (b) b.click(); } });
+}
+/* =====================================================================
+   [23] 내 회사 (대시보드)
+   ===================================================================== */
+function nextTodo() {
+  if (S.phase === "list") {
+    const open = S.notices.filter(n => { const d = noticeDef(n.nid); return d && eligible(d) && n.close > S.now; });
+    if (!open.length) return "지금은 참가할 수 있는 공고가 없습니다. 조건을 갖추거나 다음 공고를 기다리십시오.";
+    return "공고를 골라 참가 신청을 하십시오. 참가할 수 있는 공고가 " + open.length + "건 있습니다.";
+  }
+  return "진행 중인 입찰을 마무리하십시오.";
+}
+function screenDashboard() {
+  const c = CH();
+  const canCert = c.id === "goods" && !S.ownProd && S.wins >= 1;
+  const certBox = canCert
+    ? '<div class="good" style="margin-top:12px">낙찰 실적이 생겼습니다. ' + T("ownProd", "직접생산확인") +
+      "을 신청할 수 있습니다. (소상공인·소기업 첫 신청 무료, 처리 7일 — " + GS +
+      ')<div class="btn-row" style="margin-top:10px"><button class="btn sm" data-act="applyCert">직접생산확인 신청하기</button></div></div>'
+    : "";
+  const body =
+    stepsHTML(S.phase === "list" ? 1 : 4) +
+    objbar("<b>다음 할 일</b> · " + nextTodo()) +
+    '<div class="card" style="margin-top:12px">' +
+      '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">' +
+        '<div class="prof" style="width:76px"><div class="portrait face">' + portraitMarkup(c) + "</div></div>" +
+        '<div style="min-width:0;flex:1 1 200px"><div class="tiny muted">내 회사</div>' +
+          '<div class="big" style="font-size:26px">' + esc(S.company) + "</div>" +
+          '<div class="tiny muted" style="margin-top:2px">' + c.owner + " · " + c.name + " · 직원 " + S.staff + "명</div></div>" +
+        '<div class="tag amber" style="align-self:flex-start">' + c.diffLabel + "</div>" +
+      "</div>" +
+      '<div class="statgrid" style="margin-top:12px">' +
+        '<div class="stat rel" id="capStat"><div class="k">자본금</div><div class="v" id="capVal">' + eok(S.capital) + "</div></div>" +
+        '<div class="stat"><div class="k">최근 3년 실적</div><div class="v">' + (S.perf ? eok(S.perf) : "없음") + "</div></div>" +
+        '<div class="stat"><div class="k">신용등급</div><div class="v">' + S.credit + "</div></div>" +
+        '<div class="stat"><div class="k">낙찰</div><div class="v">' + S.wins + "건 <small>/ " + Math.min(S.rounds, ROUNDS()) + "회 도전</small></div></div>" +
+      "</div>" +
+      (function () {
+        const ns = (S.notices || []).map(x => noticeDef(x.nid)).filter(Boolean);
+        const maxBase = ns.length ? Math.max.apply(null, ns.map(x => x.base)) : 0;
+        const maxPerf = ns.length ? Math.max.apply(null, ns.map(x => (x.need && x.need.perf) || 0)) : 0;
+        const cl = (v, max, min) => (max > 0 ? Math.max(min, Math.min(100, Math.round(v / max * 100))) : 0);
+        const g = (k, v, p, cls) => '<div class="grow"><span class="gk">' + k + '</span>' +
+          '<div class="gbar"><i class="' + cls + '" style="width:' + p + '%"></i></div>' +
+          '<span class="gv">' + v + '</span></div>';
+        const ladder = ns.slice().sort((a, b) => a.base - b.base).map((x, i) => {
+          const rows = eligibility(x);
+          const open = rows.every(r => r.ok);
+          return '<div class="lv ' + (open ? "open" : "lock") + '">' +
+            '<span class="no">' + (i + 1) + '</span>' +
+            '<div class="bd"><div class="nm">' + x.name + '</div>' +
+            '<div class="req">' + (rows.length
+              ? rows.map(r => '<span class="' + (r.ok ? "" : "no") + '">' + (r.ok ? "✓ " : "✕ ") + r.label + '</span>').join("")
+              : '<span>자격 조건 없음</span>') + '</div></div>' +
+            '<span class="go2">' + (open ? "도전 가능" : "자격 미달") + '</span></div>';
+        }).join("");
+        return '<div class="mgr" style="margin-top:12px">' +
+            '<div class="ph2"><img src="' + PORTRAITS[c.id] + '" alt="' + c.owner + '"></div>' +
+            '<div><div class="t1">사무소 · 직원 ' + S.staff + '명</div>' +
+            '<div class="t2">' + c.owner + " · " + c.name + ' · ' + fDate(S.now) + '</div></div>' +
+            '<span class="tag">' + c.diffLabel + '</span></div>' +
+          '<div class="ladder-wrap">' +
+            '<div class="ladder-head"><span class="ico">\u25B2</span>성장 게이지 · 자본 · 실적 · 도전</div>' +
+            '<div class="gauges">' +
+              g("자본금", eok(S.capital), cl(S.capital, maxBase, 4), "gold") +
+              g("실적", (S.perf ? eok(S.perf) : "없음"), cl(S.perf, maxPerf, 4), "") +
+              g("도전", Math.min(S.rounds + 1, ROUNDS()) + " / " + ROUNDS(), cl(S.rounds, Math.max(1, ROUNDS()), 5), "blue") +
+            '</div>' +
+            '<div class="ladder-head" style="margin-top:14px"><span class="ico">\u2605</span>단계 해금 · 공고 자격</div>' +
+            '<div class="ladder">' + ladder + '</div>' +
+          '</div>';
+      })() +
+      sceneSVG(c.id, S.wins > 0 ? 0.9 : 0.55) +
+      (S.sanctioned.length ? '<div class="bad" style="margin-top:12px">제재 이력 · ' + S.sanctioned.join(" / ") + "</div>" : "") +
+      certBox +
+      '<div class="btn-row actions"><button class="btn big-btn" data-act="toList">공고 목록 보기</button>' +
+        '<button class="btn subtle" data-act="toEnd">여기서 마치기</button></div>' +
+    "</div>" +
+    guide("이 화면에서 실제로 보는 것",
+      ["나라장터의 ‘나의 입찰’ 화면과 같습니다. 진행 중인 건, 마감된 건, 낙찰·탈락 결과가 모입니다.",
+       "자본금과 실적은 공고의 참가자격을 가르는 기준입니다. 실적은 낙찰받아 수행을 마쳐야 쌓입니다.",
+       "신용등급과 실적은 적격심사의 비가격 점수에도 쓰입니다."],
+      "notice");
+  return chrome(body);
+}
+
+/* =====================================================================
+   [24] 공고 목록
+   ===================================================================== */
+function screenList() {
+  if (!S.notices.length) buildNotices();
+  const rows = S.notices.map(n => {
+    const d = noticeDef(n.nid);
+    if (!d) return "";
+    const okAll = eligible(d);
+    const left = n.close - S.now;
+    const dd = dDay(S.now, n.close);           // 날짜끼리 비교 — 시각 때문에 하루가 더 세지지 않는다
+    const closed = left <= 0;
+    return '<button class="notice ' + (okAll ? "" : "locked") + '" data-act="openNotice" data-id="' + d.id + '">' +
+      '<div class="row1"><div><div class="nm">' + d.name + (d.flagship ? ' <span class="tag blue">공고문 전문</span>' : "") + "</div>" +
+      '<div class="tiny muted" style="margin-top:3px">' + d.org + " · " + d.demand + "</div></div>" +
+      (closed ? '<span class="dday soon">마감</span>' : '<span class="dday ' + (dd <= 1 ? "soon" : "") + '">' + (dd === 0 ? "오늘 마감" : "D-" + dd) + "</span>") +
+      "</div>" +
+      '<div class="meta"><span>기초금액 <b>' + won(d.base) + "원</b></span>" +
+        "<span>마감 <b>" + fDT(n.close) + "</b></span><span>" + d.award + "</span>" +
+        (okAll ? '<span class="tag green">참가 가능</span>' : '<span class="tag red">참가자격 미달</span>') +
+      "</div></button>";
+  }).join("");
+
+  const body =
+    stepsHTML(1) +
+    objbar("<b>입찰 공고</b> · 공고를 골라 공고문을 읽으십시오") +
+    '<div class="sec-head"><h2>입찰 공고</h2><span class="hint">' + (S.rounds + 1) + "번째 도전 · " + S.notices.length + "건</span></div>" +
+    '<div class="tiny muted" style="margin:0 2px 12px">공고를 누르면 공고문 전문을 볼 수 있습니다. 참가자격이 모자란 공고는 흐리게 표시됩니다.<br>※ 게시 후 제출 개시 시각은 공고마다 다릅니다. 이 게임은 마감 3일 전부터 제출할 수 있습니다.</div>' +
+    rows +
+    guide("공고문에서 꼭 보는 다섯 가지",
+      ["① 무엇을 사는지 ② 낙찰자를 어떻게 정하는지 ③ 기초금액 ④ 참가자격(자본·실적·면허·직접생산) ⑤ 마감 시각",
+       "공고문 본문에 없고 ‘붙임 서류·특수조건’에만 있는 요건이 있습니다. 그것을 놓쳐 탈락하는 경우가 가장 많습니다.",
+       "정정공고가 나면 남은 기간에 5일 이상을 더해 다시 공고해야 합니다."],
+      "notice") +
+    '<div class="btn-row actions"><button class="btn subtle" data-act="toDash">내 회사로</button></div>';
+  return chrome(body);
+}
+/* =====================================================================
+   [25] 공고 상세 + 공고문 전문
+   ===================================================================== */
+function stampFx(title, sub, cb) {
+  document.getElementById("modal-root").innerHTML =
+    '<div class="modal-bg"><div class="modal" style="text-align:center;max-width:340px">' +
+    '<svg class="stamp" width="96" height="96" viewBox="0 0 100 100" style="display:block;margin:0 auto 10px">' +
+    '<circle cx="50" cy="50" r="43" fill="none" stroke="#c0392b" stroke-width="5"/>' +
+    '<circle cx="50" cy="50" r="34" fill="none" stroke="#c0392b" stroke-width="2"/>' +
+    '<text x="50" y="58" text-anchor="middle" font-size="24" font-weight="800" fill="#c0392b" font-family="sans-serif">접수</text></svg>' +
+    '<h3 style="text-align:center">' + title + "</h3>" +
+    '<p style="text-align:center">' + sub + "</p></div></div>";
+  setTimeout(() => { document.getElementById("modal-root").innerHTML = ""; if (cb) cb(); }, 1250);
+}
+
+function screenDetail() {
+  const n = noticeOf();
+  if (!n) { S.screen = "list"; return screenList(); }
+  const c = CH();
+  const el3 = eligibility(n), allOk = el3.every(r => r.ok);
+  const closed = n.close <= S.now;
+  const qual = el3.map(r =>
+    '<div style="display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed #e6edf4;font-size:14px">' +
+    "<span>" + r.label + "</span>" +
+    '<span style="text-align:right;white-space:nowrap"><b style="color:' + (r.ok ? "var(--green)" : "var(--red)") + '">' + (r.ok ? "충족" : "미달") + '</b> <span class="tiny muted">' + r.mine + "</span></span></div>").join("");
+  if (!el3.length) qual = '<div class="tiny muted">이 공고는 별도 자본·실적 요건을 두지 않았습니다.</div>';
+
+  const bondNote = n.base <= RULES.contractBondExempt
+    ? "기초금액이 5천만원 이하라 낙찰금액도 5천만원을 넘지 않습니다. 계약보증금은 면제 대상이지만 ‘지급확약서’는 반드시 내야 합니다."
+    : "계약보증금은 계약금액의 10%입니다. (낙찰금액이 5천만원 이하가 되면 면제 + 지급확약서)";
+
+  const w = S.watch || (S.watch = buildWatch(n));
+  const answered = w.items.filter(it => w.ans[it.n]).length;
+  const watchHTML = w.items.map(it => {
+    const chosen = w.ans[it.n];
+    const right = chosen === it.right;
+    return '<div class="wq ' + (chosen ? (right ? "right" : "wrong") : "") + '">' +
+      '<div class="wt"><span class="wn">' + (chosen ? (right ? "✓" : "!") : it.n) + "</span>" + it.q + "</div>" +
+      '<div class="opts">' + it.opts.map(o =>
+        '<button class="opt ' + (chosen === o ? (o === it.right ? "right" : "wrong") : "") + '" data-act="watch" data-n="' + it.n + '" data-v="' + esc(o) + '">' + o + "</button>").join("") +
+      "</div></div>";
+  }).join("");
+
+  const body =
+    stepsHTML(1) +
+    objbar("<b>공고 읽기</b> · " + (watchDone() ? "다섯 가지를 모두 짚었습니다. 준비가 되었습니다." : "조건 5개 찾기")) +
+    '<div class="card" style="margin-top:12px">' +
+      '<div class="tiny muted">' + n.org + " · " + n.demand + "</div>" +
+      '<div class="big" style="margin:4px 0 10px;font-size:23px">' + n.name + "</div>" +
+      '<div class="opts" style="margin-bottom:12px">' +
+        '<span class="tag blue">' + n.method + "</span>" +
+        "<span class=\"tag\">" + n.award + "</span>" +
+        "<span class=\"tag\">" + n.priceHow + "</span>" +
+        (closed ? '<span class="tag red">마감됨</span>' : '<span class="tag amber">마감 ' + fDT(n.close) + "</span>") +
+      "</div>" +
+      '<p class="tiny muted" style="margin:-4px 0 12px">※ 게시 후 제출 개시 시각은 <b>공고마다 다릅니다</b>. 아래 입찰서 제출기간은 게임 설정입니다.</p>' +
+      '<div class="statgrid">' +
+        '<div class="stat"><div class="k">' + T("basePrice", "기초금액") + '</div><div class="v">' + won(n.base) + "<small>원</small></div></div>" +
+        '<div class="stat"><div class="k">' + T("qual", "적격심사") + ' 통과점수</div><div class="v">' + c.qualScore + "<small>점</small></div></div>" +
+        '<div class="stat"><div class="k">' + T("lowerBound", "낙찰하한율") + '</div><div class="v">' + n.lbLabel + "</div></div>" +
+        '<div class="stat"><div class="k">납품·이행</div><div class="v">' + n.deliverDays + "<small>일</small></div></div>" +
+      "</div>" +
+      '<div class="note" style="margin-top:12px">' + n.note + "</div>" +
+    "</div>" +
+
+    '<div class="card">' +
+      '<details class="docwrap" id="docWrap" open>' +
+        '<summary><span class="ico">📄</span>공고문 전문 <span class="arrow"></span></summary>' +
+        '<p class="tiny muted" style="margin:10px 0 8px">실제 나라장터 공고문과 같은 순서로 적었습니다. 끝까지 내려 읽어 보십시오. 조건 하나를 놓치면 실제로 실패합니다.</p>' +
+        '<div class="doc-tools">' +
+          '<button class="btn subtle sm" data-act="docAll" data-v="close">모두 접기</button>' +
+          '<button class="btn subtle sm" data-act="docAll" data-v="open">모두 펼치기</button>' +
+          '<button class="btn ghost sm" data-act="docTop">맨 위로</button>' +
+        "</div>" +
+        docHTML(n) +
+      "</details>" +
+    "</div>" +
+
+    '<div class="card">' +
+      '<div class="card-title"><span class="ico">✓</span>내 자격으로 참가할 수 있습니까</div>' + qual +
+      (allOk ? '<div class="good" style="margin-top:12px">참가자격을 모두 채웠습니다.</div>'
+             : '<div class="bad" style="margin-top:12px">참가자격이 모자랍니다. 이대로는 접수되지 않습니다. 다른 공고를 고르십시오.</div>') +
+    "</div>" +
+
+    '<div class="card">' +
+      '<div class="card-title"><span class="ico">₩</span>' + T("bidBond", "입찰보증금") + "을 어떻게 하시겠습니까</div>" +
+      '<p class="tiny muted">입찰금액의 5%(약 ' + won(n.base * RULES.bidBondRate) + '원) 이상을 걸어야 합니다. 조달청은 신용거래불량자 등 예외를 빼고 ' + T("memo", "지급각서") + "로 면제해 줍니다.</p>" +
+      '<div class="opts" style="margin-top:10px">' +
+        '<button class="opt ' + (S.bondChoice === "memo" ? "on" : "") + '" data-act="bond" data-v="memo">지급각서로 면제 (돈은 안 냄)</button>' +
+        '<button class="opt ' + (S.bondChoice === "cash" ? "on" : "") + '" data-act="bond" data-v="cash">현금으로 5% 납부</button>' +
+      "</div>" +
+      '<div class="warn" style="margin-top:12px">면제는 ‘안 내도 된다’가 아닙니다. 낙찰받고 정당한 이유 없이 계약하지 않으면 <b>그 금액을 현금으로 징수</b>하고 6개월 입찰 제한을 받습니다.</div>' +
+    "</div>" +
+
+    '<div class="card">' +
+      '<div class="card-title"><span class="ico">⑤</span>조건 5개 찾기 <span class="tag ' + (watchDone() ? "green" : "line") + '" style="margin-left:6px">' + answered + "/5 확인</span></div>" +
+      '<p class="tiny muted" style="margin-bottom:12px">공고문에서 방금 읽은 다섯 가지입니다. 짚어 두면 투찰 화면 위쪽에 그대로 다시 나옵니다.<br><b>짚지 않고 투찰하면 다음 판에서 서류 하나가 빠져 입찰이 무효가 됩니다.</b></p>' +
+      '<div class="watch">' + watchHTML + "</div>" +
+      (watchDone() ? '<div class="good" style="margin-top:12px">다섯 가지를 모두 짚었습니다. 준비가 되었습니다.</div>' : "") +
+    "</div>" +
+
+    '<div class="btn-row actions">' +
+      (closed ? '<button class="btn big-btn" disabled>마감된 공고입니다</button>'
+        : allOk
+          ? (watchDone()
+              ? '<button class="btn big-btn" data-act="apply">참가 신청하고 투찰하기</button>'
+              : '<button class="btn ghost big-btn" data-act="applyCareless">확인 없이 바로 투찰하기</button>')
+          : '<button class="btn big-btn" disabled>참가자격 미달</button>') +
+      '<button class="btn subtle" data-act="toList">다른 공고 보기</button>' +
+    "</div>" +
+    guide("공고문을 읽지 않으면 100% 틀립니다",
+      ["참가자격은 자본·실적·면허·직접생산 등 여러 항목입니다. 하나만 모자라도 접수 자체가 되지 않습니다.",
+       "기초금액이 본문에 없고 붙임이나 규격서에 붙는 경우가 있습니다. 그럴 때는 발주기관에 문의합니다.",
+       "‘1순위’는 낙찰이 아니라 심사 순서입니다. 계약은 심사를 통과해야 합니다."],
+      "notice");
+  return chrome(body);
+}
+/* =====================================================================
+   [26] 투찰
+   ===================================================================== */
+function bidError(msg) {
+  const box = document.getElementById("bidErr");
+  if (box) { box.className = "bad"; box.innerHTML = msg; box.style.display = "block"; box.scrollIntoView({ block: "center", behavior: "smooth" }); }
+  toast("접수되지 않았습니다. 이유를 확인하십시오.");
+}
+function screenBid() {
+  const n = noticeOf();
+  if (!n) { S.screen = "list"; return screenList(); }
+  const c = CH();
+  if (!S.bid) S.bid = { amount: 0, picks: [], step: "pick" };
+  const cap = Math.floor(n.base * RULES.capRate);
+  const lbAmt = Math.ceil(n.base * n.lb);
+  const sb = safeBand(n), safeLow = sb.low, safeHigh = sb.high;
+  /* 안전 구간이 하한율보다 몇 %p 위인지 — 실제 산식 값으로 표시한다 */
+  const pLow = (((safeLow / n.base) * 100) - (n.lb * 100)).toFixed(2);
+  const pHigh = (((safeHigh / n.base) * 100) - (n.lb * 100)).toFixed(2);
+  const picksDone = S.bid.picks.length === 2;
+  const amt = S.bid.amount;
+
+  const pickBtns = Array.from({ length: 15 }, (_, i) => i + 1).map(k =>
+    '<button class="pn ' + (S.bid.picks.indexOf(k) >= 0 ? "on" : "") + '" data-act="pickNo" data-k="' + k + '"' + (picksDone && S.bid.picks.indexOf(k) < 0 ? " disabled" : "") + ">" + k + "</button>").join("");
+
+  const recap = S.watch ? '<div class="card tight" style="background:#fbfdff">' +
+    '<div class="tiny muted" style="margin-bottom:6px">공고문에서 짚어 둔 다섯 가지</div>' +
+    '<dl class="kv" style="font-size:13.5px">' +
+      "<dt>참가자격</dt><dd>" + (S.watch.ans[1] || "확인 안 함") + "</dd>" +
+      "<dt>보증금</dt><dd>" + (S.watch.ans[2] || "확인 안 함") + "</dd>" +
+      "<dt>마감</dt><dd>" + (S.watch.ans[3] || "확인 안 함") + "</dd>" +
+      "<dt>심사기준</dt><dd>" + (S.watch.ans[4] || "확인 안 함") + "</dd>" +
+      "<dt>납기</dt><dd>" + (S.watch.ans[5] || "확인 안 함") + "</dd>" +
+    "</dl></div>" : "";
+
+  const body =
+    stepsHTML(3) +
+    objbar("<b>투찰</b> · " + (picksDone ? "투찰가를 쓰십시오" : "예비가격번호 2개를 뽑으십시오")) +
+    '<div class="card" style="margin-top:12px">' +
+      '<div class="tiny muted">' + esc(S.company) + " · " + n.name + "</div>" +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-top:4px">' +
+        '<div><div class="tiny muted">' + T("basePrice", "기초금액") + '</div><div class="big">' + won(n.base) + "<small>원</small></div></div>" +
+        '<div style="text-align:right"><div class="tiny muted">마감</div><div style="font-weight:700">' + fDT(n.close) + "</div></div>" +
+      "</div>" +
+      '<div class="tw" style="margin-top:12px"><table><tbody>' +
+        "<tr><th style='width:38%'>제출할 수 있는 상한</th><td>기초금액의 102% <b>미만</b> — " + won(cap) + "원 미만 <span class='tiny muted'>(게임 설정 기준 · 공고에 따라 다름)</span></td></tr>" +
+        "<tr><th>" + T("lowerBound", "낙찰하한율") + " (예정가격 대비 " + n.lbLabel + ")</th><td>기초금액 기준 참고 금액 <b>" + won(lbAmt) + "원</b> <span class='tiny muted'>" + n.lbBasis + "</span></td></tr>" +
+        "<tr><th>가장 안전한 구간</th><td><b>" + won(safeLow) + " ~ " + won(safeHigh) + "원</b> <span class='tiny muted'>(기초금액 기준 · 하한율보다 " + pLow + "~" + pHigh + "%p 높게, " + GS + ")</span></td></tr>" +
+        "<tr><th>입찰보증금</th><td>" + (S.bondChoice === "memo" ? "지급각서 제출 (면제)" : "현금 " + eok(n.base * RULES.bidBondRate) + " 납부") + "</td></tr>" +
+      "</tbody></table></div>" +
+      '<div class="note" style="margin-top:10px">※ 하한·안전 구간은 <b>기초금액</b> 기준으로 표시한 게임 설정 참고값입니다. <b>실제 판정은 예정가격 기준(±2%)</b>입니다 — 예정가격은 기초금액의 ±2% 안에서 정해지므로, 예정가격이 높게 나오면 같은 금액도 하한 아래로 떨어질 수 있습니다. 하한율·투찰 제한은 공고마다 다르니 공고문을 확인하십시오.</div>' +
+    "</div>" +
+    (S.watch ? recap : '<div class="warn">공고문의 조건 5개를 짚지 않고 왔습니다. 이대로 투찰하면 <b>다음 판에서 서류가 빠져 입찰이 무효</b>가 됩니다.</div>') +
+
+    '<div class="card' + (picksDone ? "" : " lockstep") + '">' +
+      '<div class="card-title"><span class="ico">1</span>' + T("yebi", "예비가격") + "번호 2개를 뽑으십시오</div>" +
+      '<p class="tiny muted">조달청 복수예가 입찰은 <b>반드시 2개</b>를 뽑아야 합니다. 15개의 예비가격이 미리 밀봉되어 있고, 가장 많이 뽑힌 4개의 평균이 ' + T("yejeong", "예정가격") + "이 됩니다.</p>" +
+      '<div class="picks" style="margin-top:10px">' + pickBtns + "</div>" +
+      '<div class="tiny muted" style="margin-top:8px">뽑은 번호 <b>' + (S.bid.picks.length ? S.bid.picks.join(", ") : "없음") + "</b> · " + S.bid.picks.length + "/2</div>" +
+    "</div>" +
+
+    '<div class="card' + (picksDone ? "" : " lockstep") + '">' +
+      '<div class="card-title"><span class="ico">2</span>투찰가를 쓰십시오</div>' +
+      '<div class="money-in"><input id="bidAmount" inputmode="numeric" placeholder="0" value="' + (amt ? won(amt) : "") + '"' + (picksDone ? "" : " disabled") + '><span class="unit">원</span></div>' +
+      '<div id="bidJudgeWrap"' + (amt ? "" : ' style="display:none"') + ">" + bidJudgeHTML(n, amt) + "</div>" +
+      '<div class="pricechips">' +
+        '<button class="chip" data-act="fill" data-v="safe"' + (picksDone ? "" : " disabled") + ">안전 구간</button>" +
+        '<button class="chip" data-act="fill" data-v="lb"' + (picksDone ? "" : " disabled") + ">낙찰하한 바로 위 (위험)</button>" +
+        '<button class="chip" data-act="fill" data-v="mid"' + (picksDone ? "" : " disabled") + ">기초금액의 95%</button>" +
+        '<button class="chip" data-act="fill" data-v="base"' + (picksDone ? "" : " disabled") + ">기초금액 그대로</button>" +
+        '<button class="chip" data-act="fill" data-v="under"' + (picksDone ? "" : " disabled") + ">하한 아래</button>" +
+        '<button class="chip" data-act="fill" data-v="over"' + (picksDone ? "" : " disabled") + ">102% 넘겨 보기</button>" +
+      "</div>" +
+      '<div id="bidErr" class="bad" style="display:none;margin-top:10px"></div>' +
+      '<div class="warn" style="margin-top:12px">제출하면 <b>교환·변경·취소가 되지 않습니다.</b> 마감은 내 컴퓨터가 아니라 <b>서버에 도착한 시각</b>으로 봅니다.</div>' +
+    "</div>" +
+
+    guide("값을 어디에 쓰면 좋을까요",
+      ["낙찰하한율보다 낮으면 1순위여도 심사 대상이 되지 않습니다. 다만 실제 판정은 예정가격 기준이라, 하한선 겨우 위에 쓰면 예정가격이 높게 나올 때 하한 아래로 떨어집니다. 그래서 안전 구간을 따로 표시합니다.",
+       "기초금액의 102%를 넘는 투찰은 게임 설정상 시스템이 받지 않습니다(일부 공고 기준). 예정가격을 넘어도 낙찰 대상이 아닙니다.",
+       "같은 곳(같은 IP)에서 두 번 내면 무효입니다.",
+       "이 화면의 상한·하한·안전 구간은 게임 설정 기준입니다. 실제로는 그 공고문과 나라장터 유의사항이 기준입니다."],
+      "bid") +
+
+    '<div class="btn-row actions">' +
+      '<button class="btn big-btn" data-act="submitBid"' + (picksDone ? "" : " disabled") + ">투찰서 제출</button>" +
+      (S.undoLeft > 0 ? '<button class="btn subtle" data-act="undo">참가 신청 되돌리기 (한 판 1번)</button>' : "") +
+      '<button class="btn subtle" data-act="toDetail">공고로 돌아가기</button>' +
+    "</div>" +
+    '<p class="tiny muted" style="margin-top:8px">되돌리기는 이 게임에서만 한 번 허용합니다. 실제로는 투찰한 입찰서를 교환·변경·취소할 수 없습니다.</p>';
+  return chrome(body);
+}
+/* 입력한 금액의 비율·판정 — 값이 바뀔 때마다 다시 그린다 */
+function bidJudgeHTML(n, amt) {
+  amt = Math.floor(amt || 0);
+  if (!n || !amt) return "";
+  const cap = Math.floor(n.base * RULES.capRate), lbAmt = Math.ceil(n.base * n.lb);
+  const rate = amt / n.base * 100;
+  const bad = amt < lbAmt || amt >= cap;
+  /* 하한·상한에 바짝 붙었을 때는 퍼센트 대신 몇 원 차이인지 적는다 */
+  const dLb = amt - lbAmt, dCap = cap - amt;
+  let edge = "";
+  if (Math.abs(dLb) <= 1000) edge = " · 낙찰하한 " + won(lbAmt) + "원" + (dLb === 0 ? "과 같은 금액" : dLb > 0 ? "보다 " + won(dLb) + "원 위" : "보다 " + won(-dLb) + "원 아래");
+  else if (Math.abs(dCap) <= 1000) edge = " · 102% 상한 " + won(cap) + "원" + (dCap > 0 ? "보다 " + won(dCap) + "원 아래" : "과 같은 금액 (접수 안 됨)");
+  return '<div class="gauge"><i class="' + (bad ? "low" : "mid") + '" style="width:' + Math.min(100, Math.max(0, rate - 60) / 45 * 100) + '%"></i></div>' +
+    '<div class="tiny" style="margin-top:6px;color:' + (bad ? "var(--red)" : "var(--green)") + '">' +
+    "기초금액의 " + rate.toFixed(3) + "% (" + won(amt) + "원" + edge + ") · " +
+    (amt < lbAmt ? "낙찰하한 아래 — 1순위여도 심사 대상이 아닙니다" : amt >= cap ? "102% 상한 초과 — 접수되지 않습니다 (게임 설정)" : "제출 가능한 구간입니다") + "</div>";
+}
+function bindBidInput() {
+  const inp = document.getElementById("bidAmount");
+  if (!inp) return;
+  const apply = () => {
+    const digits = inp.value.replace(/[^0-9]/g, "");
+    const v = digits ? parseInt(digits, 10) : 0;
+    S.bid.amount = v;
+    const pretty = digits ? won(v) : "";
+    if (inp.value !== pretty) inp.value = pretty;
+    const wrap = document.getElementById("bidJudgeWrap");
+    if (wrap) {
+      wrap.innerHTML = bidJudgeHTML(noticeOf(), v);
+      wrap.style.display = v ? "" : "none";
+    }
+  };
+  inp.addEventListener("input", apply);
+  inp.addEventListener("change", apply);
+  inp.addEventListener("keydown", e => { if (e.key === "Enter") { const b = document.querySelector('[data-act="submitBid"]'); if (b) b.click(); } });
+}
+function submitBid() {
+  const n = noticeOf();
+  const amt = Math.floor(S.bid.amount || 0);
+  const cap = Math.floor(n.base * RULES.capRate);
+  const box = document.getElementById("bidErr");
+  if (box) box.style.display = "none";
+  if (amt <= 0) return bidError("투찰가를 입력하십시오.");
+  if (amt >= cap) return bidError("기초금액의 <b>102%(" + won(cap) + "원)를 넘긴 금액이라 접수되지 않았습니다.</b><br>복수예가 입찰은 기초금액의 102%를 넘는 투찰을 시스템이 제한하는 경우가 많고(게임은 102% 이상 접수 불가로 단순화), 상한은 공고마다 다를 수 있습니다. 금액을 낮춰 다시 쓰십시오.");
+  if (n.close <= S.now) return bidError("마감 시각이 지나 접수되지 않았습니다. 서버 접수 시각이 기준입니다.");
+  /* 투찰이 끝나면 게임 시계도 개찰 시각으로 넘어간다 — 통지일·마감일이 개찰보다 앞서지 않게 */
+  S.now = n.close;
+  S.bid.amount = amt;
+  S.rivals = makeRivals(n);
+  S.draw = drawYejeong(n);
+  S.careless = !watchDone();
+  /* 제출 연출 */
+  document.getElementById("modal-root").innerHTML =
+    '<div class="modal-bg"><div class="modal" style="max-width:430px">' +
+    '<h3>투찰서를 보내는 중입니다</h3>' +
+    '<p class="tiny muted">서버에 도착한 시각으로 접수됩니다.</p>' +
+    '<svg viewBox="0 0 460 160" width="100%" height="150" aria-hidden="true" style="margin-top:6px">' +
+      '<rect x="0" y="120" width="460" height="2" fill="#dbe3ec"/>' +
+      '<g class="env-fly"><rect x="40" y="70" width="54" height="36" rx="3" fill="#fff" stroke="#1163ad" stroke-width="2"/>' +
+      '<path d="M40 70 L67 90 L94 70" fill="none" stroke="#1163ad" stroke-width="2"/></g>' +
+      '<g class="env-target"><rect x="330" y="34" width="86" height="82" rx="8" fill="#0b2b49"/>' +
+      '<rect x="342" y="48" width="62" height="6" rx="3" fill="#4c7fae"/>' +
+      '<rect x="342" y="62" width="62" height="6" rx="3" fill="#4c7fae"/>' +
+      '<circle cx="373" cy="92" r="6" fill="#62d29a"/></g>' +
+      '<text x="373" y="132" text-anchor="middle" font-size="12" fill="#64748b" font-family="sans-serif">나라장터 서버</text>' +
+    "</svg>" +
+    '<div class="tiny" style="text-align:center;color:var(--muted)">접수 후에는 취소할 수 없습니다</div></div></div>';
+  setTimeout(() => {
+    document.getElementById("modal-root").innerHTML = "";
+    finishBid();
+    S.rounds++;
+    S.screen = "open";
+    S.phase = "open";
+    render();
+  }, 1850);
+}
+function finishBid() {
+  const n = noticeOf();
+  const yej = S.draw.yejeong;
+  const rows = [{ name: S.company, amount: S.bid.amount, mine: true }].concat(S.rivals);
+  rows.sort((a, b) => a.amount - b.amount);
+  rows.forEach(r => {
+    r.rate = r.amount / yej;
+    r.over = r.amount > yej;
+    r.lbFail = r.rate < n.lb;
+    r.valid = !r.over;
+    r.invalid = false;
+  });
+  const mine = rows.find(r => r.mine);
+  /* 산출내역서 미제출 → 무효 (공고문 10항, 시행규칙 §44) */
+  if (S.careless) { mine.invalid = true; mine.valid = false; }
+  let rk = 0;
+  rows.forEach(r => { if (r.valid) r.rank = ++rk; });
+  const qualified = rows.filter(r => r.valid && !r.lbFail);
+  qualified.forEach((r, i) => r.qualRank = i + 1);
+
+  let outcome;
+  if (!rows.some(r => r.valid)) outcome = "유찰";
+  else if (mine.invalid) outcome = "무효";
+  else if (!mine.valid) outcome = "초과";
+  else if (mine.lbFail) outcome = "하한미달";
+  else if (qualified.length && qualified[0].mine) outcome = "1순위";
+  else outcome = "탈락";
+
+  const second = qualified.find(r => !r.mine);
+  S.result = { yej, rows, mine, outcome, second, lb: n.lb, careless: !!S.careless, notifiedAt: S.now };
+  S.phase = "open";
+}
+/* =====================================================================
+   [27] 개찰 결과
+   ===================================================================== */
+function screenOpen() {
+  const n = noticeOf();
+  const R = S.result;
+  if (!n || !R) { S.screen = "list"; return screenList(); }
+  const d = S.draw;
+  const yej = R.yej;
+  const tone = { "1순위": "good", "탈락": "bad", "하한미달": "bad", "초과": "bad", "무효": "bad", "유찰": "warn" }[R.outcome] || "warn";
+
+  let msg = "";
+  if (R.outcome === "1순위") msg = "<b>1순위입니다. 그러나 낙찰이 아닙니다.</b> 여기서부터 " + T("qual", "적격심사") + "가 시작됩니다. 통보를 받은 날부터 <b>5일 안에</b> 서류를 내지 않으면 차순위에게 넘어가고 6개월 제재를 받을 수 있습니다.";
+  else if (R.outcome === "탈락") msg = "1순위는 <b>" + (R.second ? "다른 업체" : "다른 업체") + "</b>가 가져갔습니다. 내 투찰률은 예정가격의 " + (R.mine.rate * 100).toFixed(2) + "%였습니다. 하한선(" + n.lbLabel + ")에 더 가까이 쓰면 다음에는 이길 수 있습니다.";
+  else if (R.outcome === "하한미달") msg = "<b>가장 낮은 금액을 썼지만 심사 대상이 되지 못했습니다.</b> " + T("lowerBound", "낙찰하한율") + " " + n.lbLabel + "보다 낮았기 때문입니다. 1순위여도 하한 아래면 아예 심사하지 않습니다.";
+  else if (R.outcome === "초과") msg = "<b>예정가격을 넘겼습니다.</b> 예정가격(" + won(yej) + "원)보다 비싼 입찰은 낙찰 대상이 되지 않습니다.";
+  else if (R.outcome === "무효") msg = "<b>입찰이 무효가 되었습니다.</b> 산출내역서를 함께 내지 않았습니다. 공고문 10항 유의사항에 적혀 있던 조건입니다. 무효가 되면 순위에도 들지 못합니다. (국가계약법 시행규칙 제44조)";
+  else msg = "<b>유찰입니다.</b> 유효한 입찰자가 없습니다. 재공고하게 되며, 한 번 유찰됐다고 바로 수의계약으로 바뀌지는 않습니다. 재공고 횟수와 수의계약 전환 조건은 계약방법·공고에 따라 다릅니다.";
+
+  const rowsH = R.rows.map((r, i) => {
+    const note = r.invalid ? "무효 (산출내역서 미제출)" : r.over ? "예정가격 초과" : r.lbFail ? "하한 미달 · 심사 대상 아님" : (r.qualRank === 1 ? "심사 1순위" : "심사 " + r.qualRank + "순위");
+    return '<tr class="' + (r.mine ? "mine" : "") + '" style="animation-delay:' + (0.12 + i * 0.09) + 's">' +
+      "<td>" + (r.valid ? '<span class="rankbadge ' + (r.rank === 1 ? "one" : "") + '">' + r.rank + "</span>" : "-") + "</td>" +
+      "<td>" + esc(r.name) + (r.mine ? " (나)" : "") + "</td>" +
+      '<td class="r">' + won(r.amount) + "</td>" +
+      '<td class="r">' + (r.rate * 100).toFixed(2) + "%</td>" +
+      '<td style="font-size:12.5px;color:' + (r.invalid || r.over || r.lbFail ? "var(--red)" : "var(--green)") + '">' + note + "</td></tr>";
+  }).join("");
+
+  const priceList = d.prices.map((p, i) => {
+    const no = i + 1, isTop = d.top.indexOf(no) >= 0, cnt = d.counts[no] || 0;
+    return '<div style="display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px dotted #eef2f7;font-size:12.5px;' +
+      (isTop ? "background:#eaf7ef;font-weight:700;color:#0a5c3b;" : "color:#5b6b7d;") + '">' +
+      "<span>" + no + "번" + (isTop ? " ★" : "") + "</span><span>" + won(p) + "원</span><span>" + cnt + "표</span></div>";
+  }).join("");
+
+  const body =
+    stepsHTML(4) +
+    objbar("<b>개찰 결과</b> · " + R.outcome) +
+    '<div class="res-hero ' + (R.outcome === "1순위" ? "win" : "lose") + '" style="margin-top:12px">' +
+      '<div class="stampbig ' + (R.outcome === "1순위" ? "" : "fail") + '" style="color:' + (R.outcome === "1순위" ? "#0a7f5c" : "#a82a21") + '">' + R.outcome + "<small>개찰 결과</small></div>" +
+      '<div class="res-badge">' + (R.outcome === "1순위" ? "✓" : "✕") + "</div>" +
+      '<div class="res-word">' + R.outcome + "</div>" +
+    "</div>" +
+    '<div class="card">' +
+      '<div class="tiny muted">' + n.org + " · " + fDT(n.close) + " 개찰</div>" +
+      '<div class="big" style="margin:3px 0 10px">개찰 결과</div>' +
+      '<div class="statgrid">' +
+        '<div class="stat"><div class="k">' + T("yejeong", "예정가격") + '</div><div class="v">' + won(yej) + "<small>원</small></div></div>" +
+        '<div class="stat"><div class="k">내 투찰가</div><div class="v">' + won(R.mine.amount) + "<small>원</small></div></div>" +
+        '<div class="stat"><div class="k">내 투찰률 (예정가격 대비)</div><div class="v">' + (R.mine.rate * 100).toFixed(2) + "<small>%</small></div></div>" +
+        '<div class="stat"><div class="k">낙찰하한율 (예정가격 대비)</div><div class="v">' + n.lbLabel + "</div></div>" +
+      "</div>" +
+    "</div>" +
+
+    '<div class="card"><div class="card-title"><span class="ico">!</span>결과</div>' +
+      '<div class="' + tone + '">' + msg + "</div>" +
+      (R.careless ? '<div class="bad" style="margin-top:10px">지난 공고문의 조건 5개를 짚지 않고 투찰했습니다. 이번 판의 실패 원인입니다.</div>' : "") +
+    "</div>" +
+
+    '<div class="card sheet-drop">' +
+      '<div class="card-title"><span class="ico">≡</span>개찰 결과표</div>' +
+      '<div class="tw anim"><table><thead><tr><th>순위</th><th>업체명</th><th>투찰가(원)</th><th>투찰률<br><span style="font-weight:400;font-size:11px">예정가격 대비</span></th><th>비고</th></tr></thead>' +
+      "<tbody>" + rowsH + "</tbody></table></div>" +
+      '<p class="tiny muted" style="margin-top:8px"><b>투찰률·낙찰하한율은 모두 예정가격 대비 비율</b>입니다. 1순위는 낙찰 확정이 아니라 <b>심사 순서</b>이며, 심사에서 떨어지면 차순위에게 다시 통보가 갑니다.</p>' +
+    "</div>" +
+
+    '<div class="card"><div class="card-title"><span class="ico">★</span>' + T("yejeong", "예정가격") + "은 이렇게 정해졌습니다</div>" +
+      '<p class="tiny muted">' + T("yebi", "예비가격") + " 15개 중 가장 많이 뽑힌 4개(★)의 평균입니다. 끝수는 소수점 첫째자리에서 올림합니다.</p>" +
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:8px">' + priceList + "</div>" +
+      '<div class="calc" style="margin-top:10px">(' + d.list.map(v => won(v)).join(" + ") + ") ÷ 4 = " + wonP(d.avg) + "원\n→ " + (d.avg === yej ? "끝수 없음 — 그대로 " : "소수점 이하 올림 — ") + won(yej) + "원</div>" +
+    "</div>" +
+
+    guide("개찰 뒤에 할 일",
+      ["1순위면 적격심사 서류를 5일 안에 냅니다. 부족하면 7일 안에 보완합니다.",
+       "부적격 통보를 받으면 3일 안에 재심사를 요청할 수 있지만, 새 서류를 붙일 수는 없습니다.",
+       "내 입찰이 무효인지, 자격 미달인지도 이때 확인합니다."],
+      "open") +
+    '<div class="btn-row actions">' + nextAfterOpen(R) + "</div>";
+  return chrome(body);
+}
+function nextAfterOpen(R) {
+  if (R.outcome === "1순위") return '<button class="btn big-btn" data-act="toQual">적격심사 서류 내러 가기</button>';
+  if (R.outcome === "유찰") return '<button class="btn big-btn" data-act="afterLose">다음 공고 보기</button>';
+  return '<button class="btn big-btn" data-act="afterLose">다음 공고 보기</button>' +
+    '<button class="btn subtle" data-act="toEnd">결과 카드 보기</button>';
+}
+/* =====================================================================
+   [28] 적격심사
+   ===================================================================== */
+const QUAL_DOCS = [
+  "적격심사 자기평가 및 심사표",
+  "신용평가등급 확인서",
+  "국세·지방세 납세증명서",
+  "실적증명서 (해당 시)",
+  "4대보험 가입자 명부"
+];
+function screenQual() {
+  const n = noticeOf(), R = S.result, c = CH();
+  if (!n || !R) { S.screen = "list"; return screenList(); }
+  if (!S.qual) {
+    const auto = S.mode === "quick";
+    S.qual = { docs: QUAL_DOCS.map(() => auto), notifiedAt: S.now, deadline: addBizDays(S.now, RULES.qualDocDays), fixDeadline: null, phase: "form", score: null, tried: 0 };
+  }
+  const q = S.qual;
+  const left = bizDaysLeft(S.now, q.deadline);   // 토·일·공휴일은 세지 않는다
+  const docsH = QUAL_DOCS.map((d, i) =>
+    '<li class="' + (q.docs[i] ? "on" : "") + '" data-act="doc" data-i="' + i + '"><span class="box">' + (q.docs[i] ? "✓" : "") + "</span><span>" + d + "</span></li>").join("");
+  const missing = q.docs.filter(x => !x).length;
+
+  let core = "";
+  if (q.phase === "form") {
+    core =
+      '<div class="card">' +
+        '<div class="card-title"><span class="ico">1</span>서류를 5일 안에 내십시오</div>' +
+        '<p class="tiny muted">' + T("qual", "적격심사") + ' 통보를 받은 날부터 <b>5일</b>(공휴일 제외) 안에 나라장터로 제출합니다. 부족하면 <b>7일</b> 안에 보완합니다.</p>' +
+        '<div class="warn" style="margin:10px 0"><b>남은 기한 ' + left + "영업일 (D-" + left + ")</b> (마감 " + fDate(q.deadline) + ")" +
+        (q.fixDeadline ? " · 보완 기한 " + fDate(q.fixDeadline) : "") + "</div>" +
+        '<p class="tiny muted" style="margin:-4px 0 10px">토요일·일요일·공휴일은 기한에 세지 않습니다. 그래서 마감일이 일요일로 떨어지지 않습니다.</p>' +
+        '<ul class="checklist">' + docsH + "</ul>" +
+        (q.tried > 0 ? '<div class="warn">서류가 빠져 보완 요청을 받았습니다. <b>빠진 서류를 채워 다시 내십시오.</b></div>' : "") +
+        '<div class="tiny muted" style="margin-top:6px">※ 서류 5종 구성은 게임에서 단순화했습니다 (' + GS + ").</div>" +
+        '<div class="btn-row">' +
+          '<button class="btn" data-act="submitQual">서류 제출하기' + (missing ? " (" + missing + "개 빠짐)" : "") + "</button>" +
+          '<button class="btn subtle" data-act="delayQual">하루 미루기</button>' +
+        "</div>" +
+      "</div>";
+  } else if (q.phase === "result") {
+    const pass = !q.failed && q.score >= c.qualScore;
+    let headline = pass ? "적격 — 통과했습니다."
+      : q.failed === "late" ? "서류를 내지 않아 차순위로 넘어갑니다."
+      : q.failed === "docs" ? "보완 기한 안에 서류를 채우지 못했습니다."
+      : "부적격 — " + c.qualScore + "점에 " + (c.qualScore - q.score).toFixed(2) + "점 모자랍니다.";
+    const sub = pass ? "이제 낙찰자로 확정됩니다. 다음은 계약입니다."
+      : q.failed ? "정당한 사유 없이 계약을 체결하지 않은 것으로 보아 <b>6개월 입찰참가자격 제한</b>이 남습니다. (시행규칙 별표2 제13호 가목)"
+      : "부적격 통보를 받으면 <b>3일 안에</b> 재심사를 요청할 수 있습니다. 다만 <b>새 서류를 덧붙일 수는 없습니다.</b>";
+    core =
+      '<div class="card"><div class="card-title"><span class="ico">2</span>심사 결과</div>' +
+        '<div class="' + (pass ? "good" : "bad") + '"><b>' + headline + "</b> " + sub + "</div>" +
+        (!q.failed ? '<div class="calc" style="margin-top:12px">입찰가격 평점 = 70 − 2 × |90 − (내 투찰가 ÷ 예정가격 × 100)|\n' +
+          "            = 70 − 2 × |90 − " + (R.mine.rate * 100).toFixed(2) + "|\n" +
+          "            = " + q.pricePart.toFixed(2) + "점\n" +
+          "비가격 평점 (실적·신용·경영상태) = " + RULES.nonPriceScore.toFixed(2) + "점 (" + GS + ")\n" +
+          "합계 = " + q.score.toFixed(2) + "점 / 통과점수 " + c.qualScore + "점</div>" : "") +
+        '<p class="tiny muted" style="margin-top:8px">근거 · ' + c.qualBasis + ". 비가격 배점은 게임에서 30점 만점으로 단순화했습니다.</p>" +
+        (pass ? '<div class="tiny muted" style="margin-top:8px">낙찰자 결정 통지 · <b>' + fDT(R.awardedAt || S.now) + '</b> — 계약은 이 통지를 받은 날부터 10일 이내입니다.</div>' : "") +
+        '<div class="btn-row">' +
+          (pass ? '<button class="btn" data-act="toContract">계약하러 가기</button>'
+                : (q.failed ? '<button class="btn" data-act="giveUpQual">다음 공고로</button>'
+                            : '<button class="btn ghost" data-act="reexam">재심사 요청 (3일)</button>' +
+                              '<button class="btn subtle" data-act="giveUpQual">포기하고 다음 공고</button>')) +
+        "</div>" +
+      "</div>";
+  }
+  const body =
+    stepsHTML(5) +
+    objbar("<b>적격심사</b> · " + (q.phase === "result" ? "심사 결과" : "서류를 5일 안에 내십시오")) +
+    '<div class="card tight" style="background:#fbfdff;margin-top:12px"><div class="tiny muted">적격심사 대상자 통보</div>' +
+      '<div style="font-weight:700;font-size:16px;margin:3px 0">' + esc(S.company) + " 귀하</div>" +
+      '<div class="tiny">「' + n.name + '」에 대하여 <b>적격심사 대상자</b>로 선정되었음을 통보합니다. 이것은 낙찰 확정이 아니라 심사 대상 통보입니다. 심사를 통과해야 낙찰자로 확정됩니다.<br>심사 대상 금액(내 투찰가)은 <b>' + won(R.mine.amount) + "원</b>입니다.</div>" +
+      '<div class="tiny muted" style="margin-top:5px">' + n.org + " · " + fDT(q.notifiedAt || S.now) + '</div><div class="seal" style="position:absolute"></div></div>' +
+    core +
+    guide("적격심사에서 실제로 많이 틀립니다",
+      ["자기평가 및 심사표를 잘못 써서 점수가 깎입니다. 실적증명서를 미리 발급받아 두어야 합니다.",
+       "서류를 안 내고 버티면 차순위로 넘어가고, 6개월 입찰 제한을 받을 수 있습니다.",
+       "재심사는 ‘다시 계산해 달라’는 것이지, 새 서류를 붙이는 자리가 아닙니다."],
+      "qual");
+  return chrome(body);
+}
+
+/* =====================================================================
+   [29] 계약
+   ===================================================================== */
+function screenContract() {
+  const n = noticeOf(), R = S.result, c = CH();
+  if (!n || !R) { S.screen = "list"; return screenList(); }
+  if (!S.contract) {
+    const amount = R.mine.amount;
+    const bond = Math.round(amount * RULES.contractBondRate);
+    const exempt = amount <= RULES.contractBondExempt;
+    S.contract = { amount, bond, exempt, promised: false, done: false };
+  }
+  const k = S.contract;
+  const amount = k.amount;
+  const late = lateFee(amount, c.lateRate, 1);
+
+  const bondBox = k.exempt
+    ? '<div class="good"><b>계약보증금 면제</b> — 계약금액 ' + won(amount) + "원은 5천만원 이하입니다.<br>" +
+      "면제여도 <b>지급확약서</b>는 내야 합니다. 계약을 어기면 계약금액의 10%(" + won(k.bond) + "원)를 현금으로 냅니다.</div>"
+    : '<div class="warn"><b>계약보증금 ' + won(k.bond) + "원</b> — 계약금액의 10%입니다. 계약체결일까지 내야 합니다.<br>" +
+      "내 자본 " + eok(S.capital) + "에서 빼면 " + eok(S.capital - k.bond) + "이 남습니다.</div>";
+
+  const body =
+    stepsHTML(6) +
+    objbar("<b>계약</b> · 낙찰자 결정 통지 후 10일 안에 계약합니다") +
+    '<div class="card" style="margin-top:12px">' +
+      '<div class="tiny muted">낙찰자 결정 통지 후 10일 안에 계약합니다 · 남은 기한 ' + Math.max(0, RULES.contractDays - dDay(R.awardedAt || R.notifiedAt || S.now, S.now)) + "일 (통지 " + fDate(R.awardedAt || R.notifiedAt || S.now) + ")" +
+      '<div class="big" style="margin:4px 0 8px">계약서</div>' +
+      '<dl class="kv">' +
+        "<dt>계약상대자</dt><dd>" + esc(S.company) + "</dd>" +
+        "<dt>계약명</dt><dd>" + n.name + "</dd>" +
+        "<dt>계약금액</dt><dd>" + won(amount) + "원 (부가세 포함)</dd>" +
+        "<dt>계약기간</dt><dd>계약일부터 " + n.deliverDays + "일</dd>" +
+        "<dt>" + T("late", "지체상금") + "률</dt><dd>" + c.lateLabel + " · 하루 " + won(late.raw) + "원</dd>" +
+        "<dt>지체상금 상한</dt><dd>계약금액의 30% = " + won(late.cap) + "원</dd>" +
+        "<dt>" + T("contractBond", "계약보증금") + "</dt><dd>" + (k.exempt ? "면제 (지급확약서 제출)" : won(k.bond) + "원 (10%)") + "</dd>" +
+        "<dt>검사·대금</dt><dd>검사 14일 이내 · 청구 후 5일 이내(공휴일·토요일 제외)</dd>" +
+      "</dl>" +
+      '<div style="margin-top:12px">' + bondBox + "</div>" +
+      (k.exempt ? '<ul class="checklist" style="margin-top:10px"><li class="' + (k.promised ? "on" : "") + '" data-act="promise"><span class="box">' + (k.promised ? "✓" : "") + '</span><span>지급확약서를 제출했습니다</span></li></ul>' : "") +
+      '<div class="btn-row">' +
+        '<button class="btn" data-act="signContract"' + (k.exempt && !k.promised ? " disabled" : "") + ">계약 체결</button>" +
+        '<button class="btn danger" data-act="giveUpContract">계약 포기</button>' +
+      "</div>" +
+      '<p class="tiny muted" style="margin-top:8px">계약 포기는 보증금을 잃고 <b>6개월 입찰 제한</b>을 받습니다. 화면에 남겨 둔 이유는 실제로 그렇게 되기 때문입니다.</p>' +
+    "</div>" +
+    guide("계약에서 걸리는 두 가지",
+      ["계약보증금을 안 내면 계약 자체가 안 됩니다. 면제여도 지급확약서가 필요합니다.",
+       "낙찰통지 후 10일 안에 계약서를 작성하지 않으면 계약을 포기한 것으로 처리될 수 있습니다."],
+      "contract");
+  return chrome(body);
+}
+
+/* =====================================================================
+   [30] 수행·대금
+   ===================================================================== */
+function screenPerform() {
+  const n = noticeOf(), R = S.result, c = CH();
+  if (!n || !R || !S.contract) { S.screen = "list"; return screenList(); }
+  const k = S.contract;
+  if (!S.perform) S.perform = { step: 0, lateDays: 0, fee: 0, invoice: null, paid: null, delivered: false, inspAsk: null, inspDue: null, claimDay: null, payDue: null };
+  const p = S.perform;
+  const amount = k.amount;
+  const targets = [0.08, 0.42, 0.72, 0.95];
+  const scene = sceneSVG(c.id, targets[Math.min(p.step, targets.length - 1)]);
+
+  let core = "";
+  if (p.step === 0) {
+    core = '<div class="card"><div class="card-title"><span class="ico">1</span>일을 시작합니다</div>' +
+      "<p>계약기간은 계약일부터 <b>" + n.deliverDays + "일</b>입니다. 지정 납품일은 <b>" + fDate(k.due || nextBiz(addDays(S.now, n.deliverDays))) + "</b>이고, 오늘 착수합니다.</p>" +
+      '<div class="btn-row"><button class="btn" data-act="work" data-step="1">작업 시작</button></div></div>';
+  } else if (p.step === 1) {
+    core = '<div class="card"><div class="card-title"><span class="ico">2</span>작업 중</div>' +
+      "<p>" + (c.id === "goods" ? "원단에 인쇄가 올라가고 있습니다." : c.id === "service" ? "무대와 조명을 세우고 있습니다." : "기초를 놓고 골조를 올리고 있습니다.") + "</p>" +
+      '<div class="btn-row"><button class="btn" data-act="work" data-step="2">계속 진행</button></div></div>';
+  } else if (p.step === 2) {
+    core = '<div class="card"><div class="card-title"><span class="ico">3</span>완성했습니다</div>' +
+      '<p class="tiny muted">지정 납품일은 <b>' + fDate(k.due || nextBiz(addDays(S.now, n.deliverDays))) + "</b>입니다. (계약일부터 " + n.deliverDays + "일 · 그날이 주말·공휴일이면 다음 영업일)</p>" +
+      "<p>납품·이행완료 통지를 <b>날짜가 남는 형태</b>로 해야 합니다. 구두 통지는 나중에 지체일수 다툼이 됩니다.</p>" +
+      '<div class="btn-row"><button class="btn" data-act="work" data-step="3">납품 완료 보고</button></div></div>';
+  } else if (p.step === 3) {
+    const lf = lateFee(amount, c.lateRate, p.lateDays);
+    core = '<div class="card"><div class="card-title"><span class="ico">4</span>' + T("late", "지체상금") + "</div>" +
+      '<div class="bad">지정 납품일 <b>' + fDate(k.due || S.now) + "</b>보다 <b>" + p.lateDays + "일</b> 늦은 <b>" + fDate(p.actual || S.now) + "</b>에 납품했습니다. (자재 입고 지연) " + T("late", "지체상금") + "이 붙습니다.</div>" +
+      '<div class="calc" style="margin-top:10px">지체상금 = 계약금액 × 지체상금률 × 지체일수\n' +
+      "        = " + won(amount) + " × " + c.lateRate + " × " + p.lateDays + "\n" +
+      "        = " + won(lf.fee) + "원" + (lf.capped ? "\n(상한 30% 적용)" : "") + "</div>" +
+      '<p class="tiny muted" style="margin-top:8px">지체상금은 협상 대상이 아닙니다. 발주기관이 책임 있는 일수는 자료로 증명해야 뺄 수 있습니다.</p>' +
+      '<div class="btn-row"><button class="btn" data-act="work" data-step="4">검사 신청</button></div></div>';
+  } else if (p.step === 4) {
+    const inspDate = p.inspDue || prevBiz(addDays(S.now, RULES.inspectDays));
+    core = '<div class="card"><div class="card-title"><span class="ico">5</span>' + T("inspect", "검사") + "</div>" +
+      "<p>발주기관은 이행완료 통지를 받은 날부터 <b>14일</b> 안에 검사합니다. 검사에 합격해야 대금을 청구할 수 있습니다.</p>" +
+      '<div class="warn">이행완료 통지일 · <b>' + fDate(p.inspAsk || S.now) + "</b> <span class='tiny muted'>(토·일·공휴일이면 다음 영업일)</span><br>검사 예정일 · <b>" + fDate(inspDate) + "</b> <span class='tiny muted'>(통지일부터 14일 이내 · 그날이 주말·공휴일이면 앞 영업일)</span></div>" +
+      '<div class="card-title" style="margin-top:14px"><span class="ico">6</span>세금계산서를 언제 낼까요</div>' +
+      '<p class="tiny muted">세금계산서 발행일이 청구일로 관리됩니다. 검사 전에 내면 반송될 수 있습니다.</p>' +
+      '<div class="opts" style="margin-top:8px">' +
+        '<button class="opt" data-act="invoice" data-v="after">검사가 끝난 뒤 낸다 (안전)</button>' +
+        '<button class="opt" data-act="invoice" data-v="before">먼저 낸다 (빠를 것 같다)</button>' +
+      "</div></div>";
+  } else if (p.step === 5) {
+    const due = p.payDue || addBizDays(p.claimDay || S.now, RULES.payDays);
+    core = '<div class="card"><div class="card-title"><span class="ico">7</span>대금 지급</div>' +
+      (p.invoice === "before"
+        ? '<div class="warn"><b>세금계산서가 반송되었습니다.</b> 검사 완료 전에 발행했기 때문입니다. 반송일부터 다시 청구한 날까지는 지급기간에 넣지 않습니다. 5영업일이 다시 시작됩니다.</div>'
+        : '<div class="good">검사 완료 후 청구했습니다. 청구를 받은 날부터 5영업일 안에 지급됩니다. (공휴일·토요일 제외)</div>') +
+      '<div class="calc" style="margin-top:10px">계약금액        ' + won(amount) + "원\n" +
+      "(-) 지체상금      " + won(p.fee) + "원\n" +
+      "= 지급액         " + won(amount - p.fee) + "원\n" +
+      "청구일           " + fDate(p.claimDay || S.now) + "\n" +
+      "지급 예정일       " + fDate(due) + "  (청구 후 " + RULES.payDays + "영업일)</div>" +
+      (k.bondPaid ? '<p class="tiny muted" style="margin-top:8px">계약보증금 ' + won(k.bond) + "원은 계약이 끝난 뒤 그대로 돌려받습니다. 위 지급액과는 따로 움직입니다.</p>" : "") +
+      '<div class="btn-row"><button class="btn" data-act="work" data-step="6">대금을 받습니다</button></div></div>';
+  } else {
+    core = '<div class="card"><div class="card-title"><span class="ico">✓</span>이번 계약 결과</div>' +
+      '<div class="good">대금이 입금되었습니다. 낙찰 1건을 완수했습니다.</div>' +
+      '<div class="calc" style="margin-top:10px">계약금액        ' + won(amount) + "원\n" +
+      "(-) 지체상금      " + won(p.fee) + "원\n" +
+      "= 받은 대금      " + won(amount - p.fee) + "원\n" +
+      "(-) 원가          " + won(k.cost || 0) + "원\n" +
+      "= 이번 계약 손익  " + won(amount - p.fee - (k.cost || 0)) + "원\n" +
+      "입금일           " + fDate(p.paid || S.now) + "</div>" +
+      '<p class="tiny muted" style="margin-top:8px">지체상금은 받은 대금에서 이미 빠져 있습니다. 손익에서 다시 빼지 않습니다.</p>' +
+      '<div class="btn-row"><button class="btn" data-act="finishJob">회사로 돌아가기</button></div></div>';
+  }
+
+  const body =
+    stepsHTML(7) +
+    objbar("<b>수행·대금</b> · " + (p.step === 0 ? "일을 시작합니다" : p.step === 1 ? "작업 중" : p.step === 2 ? "완성했습니다" : p.step === 3 ? "지체상금" : p.step === 4 ? "검사 · 세금계산서" : p.step === 5 ? "대금 지급" : "이번 계약 결과")) +
+    '<div class="card" style="margin-top:12px">' +
+      '<div class="tiny muted">수행 중 · ' + esc(S.company) + "</div>" +
+      '<div class="big" style="font-size:20px;margin:2px 0 0">' + n.name + "</div>" +
+      '<div class="tiny muted" style="margin-top:3px">계약금액 <b style="color:var(--ink)">' + won(amount) + "원</b> · 계약일부터 " + n.deliverDays + "일</div>" +
+      scene + "</div>" +
+    core +
+    guide("수행·대금에서 실제로 걸리는 것",
+      ["이행완료 통지는 날짜가 남게 합니다. 나중에 지체일수로 다툼이 생깁니다.",
+       "검사 완료 전 세금계산서 발행은 반송 위험이 있습니다. 발행일이 청구일로 관리됩니다.",
+       "지체상금이 계약보증금 상당액에 이르면 보증금이 국고로 들어가거나 추가 보증금을 내야 합니다."],
+      "perform");
+  return chrome(body);
+}
+
+/* =====================================================================
+   [31] 결과 카드
+   ===================================================================== */
+function screenEnd() {
+  const c = CH();
+  const line1 = S.wins > 0
+    ? "가장 낮은 가격만 써서는 이기지 못합니다. 1순위는 ‘심사 순서’일 뿐이고, 서류를 내야 낙찰이 됩니다."
+    : "1순위가 낙찰이 아닙니다. 하한선 아래로 쓰면 1순위여도 심사 대상이 되지 않습니다.";
+  const line2 = "면제받은 입찰보증금도, 계약을 어기면 현금으로 청구됩니다.";
+  const line3 = S.sanctioned.length
+    ? "공고문을 읽지 않으면 서류 하나 때문에 입찰이 통째로 무효가 됩니다. 제재는 6개월부터입니다."
+    : "공고문의 참가자격과 마감 시각을 먼저 확인하는 것만으로 절반은 이깁니다.";
+  const learned = S.learned.length;
+  const slogan = "나는 ‘" + S.company + "’" + josaRo(S.company) + " 나라장터 입찰 " + Math.min(S.rounds, ROUNDS()) + "건에 도전해 " + S.wins + "건 낙찰, 최종 자본 " + eok(S.capital) + ". 1순위가 낙찰이 아니라는 걸 이제 압니다.";
+
+  const body =
+    stepsHTML(8) +
+    objbar("<b>결과 카드</b> · 낙찰 " + S.wins + "건") +
+    '<div class="result-card" style="margin-top:12px">' +
+      '<div class="stampbig ' + (S.wins > 0 ? "" : "fail") + '" style="color:' + (S.wins > 0 ? "#7ff0c0" : "#ffb2ab") + '">' + (S.wins > 0 ? "낙찰 " + S.wins : "낙찰 없음") + "<small>결과 카드</small></div>" +
+      '<div class="rc-top"><span>결과 카드</span><span>' + fDate(S.now) + "</span></div>" +
+      "<h2>" + esc(S.company) + "</h2>" +
+      '<div class="rsub">' + c.name + " · " + c.who + "</div>" +
+      '<div class="rgrid">' +
+        '<div><div class="k">최종 자본</div><div class="v">' + eok(S.capital) + "</div></div>" +
+        '<div><div class="k">낙찰</div><div class="v">' + S.wins + "건</div></div>" +
+        '<div><div class="k">도전</div><div class="v">' + Math.min(S.rounds, ROUNDS()) + "회</div></div>" +
+        '<div><div class="k">제재 이력</div><div class="v">' + (S.sanctioned.length ? S.sanctioned.length + "건" : "없음") + "</div></div>" +
+      "</div>" +
+      '<div class="rline"><b>배운 용어 ' + learned + "개</b> · " + (S.sanctioned.length ? "제재 " + S.sanctioned.join(", ") : "제재 없음") + "</div>" +
+      '<div class="slogan">' + slogan + "</div>" +
+    "</div>" +
+    '<div class="card" style="margin-top:14px">' +
+      '<div class="card-title"><span class="ico">✓</span>이 게임에서 배운 것</div>' +
+      "<p>1. " + line1 + "</p><p>2. " + line2 + "</p><p>3. " + line3 + "</p>" +
+    "</div>" +
+    '<div class="card">' +
+      '<div class="card-title"><span class="ico">→</span>실제로 나라장터를 할 때 확인할 것</div>' +
+      "<p>1. 공고문의 <b>참가자격</b>과 <b>마감 시각</b>을 먼저 확인하십시오. 내 업종이라도 직접생산확인·면허가 없으면 들어갈 수 없습니다.</p>" +
+      "<p>2. 공고문의 <b>낙찰자 결정방법</b>과 <b>낙찰하한율</b>을 보고 값을 정하십시오. 기초금액의 102%를 넘는 투찰은 접수되지 않는 경우가 많으니, 공고에 적힌 투찰 상한을 먼저 확인하십시오.</p>" +
+      "<p>3. 낙찰되면 <b>5일 안에 적격심사 서류</b>, <b>10일 안에 계약</b>입니다. 이 두 기한을 놓치면 낙찰이 사라집니다.</p>" +
+      "<p>4. 이 게임의 수치·판정(투찰 상한, 하한·안전 구간, 점수, 기한, 보증금)은 교육을 위해 단순화한 <b>게임 설정</b>입니다. 공고마다 다를 수 있으므로 실제 입찰에서는 해당 <b>공고문과 나라장터 유의사항</b>을 확인하십시오.</p>" +
+    "</div>" +
+    '<div class="card"><div class="card-title"></div>' +
+      '<div class="btn-row actions">' +
+        '<button class="btn big-btn" data-act="restart">같은 업종으로 다시</button>' +
+        '<button class="btn ghost" data-act="newGame">업종부터 다시</button>' +
+        '<button class="btn subtle" data-act="glossary">배운 용어 ' + learned + "개 보기</button>" +
+      "</div></div>" +
+    guide("결과를 어떻게 읽으면 좋을까요",
+      ["낙찰 건수보다 <b>왜 그렇게 됐는지</b>가 중요합니다. 개찰표의 투찰률(예정가격 대비)을 다시 보십시오.",
+       "제재 이력이 있다면 그 이유를 확인하십시오. 실제로는 1개월에서 2년까지 이어집니다."]);
+  return chrome(body);
+}
+/* =====================================================================
+   [32] 조작 처리
+   ===================================================================== */
+function commitName(name) {
+  const c = CH();
+  S.company = name;
+  S.capital = c.start.capital;
+  S.perf = c.start.perf;
+  S.staff = c.start.staff;
+  S.license = c.start.license;
+  S.ownProd = c.start.ownProd;
+  S.credit = c.credit;
+  S.now = RULES.base;
+  S.phase = "list";
+  S.rounds = 0;
+  buildNotices();
+  stampFx("참가자격 등록 완료", esc(name) + " · " + c.name + " 업종으로 나라장터에 등록했습니다.", () => {
+    S.screen = "dashboard";
+    render();
+  });
+  S.screen = "name";
+  render();
+}
+function gotoNextRound() {
+  if (S.rounds >= ROUNDS()) { S.screen = "end"; S.phase = "end"; render(); return; }
+  /* 판이 바뀌면 다음 영업일로 넘어간다 — 게임 시계가 흘러야 같은 공고의 마감도 날짜와 맞는다 */
+  S.now = nextBiz(addDays(S.now, 1));
+  buildNotices();
+  S.phase = "list";
+  S.screen = "list";
+  render();
+}
+
+const ACT = {
+  newGame: () => { const m = S.mode; S = freshState(); S.mode = m; S.screen = "sector"; render(); },
+  continue: () => { const o = load(); if (o) { S = o; if (!S.learned) S.learned = []; render(); } },
+  mode: el => { S.mode = el.dataset.v; render(); },
+  pickChar: el => { S.charId = el.dataset.id; render(); },
+  quiz: el => { S.quiz[+el.dataset.q] = el.dataset.v; render(); },
+  toName: () => { S.screen = "name"; S.nameMode = "auto"; S.autoName = S.autoName || genName(S.charId); render(); },
+  modeName: el => { S.nameMode = el.dataset.m; render(); },
+  reroll: () => { S.autoName = genName(S.charId); render(); },
+  useAuto: () => commitName(S.autoName),
+  useManual: () => {
+    const v = validateName(S.typedName);
+    if (!v.ok) { toast(v.msg); return; }
+    commitName(String(S.typedName).trim());
+  },
+
+  toDash: () => { S.screen = "dashboard"; S.phase = "list"; render(); },
+  toList: () => { if (!S.notices.length) buildNotices(); S.screen = "list"; S.phase = "list"; render(); },
+  openNotice: el => {
+    S.noticeId = el.dataset.id; S.watch = null; S.readOk = false; S.bid = null; S.bondChoice = "memo";
+    S.screen = "detail"; render();
+  },
+  bond: el => { S.bondChoice = el.dataset.v; render(); },
+  watch: el => {
+    if (!S.watch) return;
+    S.watch.ans[+el.dataset.n] = el.dataset.v;
+    if (watchDone()) S.readOk = true;
+    render();
+  },
+  docAll: el => {
+    document.querySelectorAll(".art").forEach(a => {
+      if (el.dataset.v === "close") a.classList.add("closed"); else a.classList.remove("closed");
+    });
+  },
+  docTop: () => { const d = document.querySelector(".doc"); if (d) d.scrollIntoView({ block: "start", behavior: "smooth" }); },
+  apply: () => {
+    S.phase = "bid";
+    S.bid = { amount: 0, picks: [], step: "pick" };
+    stampFx("참가 신청 접수", "입찰보증금 " + (S.bondChoice === "memo" ? "지급각서 제출 (면제)" : "현금 납부") + " · 이제 투찰 화면입니다.", () => {
+      S.screen = "bid"; render();
+    });
+    S.screen = "bid";
+  },
+  applyCareless: () => {
+    S.careless = true;
+    S.phase = "bid";
+    S.bid = { amount: 0, picks: [], step: "pick" };
+    toast("공고문 조건을 짚지 않고 진행합니다. 다음 판에서 서류가 빠져 무효가 됩니다.");
+    S.screen = "bid"; render();
+  },
+  toDetail: () => { S.screen = "detail"; render(); },
+  pickNo: el => {
+    if (!S.bid || S.bid.step !== "pick") return;
+    const k = +el.dataset.k, i = S.bid.picks.indexOf(k);
+    if (i >= 0) S.bid.picks.splice(i, 1);
+    else if (S.bid.picks.length < 2) S.bid.picks.push(k);
+    else { toast("예비가격번호는 2개까지만 뽑을 수 있습니다."); return; }
+    if (S.bid.picks.length === 2) S.bid.step = "amount";
+    render();
+  },
+  fill: el => {
+    const n = noticeOf(), v = el.dataset.v;
+    let amt = 0;
+    if (v === "safe") { const sb = safeBand(n); amt = (sb.low + sb.high) / 2; }
+    else if (v === "lb") amt = n.base * (n.lb + 0.001);
+    else if (v === "mid") amt = n.base * 0.95;
+    else if (v === "base") amt = n.base;
+    else if (v === "under") amt = n.base * (n.lb - 0.03);
+    else if (v === "over") amt = n.base * 1.03;
+    S.bid.amount = Math.round(amt / 1000) * 1000;
+    render();
+  },
+  submitBid: submitBid,
+  undo: () => {
+    if (S.undoLeft <= 0) { toast("되돌리기는 한 판에 한 번뿐입니다."); return; }
+    S.undoLeft--;
+    S.bid = null;
+    S.screen = "detail";
+    toast("참가 신청을 되돌렸습니다. 실제로는 투찰 후 되돌릴 수 없습니다.");
+    render();
+  },
+  toQual: () => { S.qual = null; S.screen = "qual"; S.phase = "qual"; render(); },
+  afterLose: () => { gotoNextRound(); },
+
+  doc: el => {
+    const i = +el.dataset.i;
+    S.qual.docs[i] = !S.qual.docs[i];
+    render();
+  },
+  submitQual: () => {
+    const q = S.qual, R = S.result;
+    const missing = q.docs.filter(x => !x).length;
+    if (missing) {
+      q.tried++;
+      if (q.tried >= 2) {
+        q.phase = "result"; q.failed = "docs";
+        q.pricePart = priceScore(R.mine.amount, R.yej); q.score = 0;
+        toast("서류를 두 번 놓쳤습니다. 차순위로 넘어갑니다.");
+        render(); return;
+      }
+      q.fixDeadline = addDays(S.now, RULES.qualFixDays);
+      toast("서류 " + missing + "개가 빠졌습니다. 7일 안에 보완하여 다시 내십시오.");
+      render(); return;
+    }
+    q.pricePart = priceScore(R.mine.amount, R.yej);
+    q.score = q.pricePart + RULES.nonPriceScore;
+    q.phase = "result";
+    /* 통과해야 낙찰자 확정 — 심사에 걸린 3영업일만큼 게임 시계도 흘러 낙찰자 결정 통지일이 된다 */
+    if (q.score >= CH().qualScore) {
+      S.now = addBizDays(S.now, RULES.qualReviewDays);
+      R.awardedAt = S.now;
+    }
+    render();
+  },
+  delayQual: () => {
+    const q = S.qual;
+    if (bizDaysLeft(S.now, q.deadline) <= 0) {
+      q.phase = "result"; q.score = 0; q.pricePart = 0; S.qual.failed = "late";
+      toast("5영업일이 지났습니다. 서류를 내지 않아 차순위로 넘어갑니다.");
+      render(); return;
+    }
+    S.now = addDays(S.now, 1);
+    toast("하루 미뤘습니다. 남은 기한 " + bizDaysLeft(S.now, q.deadline) + "영업일" + (isBn(S.now) ? " (오늘은 토·일·공휴일이라 기한이 줄지 않습니다)" : ""));
+    render();
+  },
+  reexam: () => { toast("재심사를 요청했습니다. 새 서류는 붙일 수 없어 결과는 그대로입니다."); S.qual.phase = "result"; render(); },
+  giveUpQual: () => {
+    S.sanctioned.push("계약 미체결 6개월");
+    S.fails++;
+    toast("적격심사를 포기했습니다. 차순위로 넘어가고 6개월 제재가 남습니다.");
+    gotoNextRound();
+  },
+  toContract: () => { S.contract = null; S.screen = "contract"; S.phase = "contract"; render(); },
+  promise: () => { S.contract.promised = !S.contract.promised; render(); },
+  signContract: () => {
+    const k = S.contract, c = CH(), n = noticeOf();
+    k.cost = Math.round(k.amount * c.costRate);
+    /* 계약일과 지정 납품일을 계약 시점에 고정한다 — 수행 화면의 지체일수가 이 날짜를 본다 */
+    k.contractDay = S.now;
+    k.deliverDays = n ? n.deliverDays : 30;
+    /* 계약일부터 N일이 주말·공휴일이면 다음 영업일까지가 지정 납품일 */
+    k.due = nextBiz(addDays(k.contractDay, k.deliverDays));
+    if (!k.exempt) { S.capital -= k.bond; k.bondPaid = true; }
+    k.done = true;
+    document.getElementById("modal-root").innerHTML =
+      '<div class="modal-bg"><div class="modal" style="max-width:360px;text-align:center">' +
+      '<svg class="seal" width="120" height="70" viewBox="0 0 120 70" style="display:block;margin:0 auto 6px">' +
+      '<text x="60" y="40" text-anchor="middle" font-size="20" font-weight="800" fill="#c0392b" font-family="serif">' + esc(S.company) + "</text>" +
+      '<text x="60" y="58" text-anchor="middle" font-size="13" fill="#c0392b" font-family="serif">(인)</text></svg>' +
+      "<h3>계약을 체결했습니다</h3><p class='tiny muted'>" + fDate(S.now) + " · 낙찰자 결정 통지 후 10일 이내</p></div></div>";
+    setTimeout(() => {
+      document.getElementById("modal-root").innerHTML = "";
+      S.perform = null; S.screen = "perform"; S.phase = "perform"; render();
+    }, 1200);
+    S.capital -= 0;
+  },
+  giveUpContract: () => {
+    const k = S.contract;
+    const forfeit = Math.min(S.capital, k.bond);
+    S.capital -= forfeit;
+    S.sanctioned.push("계약 미체결 6개월");
+    S.fails++;
+    toast("계약을 포기했습니다. 보증금 상당액 " + eok(forfeit) + "을 물고 6개월 제재가 남습니다.");
+    S.screen = "end"; S.phase = "end"; render();
+  },
+
+  work: el => {
+    const p = S.perform, step = +el.dataset.step, c = CH(), k = S.contract;
+    /* 계약기간(납기)을 실제로 쓰게 한다 — 날짜는 계약일에서 계산한다 */
+    const len = k.deliverDays || 30;
+    const from = k.contractDay || S.now;
+    if (step === 1) { S.now = nextBiz(addDays(from, Math.max(1, Math.round(len * 0.33)))); p.step = 1; }
+    else if (step === 2) { S.now = nextBiz(addDays(from, Math.max(2, Math.round(len * 0.7)))); p.step = 2; }
+    else if (step === 3) {
+      /* 자재 입고가 늦어 지정 납품일보다 사흘 늦게 납품 — 주말·공휴일이면 다음 영업일 */
+      const planned = k.due ? nextBiz(addDays(k.due, 3)) : nextBiz(addDays(S.now, 3));
+      p.actual = planned;
+      S.now = planned;
+      p.lateDays = k.due ? Math.max(1, diffDays(k.due, planned)) : 3;
+      p.fee = lateFee(k.amount, c.lateRate, p.lateDays).fee;
+      p.step = 3;
+    } else if (step === 4) {
+      p.inspAsk = S.now;
+      p.inspDue = prevBiz(addDays(S.now, RULES.inspectDays));
+      p.step = 4;
+    }
+    else if (step === 6) {
+      const due = p.payDue || addBizDays(p.claimDay || S.now, RULES.payDays);
+      S.now = due;
+      S.capital += (k.amount - p.fee) - (k.cost || 0) + (k.bondPaid ? k.bond : 0);
+      S.perf += k.amount;
+      S.wins++;
+      p.paid = due;
+      p.step = 6;
+    }
+    render();
+  },
+  invoice: el => {
+    const p = S.perform;
+    p.invoice = el.dataset.v;
+    /* 검사가 끝나는 날(=청구할 수 있는 날)을 기준으로 기한을 잡는다.
+       검사 전에 낸 계산서는 반송되고, 반송일부터 다시 청구한 날까지는 지급기간에 넣지 않는다. */
+    const done = p.inspDue || prevBiz(addDays(S.now, RULES.inspectDays));
+    p.claimDay = p.invoice === "before" ? nextBiz(addDays(done, RULES.invoiceBounceDays)) : done;
+    p.payDue = addBizDays(p.claimDay, RULES.payDays);
+    S.now = p.claimDay;
+    p.step = 5;
+    render();
+  },
+  finishJob: () => { gotoNextRound(); },
+
+  applyCert: () => {
+    if (S.ownProd) return;
+    S.ownProd = true;
+    S.now = addDays(S.now, 7);
+    buildNotices();
+    toast("직접생산확인증명서를 받았습니다 (유효기간 2년). 이제 인쇄 공고에 참가할 수 있습니다.");
+    render();
+  },
+  glossary: () => openGlossary(),
+  closeModal: () => closeModal(),
+  closeTerm: () => closeTerm(),
+  nextTerm: () => {
+    const rest = Array.from(new Set(Array.from(document.querySelectorAll(".term.new")).map(t => t.dataset.term)));
+    closeTerm();
+    if (rest.length) showTerm(rest[0]);
+  },
+  toEnd: () => { S.screen = "end"; S.phase = "end"; render(); },
+  restart: () => {
+    const id = S.charId, m = S.mode, name = S.company;
+    S = freshState(); S.mode = m; S.charId = id; S.autoName = name; S.typedName = name;
+    S.screen = "sector"; render();
+  }
+};
+
+document.addEventListener("click", e => {
+  const bg = e.target.closest(".modal-bg");
+  const stop = e.target.closest("[data-stop]");
+  if (bg && !stop) { closeModal(); return; }
+  const sec = e.target.closest(".art > h5");
+  if (sec && !e.target.closest(".term")) { sec.parentNode.classList.toggle("closed"); return; }
+  const el = e.target.closest("[data-act]");
+  if (!el) {
+    const t = e.target.closest(".term");
+    if (t) { showTerm(t.dataset.term); }
+    return;
+  }
+  const act = el.dataset.act;
+  if (act === "closeModal" && !el.classList.contains("modal-bg")) { closeModal(); return; }
+  if (ACT[act]) { ACT[act](el, e); }
+});
+
+/* =====================================================================
+   [33] 시작
+   ===================================================================== */
+(function boot() {
+  const saved = load();
+  S = saved || freshState();
+  if (!S.learned) S.learned = [];
+  if (S.screen && S.screen !== "end" && S.company) { render(); return; }
+  S.screen = "intro";
+  render();
+})();
+</script></body></html>
