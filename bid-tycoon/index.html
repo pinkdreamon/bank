@@ -898,6 +898,11 @@
   .hchip{padding:2px 8px;border-radius:11px}
   .hchip .hk{font-size:9px}.hchip .hv{font-size:12.5px}
   .hud2{display:flex;gap:4px;margin-top:4px;overflow:hidden}
+  @media(max-width:430px){
+    .vaultbox .vnum{font-size:25px;white-space:nowrap;letter-spacing:-.06em}
+    .vaultbox .vcoin{width:50px;height:50px;font-size:20px}
+    .vaultbox{padding:10px}
+  }
   .chipx{display:inline-flex;align-items:center;gap:3px;flex:0 0 auto;font-size:10.5px;font-weight:800;color:#cfe0f8;
     background:#152238;border:1.5px solid #2b4066;border-radius:8px;padding:1px 6px;line-height:1.7;white-space:nowrap}
   .chipx b{color:#ffdc7a;font-weight:900;font-size:9.5px;letter-spacing:.02em}
@@ -989,7 +994,7 @@
   .cast-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
   .actor{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;background:transparent;
     border:0;font-family:inherit;padding:0}
-  .actor .fig{position:relative;width:100%;aspect-ratio:3/4;max-height:190px;border-radius:14px;overflow:hidden;
+  .actor .fig{position:relative;width:100%;aspect-ratio:3/4;max-height:230px;border-radius:14px;overflow:hidden;
     border:2px solid #33507c;box-shadow:0 6px 14px rgba(0,0,0,.55);background:#0f1c2e}
   .actor .fig img{width:100%;height:100%;object-fit:cover;object-position:50% 12%;display:block}
   .actor .nm{font-size:13.5px;font-weight:900;color:#fff}
@@ -2252,6 +2257,7 @@ function afterRender() {
   /* 자본 카운트업 */
   const capEl = document.getElementById("capVal");
   if (capEl) countUp(capEl, S.capital, eok);
+  if (window.__capSeen === undefined) window.__capSeen = S.capital;
   const prev = window.__capSeen, hud = document.getElementById("hudCapital");
   if (hud) countUp(hud, S.capital, eok);
   if (prev !== undefined && prev !== S.capital) {
@@ -2634,7 +2640,7 @@ function screenDashboard() {
       '<div class="vv"><div class="vk">자본금 · 내 금고</div><div class="vnum" id="capVal">' + eok(S.capital) + "</div></div>" +
       '<div class="hchip" style="flex-direction:column;align-items:flex-end;gap:2px"><div class="hk">낙찰</div><div class="hv">' + S.wins + "건</div></div></div>" +
       '<div class="mini4">' + miniStat("최근 3년 실적", S.perf ? eok(S.perf) : "없음") + miniStat("신용등급", S.credit) +
-        miniStat("직원", S.staff + "명") + miniStat("면허", (S.license || "없음").replace(" (사업자등록만)", "없음")) + "</div>" +
+        miniStat("직원", S.staff + "명") + miniStat("면허", (S.license || "없음").replace(" (사업자등록만)", "").replace(" (토목)", "")) + "</div>" +
       (S.sanctioned.length ? '<div class="bad" style="margin-top:8px">제재 이력 · ' + S.sanctioned.join(" / ") + "</div>" : "") +
       (canCert ? '<div class="good" style="margin-top:8px">낙찰 실적이 생겼습니다. ' + T("ownProd", "직접생산확인") + "을 신청할 수 있습니다.<div class=\"btn-row\" style=\"margin-top:7px\"><button class=\"btn sm\" data-act=\"applyCert\">직접생산확인 신청하기</button></div></div>" : ""),
     acts: '<button class="btn subtle" data-act="toInvest">회사 키우기</button>' +
@@ -2705,7 +2711,7 @@ function screenInvest() {
     body: '<div class="vaultbox"><span class="vcoin">\u20A9</span><div class="vv"><div class="vk">지금 쓸 수 있는 돈</div>' +
       '<div class="vnum">' + eok(S.capital) + "</div></div></div>" +
       '<div class="mini4">' + miniStat("직원", S.staff + "명") + miniStat("신용", S.credit) +
-        miniStat("면허", (S.license || "없음").replace(" (사업자등록만)", "없음")) + miniStat("직접생산", S.ownProd ? "보유" : "없음") + "</div>" +
+        miniStat("면허", (S.license || "없음").replace(" (사업자등록만)", "").replace(" (토목)", "")) + miniStat("직접생산", S.ownProd ? "보유" : "없음") + "</div>" +
       '<div class="card" style="margin-top:8px"><div class="card-title"><span class="ico">\u25B2</span>무엇에 투자할까요</div>' + list +
       '<p class="tiny muted" style="margin-top:8px">투자 금액과 효과는 <b>게임용 설정</b>입니다. 실제 나라장터의 등록·평가 기준과는 다릅니다.</p></div>' +
       guide("돈은 어떻게 굴러갑니까", [
