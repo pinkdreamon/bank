@@ -3379,7 +3379,8 @@ document.addEventListener("click", e => {
    [31c] 자동 점검 — 주소 끝에 #selftest 를 붙이면 한 판을 스스로 돌린다
    (사람이 누르는 것과 같은 click() 경로로 조작한다 · 결과는 window.__report)
    ===================================================================== */
-async function selfTest() {
+async function selfTest(SEC) {
+  SEC = SEC || "goods";
   const T = ms => new Promise(r => setTimeout(r, ms));
   const Q = s => document.querySelector(s);
   const C = s => { const e = Q(s); if (e) { e.click(); return true; } return false; };
@@ -3419,7 +3420,7 @@ async function selfTest() {
   await go('[data-act="mode"][data-v="full"]', 80);
   await go('[data-act="newGame"]', 320);
   snap("sector");
-  await go('[data-act="pickChar"][data-id="goods"]', 240);
+  await go('[data-act="pickChar"][data-id="' + SEC + '"]', 240);
   await walk("sector2");
   await go('.sc-nav [data-act="pg"][data-k="-1"]', 200);
   await go('[data-act="startBiz"]', 1900);
@@ -3498,10 +3499,11 @@ async function selfTest() {
       /* 성장 — 직접생산확인 취득으로 더 큰 공고(g1)가 열리는지 */
       await go('[data-act="toDash"]', 400);
       await goHome();
-      const g1before = (() => { const d = noticeDef("g1"); return d ? eligibility(d).map(r => r.ok) : null; })();
+      const bigId = (NOTICES[S.charId] || []).slice().sort((a, b) => b.base - a.base)[0].id;
+      const g1before = (() => { const d = noticeDef(bigId); return d ? [bigId, eligibility(d).map(r => r.ok)] : null; })();
       const hadCert = !!Q('[data-act="applyCert"]');
       if (hadCert) { await go('[data-act="applyCert"]', 600); }
-      const g1after = (() => { const d = noticeDef("g1"); return d ? eligibility(d).map(r => r.ok) : null; })();
+      const g1after = (() => { const d = noticeDef(bigId); return d ? [bigId, eligibility(d).map(r => r.ok)] : null; })();
       rep.events.push({ step: "unlock", certBtn: hadCert, g1Before: g1before, g1After: g1after, ownProd: S.ownProd, capital: S.capital });
       await go('[data-act="toInvest"]', 400);
       await goHome();
@@ -3530,7 +3532,8 @@ window.addEventListener("load", function () {
   try { localStorage.removeItem(KEY); } catch (e) { }
   S = freshState(); GATE = true; BEAT = 0; render();
   window.__report = { done: false, pages: [], events: [], errors: [] };
-  selfTest().then(r => {
+  const _sec = (location.hash.split("=")[1] || "goods");
+  selfTest(_sec).then(r => {
     window.__report = r; r.done = true;
   }).catch(e => {
     window.__report.err = String((e && e.stack) || e);
