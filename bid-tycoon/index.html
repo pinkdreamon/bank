@@ -2117,7 +2117,7 @@ function sayFriend(text) { return say("지인", text, FRIEND_IMG, "rt"); }
 /* ---------------------------- HUD ---------------------------- */
 const chip = (k, v) => '<span class="chipx"><b>' + k + "</b>" + v + "</span>";
 function hudHTML() {
-  const inGame = !!(S.charId && S.company);
+  const inGame = !GATE && !!(S.charId && S.company);
   const c = S.charId ? CH() : null;
   const rounds = ROUNDS(), left = Math.max(0, rounds - S.rounds);
   const ava = c ? '<div class="hero-ava">' + portraitMarkup(c) + "</div>"
@@ -3364,6 +3364,137 @@ document.addEventListener("click", e => {
     return;
   }
 }, false);
+/* =====================================================================
+   [31c] 자동 점검 — 주소 끝에 #selftest 를 붙이면 한 판을 스스로 돌린다
+   (사람이 누르는 것과 같은 click() 경로로 조작한다 · 결과는 window.__report)
+   ===================================================================== */
+async function selfTest() {
+  const T = ms => new Promise(r => setTimeout(r, ms));
+  const Q = s => document.querySelector(s);
+  const C = s => { const e = Q(s); if (e) { e.click(); return true; } return false; };
+  const rep = { pages: [], events: [], errors: [], shots: [] };
+  window.addEventListener("error", e => rep.errors.push(String(e.message)));
+  const snap = tag => {
+    const b = Q(".sc-body"), lbl = (Q(".sc-nav .lbl") || {}).textContent || "";
+    rep.pages.push({ tag: tag, lbl: lbl, screen: GATE ? "intro" : S.screen,
+      sh: document.documentElement.scrollHeight, ih: window.innerHeight,
+      sw: document.documentElement.scrollWidth, iw: window.innerWidth,
+      ovf: b ? Math.max(0, b.scrollHeight - b.clientHeight) : 0 });
+  };
+  const walk = async tag => {
+    for (let i = 0; i < 16; i++) {
+      snap(tag);
+      const nb = Q('.sc-nav [data-act="pg"][data-k="1"]');
+      if (!nb || nb.disabled) break;
+      nb.click(); await T(120);
+    }
+  };
+  const go = async (sel, ms) => { const ok = C(sel); await T(ms || 300); return ok; };
+  const clearFx = () => { const m = document.getElementById("modal-root"); if (m) m.innerHTML = ""; };
+
+  /* 1) 인트로 → 업종 → 개업 */
+  snap("splash");
+  await T(200);
+  await go(".splash", 1400);                      /* 스플래시 → 오프닝(파일 없으면 스토리) */
+  for (let i = 0; i < 6 && BEAT < 6; i++) { await go('[data-act="ib"]', 260); }
+  snap("intro-last");
+  await go('[data-act="mode"][data-v="full"]', 80);
+  await go('[data-act="newGame"]', 320);
+  snap("sector");
+  await go('[data-act="pickChar"][data-id="goods"]', 240);
+  await walk("sector2");
+  await go('.sc-nav [data-act="pg"][data-k="-1"]', 200);
+  await go('[data-act="startBiz"]', 1900);
+  clearFx();
+  snap("name");
+  await go('[data-act="useAuto"]', 1900);
+  clearFx();
+  rep.events.push({ step: "open", capital: S.capital, perf: S.perf, company: S.company });
+  await walk("dash");
+  await go('[data-act="scan"]', 250);
+  snap("scan");
+  await T(1700);
+  await walk("list");
+  await walk("invest");
+  await go('[data-act="toDash"]', 300);
+
+  /* 2) 라운드 1 — 공고 → 투찰 → 개찰 → 심사 → 계약 → 수행 → 입금 */
+  const round = async (rate, tag) => {
+    if (S.screen !== "list") { await go('[data-act="scan"]', 300); await T(1700); }
+    const nid = S.notices.map(n => n.nid).find(id => { const d = noticeDef(id); return d && eligible(d) && S.notices.find(x => x.nid === id).close > S.now; });
+    rep.events.push({ step: tag + ":notice", nid: nid, eligible: S.notices.map(n => [n.nid, (() => { const d = noticeDef(n.nid); return d ? eligibility(d).map(r => r.ok) : null; })()]) });
+    if (!nid) { rep.events.push({ step: tag + ":none" }); return "none"; }
+    await go('[data-act="openNotice"][data-id="' + nid + '"]', 420);
+    await walk(tag + ":detail");
+    for (let i = 0; i < 14 && !Q('[data-act="watch"]'); i++) { await go('.sc-nav [data-act="pg"][data-k="1"]', 150); }
+    for (let i = 1; i <= 5; i++) {
+      const right = S.watch.items.find(it => it.n === i).right;
+      const b = Array.from(document.querySelectorAll('[data-act="watch"][data-n="' + i + '"]')).find(x => x.dataset.v === right);
+      if (b) { b.click(); await T(90); }
+    }
+    snap(tag + ":watch");
+    await go('[data-act="apply"]', 1900); clearFx();
+    await walk(tag + ":bid");
+    /* 예비가격번호 2개 */
+    for (let k = 1; k <= 2; k++) { await go('[data-act="pickNo"][data-k="' + k + '"]', 140); }
+    const sl = Q("#rateSlider");
+    if (sl) { sl.value = String(rate); sl.dispatchEvent(new Event("input")); await T(200);
+      rep.events.push({ step: tag + ":slide", rate: rate, amount: S.bid.amount, odds: document.querySelector(".ro-v") ? document.querySelector(".ro-v").textContent : "", cls: (Q(".readout") || {}).className }); }
+    snap(tag + ":rate");
+    await go('[data-act="submitBid"]', 2400);
+    await walk(tag + ":open");
+    const oc = S.result.outcome;
+    rep.events.push({ step: tag + ":result", outcome: oc, yej: S.result.yej, mine: S.result.mine.amount, rivals: S.result.rows.length });
+    return oc;
+  };
+
+  const oc1 = await round(9600, "r1");
+  if (oc1 === "1순위") {
+    await go('[data-act="toQual"]', 400);
+    await walk("qual");
+    await go('[data-act="submitQual"]', 500);
+    await walk("qualres");
+    if (Q('[data-act="toContract"]')) {
+      await go('[data-act="toContract"]', 350);
+      await walk("contract");
+      if (Q('[data-act="promise"]')) { await go('[data-act="promise"]', 200); }
+      await go('[data-act="signContract"]', 1500); clearFx();
+      await walk("perform0");
+      for (const s of ["1", "2", "3", "4"]) { await go('[data-act="work"][data-step="' + s + '"]', 300); }
+      await walk("perform3");
+      await go('[data-act="invoice"][data-v="after"]', 350);
+      await walk("perform5");
+      const before = S.capital;
+      await go('[data-act="work"][data-step="6"]', 450);
+      rep.events.push({ step: "paid", before: before, after: S.capital, wins: S.wins, perf: S.perf });
+      await walk("perform6");
+      await go('[data-act="finishJob"]', 500);
+      await walk("r2:list");
+    }
+  }
+  /* 3) 라운드 2 — 자본이 늘고 더 큰 공고가 열렸는지 */
+  rep.events.push({ step: "after-r1", capital: S.capital, perf: S.perf, wins: S.wins, rounds: S.rounds, screen: S.screen,
+    notices: S.notices.map(n => { const d = noticeDef(n.nid); return { id: n.nid, name: d ? d.name : "", base: d ? d.base : 0, need: d ? d.need : null, ok: d ? eligibility(d).map(r => r.ok) : null }; }) });
+  const oc2 = await round(9700, "r2");
+  await go('[data-act="toEnd"]', 400);
+  await walk("end");
+  rep.events.push({ step: "end", capital: S.capital, wins: S.wins, perf: S.perf, rounds: S.rounds, outcome2: oc2 });
+  rep.done = true;
+  document.title = "selftest done";
+  return rep;
+}
+window.addEventListener("load", function () {
+  if (location.hash !== "#selftest") return;
+  try { localStorage.removeItem(KEY); } catch (e) { }
+  S = freshState(); GATE = true; BEAT = 0; render();
+  window.__report = { done: false, pages: [], events: [], errors: [] };
+  selfTest().then(r => {
+    window.__report = r; r.done = true;
+  }).catch(e => {
+    window.__report.err = String((e && e.stack) || e); window.__report.done = true;
+  });
+});
+
 /* =====================================================================
    [32] 조작 처리
    ===================================================================== */
