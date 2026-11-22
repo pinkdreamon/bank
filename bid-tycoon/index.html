@@ -2759,7 +2759,8 @@ function screenIntro() {
       "공고를 스캔해 고르고, 슬라이더로 투찰률을 정해 직접 낸 뒤 개찰을 봅니다.",
       "낙찰·탈락의 확률과 경쟁사는 게임용 설정입니다. 공고문·기한·투찰률 기준은 자료에 나온 값을 그대로 썼습니다."], "start",
       '<p class="tiny muted" style="margin-top:8px">\u203B 날짜는 <b>게임 속 날짜</b>입니다. 실제 달력과 관계없이 ' + fDate(RULES.base) + " " + fTime(RULES.base) + "에 시작하고, 판이 바뀌면 며칠씩 흐릅니다.</p>" +
-      '<div class="note" style="margin-top:8px">이 게임은 인터넷에 연결하지 않고 판정은 모두 게임 안의 규칙으로 계산합니다. 결과는 이 브라우저에만 저장되고 실제 입찰은 하지 않습니다.</div>');
+      '<div class="note" style="margin-top:8px">이 게임은 인터넷에 연결하지 않고 판정은 모두 게임 안의 규칙으로 계산합니다. 결과는 이 브라우저에만 저장되고 실제 입찰은 하지 않습니다.</div>' +
+      '<p class="tiny muted" style="margin-top:8px">캐릭터 나르미·달이: 조달청 제공(2026 조달청 AI 게임·콘텐츠 공모전 공식 배포본)</p>');
   else body = storyHTML(BEAT);
   return hudHTML() + '<div class="play"><div class="sc-nav">' +
     '<span class="dots">' + steps.map((s, k) => '<i class="' + (k === i ? "on" : k < i ? "past" : "") + '"></i>').join("") + "</span>" +
@@ -3599,7 +3600,8 @@ function screenEnd() {
         '<div><div class="k">도전</div><div class="v">' + Math.min(S.rounds, ROUNDS()) + "회</div></div>" +
         '<div><div class="k">제재</div><div class="v">' + (S.sanctioned.length ? S.sanctioned.length + "건" : "없음") + "</div></div></div>" +
       '<div class="rline"><b>배운 용어 ' + learned + "개</b> · " + (S.sanctioned.length ? "제재 " + S.sanctioned.join(", ") : "제재 없음") + "</div>" +
-      '<div class="slogan">' + slogan + "</div></div>",
+      '<div class="slogan">' + slogan + "</div></div>" +
+      '<p class="tiny muted" style="margin-top:8px;text-align:center">캐릭터 나르미·달이: 조달청 제공(2026 조달청 AI 게임·콘텐츠 공모전 공식 배포본)</p>',
     acts: '<button class="btn subtle" data-act="toInvest">회사 키우기</button><button class="btn big-btn" data-act="restart">같은 업종으로 다시</button>'
   };
   const p1 = {
@@ -3610,7 +3612,8 @@ function screenEnd() {
       "<p>1. 공고문의 <b>참가자격</b>과 <b>마감 시각</b>을 먼저 확인하십시오.</p>" +
       "<p>2. <b>낙찰자 결정방법</b>과 <b>낙찰하한율</b>을 보고 값을 정하십시오. 기초금액의 102%를 넘는 투찰은 접수되지 않는 경우가 많습니다.</p>" +
       "<p>3. 낙찰되면 <b>5일 안에 적격심사 서류</b>, <b>10일 안에 계약</b>입니다.</p>" +
-      "<p>4. 이 게임의 수치·판정(투찰 상한, 하한·안전 구간, 확률, 점수, 기한, 보증금)은 교육을 위해 단순화한 <b>게임 설정</b>입니다.</p></div>",
+      "<p>4. 이 게임의 수치·판정(투찰 상한, 하한·안전 구간, 확률, 점수, 기한, 보증금)은 교육을 위해 단순화한 <b>게임 설정</b>입니다.</p>" +
+      '<p class="tiny muted" style="margin-top:8px">캐릭터 나르미·달이: 조달청 제공(2026 조달청 AI 게임·콘텐츠 공모전 공식 배포본)</p></div>',
     acts: '<button class="btn subtle" data-act="newGame">업종부터 다시</button><button class="btn big-btn" data-act="restart">한 판 더</button>'
   };
   return frame([p0, p1], "end");
