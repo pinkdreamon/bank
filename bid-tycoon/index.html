@@ -3597,6 +3597,27 @@ if (location.hash.indexOf("#shot=") === 0) {
   });
 }
 
+
+/* 390 프레임에서 모든 장면을 차례로 그려 넘침을 재는 점검 (#shotall) */
+if (location.hash === "#shotall") {
+  window.addEventListener("load", async function () {
+    const names = ["splash", "story", "sector", "dash", "scan", "list", "invest", "detail", "doc", "watch", "bid", "open", "qual", "contract", "perform", "end"];
+    const out = [];
+    for (const nm of names) {
+      try {
+        shotSetup(nm);
+        await new Promise(r => setTimeout(r, 260));
+        const b = document.querySelector(".sc-body");
+        out.push({ s: nm, lbl: (document.querySelector(".sc-nav .lbl") || {}).textContent || "",
+          sh: document.documentElement.scrollHeight, ih: window.innerHeight,
+          bh: b ? b.clientHeight : 0, bh2: b ? b.scrollHeight : 0, ovf: b ? Math.max(0, b.scrollHeight - b.clientHeight) : 0,
+          err: (window.__ovf || []).length });
+      } catch (e) { out.push({ s: nm, err: String(e) }); }
+    }
+    window.__shotAll = out; document.title = "shotall done";
+  });
+}
+
 /* =====================================================================
    [32] 조작 처리
    ===================================================================== */
