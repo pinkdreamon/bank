@@ -881,6 +881,277 @@
   @media(prefers-reduced-motion:reduce){
     *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
   }
+  /* =====================================================================
+     [장면 엔진] 한 화면 = 한 장면 · 세로 스크롤 없음 · HUD/장면/행동 3단 고정
+     ===================================================================== */
+  html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+  #app{position:fixed;inset:0;max-width:none;margin:0;padding:0;display:flex;flex-direction:column;overflow:hidden;z-index:1}
+  .hud{position:relative;top:auto;z-index:60;margin:0;padding:5px 10px 6px;flex:0 0 auto;border-bottom-width:2px}
+  .hud-in{gap:6px}
+  .hero-ava{width:38px;height:38px;border-radius:11px}
+  .hero-ava.noimg{display:grid;place-items:center;font-size:17px;font-weight:900;color:#7a5100}
+  .hero-id b{font-size:13.5px;max-width:40vw;line-height:1.2}
+  .hero-id small{font-size:10px;max-width:46vw}
+  .purse{padding:2px 9px 3px}
+  .purse b{font-size:15px}
+  .purse small{font-size:9px}
+  .hchip{padding:2px 8px;border-radius:11px}
+  .hchip .hk{font-size:9px}.hchip .hv{font-size:12.5px}
+  .hud2{display:flex;gap:4px;margin-top:4px;overflow:hidden}
+  .chipx{display:inline-flex;align-items:center;gap:3px;flex:0 0 auto;font-size:10.5px;font-weight:800;color:#cfe0f8;
+    background:#152238;border:1.5px solid #2b4066;border-radius:8px;padding:1px 6px;line-height:1.7;white-space:nowrap}
+  .chipx b{color:#ffdc7a;font-weight:900;font-size:9.5px;letter-spacing:.02em}
+  .chipx.btnx{cursor:pointer;font-family:inherit;border-color:#7a5a12;background:#3a2a06;color:#ffdc7a}
+  .play{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;width:100%;max-width:720px;margin:0 auto;padding:5px 10px 8px;gap:5px}
+  .sc-nav{flex:0 0 auto;display:flex;align-items:center;gap:8px;height:22px}
+  .sc-nav .dots{display:flex;gap:3px;align-items:center}
+  .sc-nav .dots i{width:6px;height:6px;border-radius:50%;background:#2a3f61;display:block}
+  .sc-nav .dots i.past{background:#5a7ba8}
+  .sc-nav .dots i.on{background:var(--gold);box-shadow:0 0 7px rgba(255,199,58,.9);width:7px;height:7px}
+  .sc-nav .lbl{font-size:10.5px;font-weight:900;color:#9fb3d4;letter-spacing:.03em}
+  .sc-nav .arw{margin-left:auto;display:flex;gap:3px}
+  .sc-nav .navb{width:30px;height:22px;border-radius:7px;border:1.5px solid #3d5a86;background:#16243a;color:#cfe0f8;
+    font-size:10px;cursor:pointer;font-family:inherit;display:grid;place-items:center;padding:0}
+  .sc-nav .navb:disabled{opacity:.28}
+  .page{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:6px;overflow:hidden;
+    animation:pgIn .3s cubic-bezier(.2,.9,.3,1) both}
+  @keyframes pgIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+  .sc-body{flex:1 1 auto;min-height:0;overflow:hidden;position:relative}
+  .sc-body > * + *{margin-top:8px}
+  .sc-act{flex:0 0 auto;display:flex;gap:8px;align-items:stretch}
+  .sc-act .btn{flex:1 1 auto;min-height:52px;font-size:16px}
+  .sc-act .btn.big-btn{flex:2 1 auto;min-height:56px}
+  /* ---------------------------- 대화 ---------------------------- */
+  .say{display:flex;gap:7px;align-items:flex-start;flex:0 0 auto}
+  .say-fig{width:44px;height:54px;flex:none;border-radius:10px;overflow:hidden;border:2px solid var(--gold);background:#0a1320;
+    box-shadow:0 3px 10px rgba(0,0,0,.5)}
+  .say-fig img{width:100%;height:100%;object-fit:cover;object-position:50% 12%;display:block}
+  .say-b{flex:1 1 auto;min-width:0;background:linear-gradient(180deg,#1c2e4a,#152238);border:2px solid #33507c;
+    border-radius:6px 14px 14px 14px;padding:5px 10px 7px}
+  .say .who{display:block;font-size:10.5px;font-weight:900;color:#ffdc7a;letter-spacing:.05em;margin-bottom:1px}
+  .say .bub{font-size:13px;font-weight:700;color:#eaf3ff;line-height:1.45;word-break:keep-all}
+  .say.rt .say-fig{order:2;border-color:var(--mint)}
+  .say.rt .say-b{border-radius:14px 6px 14px 14px;border-color:#2b6a58}
+  .say.rt .who{color:#9ff0d0}
+  /* ---------------------------- 조각 ---------------------------- */
+  .mini4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+  .mini4 .ms{background:#0f1c2e;border:1.5px solid #2b4066;border-radius:10px;padding:5px 6px;min-width:0}
+  .mini4 .ms span{display:block;font-size:9.5px;font-weight:900;color:#8ba1c2;letter-spacing:.02em}
+  .mini4 .ms b{display:block;font-size:12.5px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .helpbtn{display:inline-flex;align-items:center;gap:5px;background:#152238;border:1.5px solid #3d5a86;color:#bcd2f0;
+    border-radius:99px;padding:5px 11px;font-size:11.5px;font-weight:900;font-family:inherit;cursor:pointer;max-width:100%}
+  .helpbtn:before{content:"?";display:grid;place-items:center;width:16px;height:16px;border-radius:50%;
+    background:var(--gold);color:#25190a;font-size:11px;font-weight:900;flex:none}
+  .gcoin{width:66px;height:66px;margin:0 auto 8px;border-radius:50%;display:grid;place-items:center;font-size:30px;font-weight:900;
+    color:#8a5a12;background:radial-gradient(circle at 34% 28%,#fff6cf,#ffc73a 52%,#b4711a 100%);border:3px solid #8a5a12;
+    box-shadow:0 6px 0 #6d4408, 0 0 26px rgba(255,199,58,.6);animation:stampIn .7s cubic-bezier(.3,1.3,.5,1) both}
+  .pload{height:11px;border-radius:99px;background:#08101c;overflow:hidden;margin:10px 0}
+  .pload i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffa51f,#ffe08a);animation:loadBar 1.1s cubic-bezier(.4,.1,.3,1) forwards}
+  /* ---------------------------- 스플래시 / 영상 / 스토리 ---------------------------- */
+  .splash{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;overflow:hidden;cursor:pointer;background:radial-gradient(700px 500px at 50% 30%,#14263f,#05090f 70%)}
+  .splash .ray{position:absolute;left:50%;top:46%;width:150vmax;height:150vmax;transform:translate(-50%,-50%);
+    background:conic-gradient(from 0deg,rgba(255,199,58,.12),transparent 12%,rgba(255,199,58,.12) 24%,transparent 36%,rgba(255,199,58,.1) 50%,transparent 62%,rgba(255,199,58,.12) 74%,transparent 86%,rgba(255,199,58,.1));
+    animation:spin 26s linear infinite;pointer-events:none}
+  .splash .ring{position:absolute;left:50%;top:46%;width:min(78vw,360px);aspect-ratio:1;transform:translate(-50%,-50%);
+    border-radius:50%;border:2px solid rgba(255,199,58,.35);box-shadow:0 0 60px rgba(255,199,58,.18) inset;pointer-events:none}
+  .logo-box{position:relative;z-index:2;padding:0 18px}
+  .logo-pre{font-size:11.5px;font-weight:900;color:#9fb3d4;letter-spacing:.22em}
+  .logo-big{font-size:clamp(38px,13vw,58px);font-weight:900;line-height:1.02;letter-spacing:-.045em;color:#fff;margin:4px 0 2px;
+    text-shadow:0 4px 0 #6d4408,0 12px 30px rgba(0,0,0,.7)}
+  .logo-big .hl{background:linear-gradient(180deg,#fff6cf,#ffc73a 45%,#ff9d1b);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .logo-en{font-size:10.5px;font-weight:900;color:#ffdc7a;letter-spacing:.42em;margin-bottom:12px}
+  .trio{display:flex;justify-content:center;gap:6px;margin-bottom:12px}
+  .trio img{width:74px;height:92px;object-fit:cover;object-position:50% 12%;border-radius:12px;border:2px solid #7a5a12;
+    box-shadow:0 6px 14px rgba(0,0,0,.6)}
+  .logo-load{width:150px;height:7px;border-radius:99px;background:#0a1320;margin:0 auto 10px;overflow:hidden}
+  .logo-load i{display:block;height:100%;width:40%;border-radius:99px;background:linear-gradient(90deg,#ffa51f,#ffe08a);animation:loadLoop 1.6s ease-in-out infinite}
+  .tap-hint{font-size:11.5px;font-weight:800;color:#9fb3d4;animation:blink 1.8s ease-in-out infinite}
+  @keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+  @keyframes loadLoop{0%{margin-left:-40%}100%{margin-left:100%}}
+  .vwrap{position:absolute;inset:0;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .vwrap video{width:100%;height:100%;object-fit:contain;display:block}
+  .vwrap .vfall{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+    background:radial-gradient(600px 400px at 50% 40%,#1a2233,#05080d 75%);padding:20px;text-align:center}
+  .vwrap .vfall img{width:min(62vw,240px);border-radius:16px;border:2px solid #7a5a12;box-shadow:0 10px 30px rgba(0,0,0,.7)}
+  .vwrap .vfb-t{font-size:12px;font-weight:800;color:#9fb3d4}
+  .vwrap.blocked .vfall,.vwrap.nofile .vfall{display:flex}
+  .vwrap.blocked video,.vwrap.nofile video{opacity:0}
+  .vskip{position:absolute;right:12px;bottom:16px;z-index:3;background:rgba(0,0,0,.55);border:1.5px solid #5b739a;color:#dbe9ff;
+    border-radius:99px;padding:7px 14px;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer}
+  .storywrap{display:flex;flex-direction:column;gap:8px;justify-content:center;flex:1 1 auto;min-height:0}
+  .storywrap .say-fig{width:min(46vw,180px);height:min(56vw,220px);border-radius:18px}
+  .storywrap .say{flex-direction:column;align-items:stretch}
+  .storywrap .say.rt .say-fig{order:0;align-self:flex-end}
+  .storywrap .say .bub{font-size:17px;line-height:1.55}
+  .story-hint{font-size:11.5px;font-weight:800;color:#8ba1c2;text-align:center}
+  /* ---------------------------- 업종 ---------------------------- */
+  .cast-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .actor{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;background:transparent;
+    border:0;font-family:inherit;padding:0}
+  .actor .fig{position:relative;width:100%;aspect-ratio:3/4;max-height:190px;border-radius:14px;overflow:hidden;
+    border:2px solid #33507c;box-shadow:0 6px 14px rgba(0,0,0,.55);background:#0f1c2e}
+  .actor .fig img{width:100%;height:100%;object-fit:cover;object-position:50% 12%;display:block}
+  .actor .nm{font-size:13.5px;font-weight:900;color:#fff}
+  .actor .who2{font-size:9.5px;font-weight:800;color:#8ba1c2;text-align:center;line-height:1.25}
+  .actor .dots{display:inline-flex;gap:2px}
+  .actor .dots i{width:6px;height:6px;border-radius:50%;background:#3c4c68;display:block}
+  .actor .dots i.f{background:var(--gold);box-shadow:0 0 6px rgba(255,199,58,.8)}
+  .actor .diff{font-size:10px;font-weight:900;color:#a8bddb}
+  .actor.on .fig{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,199,58,.35),0 10px 20px rgba(0,0,0,.6)}
+  .actor.on .nm{color:#ffdc7a}
+  .pickbox{margin-top:6px;background:#0f1c2e;border:2px solid #7a5a12;border-radius:14px;padding:8px 10px}
+  .hintc{text-align:center;font-size:11.5px;font-weight:800;color:#8ba1c2;margin-top:6px}
+  .quiz{margin-bottom:7px}
+  .quiz .qtext{font-size:12px;font-weight:800;color:#eaf3ff;margin-bottom:4px}
+  .quiz .opts .opt{font-size:12px;padding:5px 9px;min-height:36px}
+  /* ---------------------------- 간판 ---------------------------- */
+  .signstage{background:linear-gradient(180deg,#16243a,#0f1c2e);border:2px solid #33507c;border-radius:16px;padding:10px}
+  .signboard{background:linear-gradient(180deg,#2a1d06,#151007);border:3px solid #b4711a;border-radius:12px;padding:8px 10px;text-align:center}
+  .signboard .sn{font-size:19px;font-weight:900;color:#ffdc7a;letter-spacing:-.02em}
+  .signboard .ss{font-size:10.5px;font-weight:800;color:#c9b58a}
+  /* ---------------------------- 스캔 ---------------------------- */
+  .scanwrap{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:0}
+  .radar{position:relative;width:150px;height:150px;border-radius:50%;border:2px solid rgba(255,199,58,.35);
+    background:radial-gradient(circle,rgba(255,199,58,.1),transparent 70%);overflow:hidden}
+  .radar:before{content:"";position:absolute;left:50%;top:50%;width:50%;height:2px;background:var(--gold);transform-origin:0 0;animation:spin2 1.4s linear infinite}
+  .radar:after{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(rgba(255,199,58,.35),transparent 40%);animation:spin2 1.4s linear infinite}
+  .radar i{position:absolute;left:50%;top:50%;width:var(--w,60%);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;border:1px dashed rgba(255,199,58,.25)}
+  .radar i:nth-child(2){--w:38%}.radar i:nth-child(3){--w:82%}
+  @keyframes spin2{to{transform:rotate(360deg)}}
+  .scan-t{font-size:14px;font-weight:900;color:#fff;text-align:center}
+  .scan-s{font-size:11.5px;font-weight:800;color:#8ba1c2}
+  /* ---------------------------- 공고 카드 ---------------------------- */
+  .boards{display:flex;flex-direction:column;gap:6px}
+  .ncard{display:block;width:100%;text-align:left;font-family:inherit;cursor:pointer;position:relative;
+    background:linear-gradient(180deg,#1d2e4c,#152238);border:2px solid #3d5a86;border-radius:14px;padding:7px 10px 8px;color:#eaf3ff;
+    box-shadow:0 4px 0 #0a1320;animation:cardIn .4s cubic-bezier(.2,.9,.3,1) both;overflow:hidden}
+  .ncard:active{transform:translateY(2px)}
+  .ncard.locked{opacity:.62;border-color:#2b4066;cursor:not-allowed;box-shadow:none}
+  @keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  .nc-top{display:flex;align-items:center;gap:5px;margin-bottom:2px}
+  .nc-dday{font-size:10px;font-weight:900;color:#25190a;background:var(--gold);border-radius:6px;padding:0 5px}
+  .nc-dday.soon{background:var(--red);color:#fff}
+  .nc-go{margin-left:auto;font-size:10.5px;font-weight:900;color:#ffdc7a}
+  .nc-name{font-size:12.8px;font-weight:900;line-height:1.3;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .nc-org{font-size:10px;font-weight:800;color:#8ba1c2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .nc-money{font-size:11px;color:#c4d8f6;margin-top:1px}
+  .nc-money b{color:#ffdc7a;font-weight:900}
+  .nc-chips{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}
+  .nc-chips .mini{font-size:9px;font-weight:900;border-radius:5px;padding:0 4px;line-height:1.65}
+  .nc-chips .mini.on{background:rgba(51,214,154,.16);color:#8ff0c8;border:1px solid #1f8f68}
+  .nc-chips .mini.off{background:rgba(255,91,77,.14);color:#ffb2ab;border:1px solid #8a2f27}
+  /* ---------------------------- 공고 상세 ---------------------------- */
+  .doc-sum{background:linear-gradient(180deg,#1d2e4c,#152238);border:2px solid #3d5a86;border-radius:14px;padding:8px 10px}
+  .ds-name{font-size:15px;font-weight:900;color:#fff;line-height:1.32;margin:2px 0 5px;letter-spacing:-.02em}
+  .tagrow{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+  .tagrow .tag{font-size:10px;padding:1px 6px}
+  .qrow{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed #2b4066;font-size:12.5px;color:#dbe9ff}
+  .qrow b.ok{color:var(--mint)}.qrow b.no{color:var(--red)}
+  .docwrap .doc{margin:0}
+  .doc .doc-head{padding:7px 10px 6px}
+  .doc .doc-org{font-size:10.5px}
+  .doc .doc-title{font-size:16px;letter-spacing:.14em;margin:2px 0 3px}
+  .doc .doc-sub,.doc .doc-no{font-size:9.5px}
+  .doc .doc-body{padding:2px 9px 6px}
+  .doc .art{padding:5px 0 6px}
+  .doc .art > h5{font-size:12.5px;margin-bottom:3px}
+  .doc .art .tg{font-size:9px;padding:0 5px}
+  .doc .art-c{font-size:11.6px;line-height:1.5}
+  .doc .art-c p{margin:0 0 4px}
+  .doc .art-c .tiny{font-size:10px}
+  .doc .doct{font-size:10.8px;margin:2px 0}
+  .doc .doct th,.doc .doct td{padding:2px 5px}
+  .doc .doc-foot{padding:5px 9px 6px;font-size:9.5px;line-height:1.4}
+  .doc .doc-foot .t2{display:none}
+  /* ---------------------------- 투찰 ---------------------------- */
+  .picks{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+  .pn{aspect-ratio:1;font-size:14px}
+  .recap{font-size:11px;font-weight:900;color:#8ff0c8;background:rgba(51,214,154,.1);border:1.5px solid #1f8f68;border-radius:8px;padding:3px 8px}
+  .sl-head{display:flex;justify-content:space-between;font-size:10px;font-weight:900;color:#8ba1c2}
+  .sl-wrap{position:relative;padding:6px 0 2px;margin-bottom:6px}
+  .sl-wrap input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:26px;background:transparent;margin:0}
+  .sl-wrap input[type=range]::-webkit-slider-runnable-track{height:14px;border-radius:99px;
+    background:linear-gradient(90deg,#8a2f27 0%,#ffa51f 38%,#33d69a 62%,#ffa51f 84%,#8a2f27 100%);border:2px solid #0a1320}
+  .sl-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#fff6cf,#ffc73a 60%,#b4711a);border:2.5px solid #6d4408;margin-top:-8px;
+    box-shadow:0 3px 8px rgba(0,0,0,.6)}
+  .sl-wrap input[type=range]::-moz-range-track{height:14px;border-radius:99px;background:linear-gradient(90deg,#8a2f27,#ffa51f,#33d69a,#ffa51f,#8a2f27)}
+  .sl-wrap input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#ffc73a;border:2.5px solid #6d4408}
+  .sl-mark{position:absolute;top:0;bottom:0;width:2px;background:#fff;opacity:.55;pointer-events:none}
+  .sl-mark b{position:absolute;top:-2px;left:-14px;font-size:8.5px;font-weight:900;color:#fff;background:#0a1320;padding:0 3px;border-radius:3px}
+  .sl-pick{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+  .sl-pick .chip{font-size:10.5px;padding:4px 8px;min-height:0}
+  .readout{border:2px solid #3d5a86;border-radius:12px;padding:6px 9px;background:#0f1c2e}
+  .readout.good{border-color:#1f8f68;background:rgba(51,214,154,.07)}
+  .readout.warn{border-color:#8a6a12;background:rgba(255,199,58,.06)}
+  .readout.bad{border-color:#8a2f27;background:rgba(255,91,77,.07)}
+  .ro-top{display:flex;justify-content:space-between;align-items:flex-end;gap:8px}
+  .ro-k{font-size:9.5px;font-weight:900;color:#8ba1c2}
+  .ro-v{font-size:22px;font-weight:900;color:#fff;line-height:1.1;font-variant-numeric:tabular-nums}
+  .ro-v small{font-size:11px;color:#ffdc7a}
+  .ro-v2{font-size:12.5px;font-weight:900;color:#ffdc7a;font-variant-numeric:tabular-nums}
+  .ro-bar{position:relative;height:14px;border-radius:99px;background:#08101c;margin:5px 0 4px;overflow:hidden;border:1px solid #24344f}
+  .ro-bar i{display:block;height:100%;background:linear-gradient(90deg,#e03a2b,#ffc73a 45%,#33d69a);transition:width .18s}
+  .ro-bar b{position:absolute;right:5px;top:-1px;font-size:9.5px;font-weight:900;color:#fff}
+  .ro-row{display:flex;justify-content:space-between;font-size:10.5px;color:#c4d8f6;font-weight:800}
+  .ro-row b{color:#fff}
+  .ro-msg{font-size:11px;font-weight:800;color:#eaf3ff;margin-top:3px;line-height:1.4}
+  .money-in input{min-height:44px;font-size:19px}
+  /* ---------------------------- 개찰 ---------------------------- */
+  .res-hero{padding:10px 12px}
+  .res-word{font-size:30px}
+  .res-sub{font-size:10.5px;margin-top:2px;color:#c4d8f6}
+  .tw table{font-size:11px}
+  .tw th,.tw td{padding:3px 5px}
+  .pzgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;margin-top:4px}
+  .pz{font-size:9.5px;font-weight:800;color:#8ba1c2;background:#0f1c2e;border:1px solid #24344f;border-radius:5px;padding:1px 4px;white-space:nowrap}
+  .pz.top{background:rgba(51,214,154,.16);border-color:#1f8f68;color:#a9f3d4;font-weight:900}
+  .pz b{color:#fff}
+  .calc{font-size:10.5px;line-height:1.5}
+  /* ---------------------------- 적격심사 ---------------------------- */
+  .noticebox{background:var(--paper);color:#2a2417;border-radius:12px;padding:9px 11px;border:2px solid #b9ad91;position:relative}
+  .noticebox .nb-name{font-size:15px;font-weight:900;margin:1px 0 3px}
+  .noticebox .tiny{color:#4a4130}
+  .noticebox .tiny.muted{color:#6b6250}
+  .checklist li{padding:6px 8px;font-size:12.5px}
+  .checklist li .box{width:19px;height:19px}
+  /* ---------------------------- 수행 ---------------------------- */
+  .perfhead{background:#0f1c2e;border:1.5px solid #2b4066;border-radius:12px;padding:6px 9px}
+  .ph-name{font-size:12.5px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .perfhead + .scene{margin-top:6px}
+  .sc-body > .scene{max-height:132px;border-radius:12px;overflow:hidden;border:2px solid #33507c}
+  .sc-body > .scene svg{width:100%;height:100%;display:block}
+  .sc-body > .scene .cap{font-size:9.5px;padding:2px 6px}
+  /* ---------------------------- 성장 투자 ---------------------------- */
+  .uprow{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed #2b4066}
+  .uprow:last-child{border-bottom:0}
+  .uprow .ub{flex:1 1 auto;min-width:0}
+  .uprow .uk{font-size:12.5px;font-weight:900;color:#fff}
+  .uprow .ud{font-size:10px;font-weight:800;color:#8ba1c2;line-height:1.35}
+  .uprow .btn{flex:0 0 auto;min-width:74px;font-size:12px;padding:0 10px}
+  /* ---------------------------- HUD 상승 효과 ---------------------------- */
+  .coinfly{position:absolute;right:6px;top:2px;font-size:12px;font-weight:900;color:#8ff0c8;animation:flyUp 1.7s ease-out forwards;pointer-events:none;z-index:5}
+  .delta{display:inline-block;margin-left:6px;font-size:12px;font-weight:900;color:var(--mint)}
+  .delta.down{color:var(--red)}
+  @keyframes flyUp{0%{opacity:0;transform:translateY(6px)}20%{opacity:1}100%{opacity:0;transform:translateY(-26px)}}
+  /* 좁은 화면 보정 */
+  @media(max-height:700px){
+    .hud2{display:none}
+    .hero-ava{width:32px;height:32px}
+    .say .bub{font-size:12px}
+    .say-fig{width:38px;height:46px}
+    .logo-big{font-size:34px}
+    .trio img{width:60px;height:74px}
+    .sc-act .btn{min-height:48px;font-size:15px}
+    .mini4 .ms b{font-size:11.5px}
+  }
+  @media(max-width:380px){
+    .mini4{gap:3px}
+    .mini4 .ms{padding:4px 4px}
+    .nc-name{font-size:12px}
+  }
+
 </style>
 </head>
 <body>
@@ -1813,161 +2084,139 @@ function runScenes(root) {
   });
 }
 /* =====================================================================
-   [18] 화면 틀
+   [18] 장면 틀 — 한 화면 = 한 장면(Page) · 세로 스크롤 없음
    ===================================================================== */
 const app = () => document.getElementById("app");
 const STEPS = ["회사 차리기", "공고 읽기", "보증금", "투찰", "개찰", "적격심사", "계약", "수행·대금", "사고·제재"];
-/* 첫 화면은 저장된 판이 있어도 항상 스플래시·스토리부터 — GATE 가 켜져 있는 동안은 인트로를 그린다 */
+/* 첫 화면은 저장된 판이 있어도 항상 스플래시부터 — GATE 가 켜져 있는 동안은 인트로를 그린다 */
 let GATE = true;
-let BEAT = 0;            /* 0 스플래시 · 1~4 스토리 · 5 판 선택 */
+let BEAT = 0;            /* 0 스플래시 · 1 오프닝 영상 · 2~5 스토리 · 6 판 선택 */
 const IS_IOS_MOTION = false;
+const OWNER_IMG = "assets/char_owner_worry.png";
+const FRIEND_IMG = "assets/char_event.png";
+const OPENING_MP4 = "assets/opening.mp4";
 
-function stepsHTML(cur) {
-  const p = Math.round(cur / (STEPS.length - 1) * 100);
-  return '<div class="stepbar"><div class="top"><span class="now">' + (cur + 1) + ". " + STEPS[cur] +
-    '</span><span class="cnt">' + (cur + 1) + " / " + STEPS.length + '</span></div>' +
-    '<div class="strack"><i style="width:' + Math.max(6, p) + '%"></i></div>' +
-    '<div class="snodes">' + STEPS.map((s, i) =>
-      '<span class="s ' + (i < cur ? "done" : i === cur ? "now" : "") + '"><b>' +
-      (i < cur ? "\u2713" : i === cur ? i + 1 : '<span class="lk">\uD83D\uDD12</span>') + "</b><em>" + s + "</em></span>").join("") + "</div></div>";
+/* 장면 넘김 — 화면 키가 바뀌면 첫 장면부터 */
+let PG = { key: "", i: 0 };
+function pageIdx(key, n, land) {
+  if (PG.key !== key) { PG.key = key; PG.i = land || 0; }
+  if (PG.i > n - 1) PG.i = n - 1;
+  if (PG.i < 0) PG.i = 0;
+  return PG.i;
 }
 
-/* ============================ 무대(band) ============================ */
-function bandHTML(kind, label, sub) {
-  const c = S.charId ? CH() : null;
-  let art = '<i class="sp"></i><i class="wall"></i><i class="flo"></i>';
-  if (kind === "board") {
-    art += '<div class="board"></div>' +
-      '<div class="note" style="left:24px;top:22px"></div>' +
-      '<div class="note n2" style="left:78px;top:32px"></div>' +
-      '<div class="note" style="left:126px;top:20px"></div>';
-  } else if (kind === "open") {
-    art += '<div class="bar"></div><div class="curt" style="opacity:.3"></div>';
-  } else {
-    art += '<div class="win"></div><div class="vault"></div>' +
-      '<div class="note" style="right:14px;top:16px"></div>';
-  }
-  return '<div class="band b-' + kind + '"><div class="band-art">' + art + "</div>" +
-    (c ? '<div class="band-fig">' + portraitMarkup(c) + "</div>" : "") +
-    '<div class="band-cap"><span class="bk">' + label + "</span>" +
-    (sub ? '<span class="bs">' + sub + "</span>" : "") + "</div></div>";
+/* ---------------------------- 대화 ---------------------------- */
+function say(who, text, img, cls) {
+  return '<div class="say ' + (cls || "") + '">' +
+    (img ? '<div class="say-fig"><img src="' + img + '" alt="' + who + '" loading="lazy"></div>' : "") +
+    '<div class="say-b"><span class="who">' + who + '</span><div class="bub">' + text + "</div></div></div>";
 }
-const BANDS = {
-  dashboard: { k: "office", a: "내 사무실", b: "오늘 할 일을 고르십시오" },
-  list: { k: "board", a: "나라장터", b: "오늘 올라온 입찰 공고" },
-  detail: { k: "board", a: "공고문 검토", b: "끝까지 읽어야 합니다" },
-  bid: { k: "office", a: "투찰서 작성", b: "예비가격번호 · 투찰가" },
-  open: { k: "open", a: "개찰장", b: "예정가격이 공개됩니다" },
-  qual: { k: "office", a: "적격심사", b: "서류 5일 · 계약 10일" },
-  contract: { k: "office", a: "계약", b: "낙찰자 결정 통지 후 10일" },
-  perform: { k: "office", a: "수행", b: "납품 · 검사 · 대금" },
-  end: { k: "open", a: "결과 카드", b: "이번 판 기록" }
-};
+function sayBoss(text) { return say("사장님", text, OWNER_IMG); }
+function sayFriend(text) { return say("지인", text, FRIEND_IMG, "rt"); }
 
-/* ============================ HUD ============================ */
-/* 화면 맨 위에 항상 붙어 있는 정보바 — 라운드·예산·남은 기회가 한 줄로 보인다 */
-function topbar() {
+/* ---------------------------- HUD ---------------------------- */
+const chip = (k, v) => '<span class="chipx"><b>' + k + "</b>" + v + "</span>";
+function hudHTML() {
   const inGame = !!(S.charId && S.company);
   const c = S.charId ? CH() : null;
   const rounds = ROUNDS(), left = Math.max(0, rounds - S.rounds);
-  const hearts = Array.from({ length: rounds }, (_, i) => '<i class="' + (i < left ? "" : "off") + '"></i>').join("");
-  const ava = c
-    ? '<div class="hero-ava">' + portraitMarkup(c) + '<span class="lv">' + (S.wins + 1) + "</span></div>"
-    : '<div class="hero-ava" style="display:grid;place-items:center;font-size:20px;font-weight:900;color:#7a5100">₩</div>';
-  const sub = inGame
-    ? c.owner + " · " + fDate(S.now) + ""
-    : "나라장터 입찰 한 바퀴";
-  const pctDone = Math.round(Math.min(1, S.rounds / Math.max(1, rounds)) * 100);
-  const chips = inGame
-    ? '<div class="purse" id="moneyHero"><span class="coin"></span><div><small>자본</small>' +
-        '<b id="hudCapital">' + eok(S.capital) + "</b></div></div>" +
-      '<div class="hchip"><div><div class="hk">남은 기회</div><div class="hv">' + left + "/" + rounds + "</div></div></div>" +
-      '<div class="hchip" style="display:none"></div>' +
-      '<button class="hchip btnchip" data-act="glossary"><div><div class="hk">배운 용어</div><div class="hv">' + S.learned.length + "개</div></div></button>"
-    : "";
-  return '<div class="hud"><div class="hud-in"><div class="hero">' + ava +
-    '<div class="hero-id"><b>' + (S.company ? esc(S.company) : "입찰 타이쿤") + "</b><small>" + sub + "</small></div></div>" +
-    (inGame ? '<div class="hchip" style="display:flex"><div><div class="hk">낙찰</div><div class="hv">' + S.wins + "</div></div></div>" : "") +
-    chips + "</div>" +
-    (inGame ? '<div class="xpbar"><i style="width:' + Math.max(5, pctDone) + '%"></i><b>' + Math.min(S.rounds + 1, rounds) + "/" + rounds + "</b></div>" : "") +
+  const ava = c ? '<div class="hero-ava">' + portraitMarkup(c) + "</div>"
+    : '<div class="hero-ava noimg"><span>₩</span></div>';
+  let h = '<div class="hud"><div class="hud-in"><div class="hero">' + ava +
+    '<div class="hero-id"><b>' + (S.company ? esc(S.company) : "입찰 타이쿤") + "</b><small>" +
+    (inGame ? c.owner + " · " + fDate(S.now) : "나라장터 입찰 한 바퀴") + "</small></div></div>";
+  if (inGame) {
+    h += '<div class="purse"><span class="coin"></span><div><small>자본</small><b id="hudCapital">' + eok(S.capital) + "</b></div></div>" +
+      '<div class="hchip"><div><div class="hk">기회</div><div class="hv">' + left + "/" + rounds + "</div></div></div>";
+  }
+  h += "</div>";
+  if (inGame) {
+    const lic = (S.license || "없음").replace(" (사업자등록만)", "").replace("없음 (업종 등록)", "업종 등록").replace(" (토목)", "");
+    h += '<div class="hud2">' + chip("낙찰", S.wins + "건") + chip("신용", S.credit) +
+      chip("직원", S.staff + "명") + chip("면허", lic) +
+      '<button class="chipx btnx" data-act="glossary">용어 ' + S.learned.length + "</button></div>";
+  }
+  return h + "</div>";
+}
+
+/* ---------------------------- 장면 틀 ---------------------------- */
+function frame(pages, key, land) {
+  const n = pages.length, i = pageIdx(key, n, land), s = pages[i] || {};
+  const dots = pages.map((x, k) => '<i class="' + (k === i ? "on" : k < i ? "past" : "") + '"></i>').join("");
+  const acts = s.acts || (i < n - 1 ? '<button class="btn big-btn" data-act="pg" data-k="1">다음</button>' : "");
+  return hudHTML() +
+    '<div class="play">' +
+      '<div class="sc-nav">' +
+        '<span class="dots">' + dots + "</span>" +
+        '<span class="lbl">' + (i + 1) + " / " + n + (s.tag ? " · " + s.tag : "") + "</span>" +
+        '<span class="arw">' +
+          '<button class="navb" data-act="pg" data-k="-1"' + (i === 0 ? " disabled" : "") + ' aria-label="이전 장면">◀</button>' +
+          '<button class="navb" data-act="pg" data-k="1"' + (i === n - 1 ? " disabled" : "") + ' aria-label="다음 장면">▶</button>' +
+        "</span>" +
+      "</div>" +
+      '<div class="page" data-i="' + i + '">' + (s.say || "") +
+        '<div class="sc-body" data-pg="' + i + '">' + (s.body || "") + "</div></div>" +
+      '<div class="sc-act">' + acts + "</div>" +
     "</div>";
 }
-function heartsRow() {
-  const rounds = ROUNDS(), left = Math.max(0, rounds - S.rounds);
-  return '<span class="hearts">' + Array.from({ length: rounds }, (_, i) =>
-    '<i class="' + (i < left ? "" : "off") + '"></i>').join("") + "</span>";
-}
 
-/* ============================ 목표 말풍선 ============================ */
-function objbar(text) {
-  return '<div class="objbar"><span class="bull">\u25B6</span><span>' + text + "</span></div>";
-}
-
-/* ============================ 도움말(접이식) ============================ */
-function guide(title, lines, askKey, foot) {
-  let inner = "";
-  if (lines && lines.length) inner += "<ul>" + lines.map(l => "<li>" + l + "</li>").join("") + "</ul>";
-  if (askKey && ASK[askKey]) {
-    inner += '<div class="quotes"><div class="qhead">실제로 이런 질문이 올라옵니다 · 네이버 지식인</div>' +
-      ASK[askKey].map(a => '<div class="quote">\u201C' + a.q + '\u201D<br><a href="' + a.u + '" target="_blank" rel="noopener">질문 원문 보기</a></div>').join("") +
-      '<div class="tiny muted" style="margin-top:7px">링크가 열리지 않아도 게임 진행에는 영향이 없습니다. 질문 원문은 위에 그대로 적어 두었습니다. (인터넷 연결 없이 실행하면 링크가 열리지 않습니다.)</div></div>';
-  }
-  if (foot) inner += foot;
-  return '<details class="help"><summary><span class="hb">?</span>' + title + '<span class="arw"></span></summary>' +
-    '<div class="inner"><div class="guide">' + inner + "</div></div></details>";
-}
-function helpBox(summary, inner) {
-  return '<details class="help"><summary><span class="hb">?</span>' + summary + '<span class="arw"></span></summary>' +
-    '<div class="inner">' + inner + "</div></details>";
-}
-
-/* ============================ 화면 틀 ============================ */
-function chrome(body, opts) {
-  opts = opts || {};
-  const sc = GATE ? "intro" : S.screen;
-  const b = BANDS[sc];
-  let h = (opts.bar === false ? "" : topbar());
-  if (opts.band !== false && b) h += '<div class="stage">' + bandHTML(b.k, b.a, b.b) + "</div>";
-  h += (opts.obj || "") + body;
-  h += '<div class="footer">입찰 타이쿤 · 나라장터 입찰 전 과정 체험 (프로토타입)<br>' +
-    "규칙과 수치는 「나라장터 입찰 전 과정 조사」에서 가져왔고, 자료에 없는 값은 ‘게임용 설정’으로 표시했습니다.<br>" +
-    "※ 이 게임의 판정은 게임 내 설정 기준입니다. 실제 입찰에서는 해당 공고문과 나라장터 유의사항을 반드시 확인하십시오.</div>";
-  return h;
-}
+/* ---------------------------- 공통 조각 ---------------------------- */
 function toast(msg) {
   const t = document.getElementById("toast");
   if (!t) return;
   t.textContent = msg; t.classList.add("show");
-  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("show"), 2600);
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("show"), 2800);
 }
 function modal(html) { document.getElementById("modal-root").innerHTML = '<div class="modal-bg" data-act="closeModal"><div class="modal pop" data-stop="1">' + html + "</div></div>"; }
 function closeModal() { document.getElementById("modal-root").innerHTML = ""; }
 
-function render() {
-  const sc = GATE ? "intro" : S.screen;
-  const changed = window.__lastScreen !== sc + "|" + (GATE ? BEAT : "");
-  window.__lastScreen = sc + "|" + (GATE ? BEAT : "");
-  let h = "";
-  if (sc === "intro") h = screenIntro();
-  else if (sc === "sector") h = screenSector();
-  else if (sc === "name") h = screenName();
-  else if (sc === "dashboard") h = screenDashboard();
-  else if (sc === "list") h = screenList();
-  else if (sc === "detail") h = screenDetail();
-  else if (sc === "bid") h = screenBid();
-  else if (sc === "open") h = screenOpen();
-  else if (sc === "qual") h = screenQual();
-  else if (sc === "contract") h = screenContract();
-  else if (sc === "perform") h = screenPerform();
-  else if (sc === "end") h = screenEnd();
-  else h = screenIntro();
-  app().innerHTML = h;
-  if (S && S.company) save();
-  if (changed) { try { window.scrollTo({ top: 0, behavior: "auto" }); } catch (e) { window.scrollTo(0, 0); } }
-  afterRender();
+/* 도움말 — 화면 안에서 펼치지 않고 팝업으로 띄운다 (장면 높이 유지) */
+let GID = 0;
+window.__guides = {};
+function guide(title, lines, askKey, foot) {
+  const id = "g" + (++GID);
+  window.__guides[id] = { title: title, lines: lines || [], askKey: askKey, foot: foot || "" };
+  return '<button class="helpbtn" data-act="help" data-g="' + id + '">? ' + title + "</button>";
+}
+function openGuide(id) {
+  const g = window.__guides[id];
+  if (!g) return;
+  let inner = "";
+  if (g.lines.length) inner += "<ul>" + g.lines.map(l => "<li>" + l + "</li>").join("") + "</ul>";
+  if (g.askKey && ASK[g.askKey]) {
+    inner += '<div class="qhead">실제로 이런 질문이 올라옵니다 · 네이버 지식인</div>' +
+      ASK[g.askKey].map(a => '<div class="quote">\u201C' + a.q + '\u201D<br><a href="' + a.u + '" target="_blank" rel="noopener">질문 원문 보기</a></div>').join("") +
+      '<div class="tiny muted" style="margin-top:7px">링크가 열리지 않아도 게임 진행에는 영향이 없습니다. 질문 원문은 위에 그대로 적어 두었습니다.</div>';
+  }
+  inner += g.foot;
+  modal("<h3>" + g.title + "</h3>" + inner +
+    '<div class="btn-row"><button class="btn subtle wide" data-act="closeModal">닫기</button></div>');
 }
 
-/* 자본 숫자를 굴려 올린다 */
+/* ---------------------------- 렌더 ---------------------------- */
+function screenOf(sc) {
+  if (sc === "intro") return screenIntro();
+  if (sc === "sector") return screenSector();
+  if (sc === "name") return screenName();
+  if (sc === "dashboard") return screenDashboard();
+  if (sc === "scan") return screenScan();
+  if (sc === "invest") return screenInvest();
+  if (sc === "list") return screenList();
+  if (sc === "detail") return screenDetail();
+  if (sc === "bid") return screenBid();
+  if (sc === "open") return screenOpen();
+  if (sc === "qual") return screenQual();
+  if (sc === "contract") return screenContract();
+  if (sc === "perform") return screenPerform();
+  if (sc === "end") return screenEnd();
+  return screenIntro();
+}
+function render() {
+  const sc = GATE ? "intro" : S.screen;
+  app().innerHTML = screenOf(sc);
+  if (S && S.company) save();
+  afterRender();
+}
 function countUp(el, to, fmt) {
   if (!el) return;
   const from = window.__capAnimFrom;
@@ -1981,61 +2230,43 @@ function countUp(el, to, fmt) {
   })(t0);
 }
 function afterRender() {
-  runScenes();
-  const isMob = window.matchMedia && window.matchMedia("(max-width:560px)").matches;
-  /* 스플래시 자동 전환 (2.7초) */
+  const sc = GATE ? "intro" : S.screen;
+  /* 스플래시 — 누르지 않아도 3.2초 뒤 자동 진행 */
   clearTimeout(window.__splashT);
-  clearInterval(window.__phI);
-  if (GATE && BEAT === 0) {
-    const PH = ["공고문을 펼치는 중…", "예비가격 번호를 뽑는 중…", "개찰표를 기다리는 중…", "낙찰가를 굴리는 중…"];
-    let pi = 0;
-    window.__phI = setInterval(() => { const t = document.querySelector(".tap-hint"); if (t) { pi = (pi + 1) % PH.length; t.textContent = PH[pi]; } }, 900);
-    window.__splashT = setTimeout(() => { if (GATE && BEAT === 0) { BEAT = 1; render(); } }, 2700);
+  if (GATE && BEAT === 0) window.__splashT = setTimeout(() => { if (GATE && BEAT === 0) { BEAT = 1; render(); } }, 3200);
+  /* 오프닝 영상 — 파일이 없거나 자동재생이 막히면 이미지 스토리로 넘어간다 */
+  if (GATE && BEAT === 1) bindOpening();
+  /* 스캔 연출 */
+  if (!GATE && S.screen === "scan") {
+    clearTimeout(window.__scanT);
+    window.__scanT = setTimeout(finishScan, 1500);
   }
-  /* 지금 화면에 새 용어가 있으면 풀이 상자를 연다 (모바일에서는 3초 뒤 자동으로 닫힌다) */
-  document.querySelectorAll(".term:not(.seen)").forEach(t => t.classList.add("new"));
-  const key = sc_key();
-  const autoOK = ["detail", "qual", "contract"].indexOf(S.screen) >= 0 && !GATE;
-  if (autoOK && !document.getElementById("termbox") && window.__termKey !== key) {
-    const first = document.querySelector(".term.new");
-    if (first) { window.__termKey = key; setTimeout(() => { if (!document.getElementById("termbox")) showTerm(first.dataset.term); }, isMob ? 1100 : 600); }
-  }
-  /* 자본금이 바뀌면 숫자가 튀어 오르고 +/− 금액이 떠오른다 · 자본이 바뀌면 상단 금고가 반짝인다 */
+  /* 장면 안에서 넘치는 내용이 있는지 기록 (검증용) */
+  window.__ovf = [];
+  document.querySelectorAll(".sc-body").forEach(b => {
+    if (b.scrollHeight > b.clientHeight + 2) window.__ovf.push({ pg: b.dataset.pg, over: b.scrollHeight - b.clientHeight });
+  });
+  /* 자본 카운트업 */
   const capEl = document.getElementById("capVal");
   if (capEl) countUp(capEl, S.capital, eok);
-  const prev = window.__capSeen;
+  const prev = window.__capSeen, hud = document.getElementById("hudCapital");
+  if (hud) countUp(hud, S.capital, eok);
   if (prev !== undefined && prev !== S.capital) {
-    const diff = S.capital - prev;
-    const hud = document.getElementById("hudCapital");
-    if (hud) countUp(hud, S.capital, eok);
-    const box = document.getElementById("capStat");
+    const diff = S.capital - prev, box = document.getElementById("capStat");
     if (box) {
       const d = document.createElement("span");
       d.className = "delta" + (diff < 0 ? " down" : "");
       d.textContent = (diff > 0 ? "+" : "\u2212") + eok(Math.abs(diff));
       box.appendChild(d);
     }
-    const vb = document.querySelector(".vaultbox");
-    if (vb) { vb.classList.remove("bump"); void vb.offsetWidth; vb.classList.add("bump"); }
-    const mh = document.getElementById("moneyHero");
-    if (mh) { mh.classList.remove("bump"); void mh.offsetWidth; mh.classList.add("bump"); }
-    if (diff !== 0) {
-      const host = vb || mh;
-      if (host) {
-        const s = document.createElement("span");
-        s.className = "coinfly"; s.textContent = (diff > 0 ? "+" : "\u2212") + eok(Math.abs(diff));
-        host.appendChild(s);
-        setTimeout(() => s.remove(), 1800);
-      }
+    if (diff !== 0 && hud) {
+      const s = document.createElement("span");
+      s.className = "coinfly"; s.textContent = (diff > 0 ? "+" : "\u2212") + eok(Math.abs(diff));
+      hud.parentNode.appendChild(s);
+      setTimeout(() => s.remove(), 1800);
     }
   }
   window.__capSeen = S.capital;
-  /* 단계 트랙의 현재 노드를 가운데로 */
-  const nowStep = document.querySelector(".snodes .now");
-  if (nowStep) {
-    const wrap = nowStep.parentNode;
-    if (wrap && wrap.scrollTo) wrap.scrollTo({ left: Math.max(0, nowStep.offsetLeft - wrap.clientWidth / 2 + nowStep.clientWidth / 2), behavior: "smooth" });
-  }
   if (S.screen === "name" && !GATE) bindNameInput();
   if (S.screen === "bid" && !GATE) bindBidInput();
   aimArrow();
@@ -2045,51 +2276,27 @@ function afterRender() {
     if (window.__revealKey !== rk) { window.__revealKey = rk; showReveal(); }
   }
 }
-function sc_key() { return (GATE ? "intro" + BEAT : S.screen) + "|" + (S.noticeId || ""); }
-/* 다음 행동 지목 — 굵은 노란 화살표가 항상 하나만 가리킨다 (참고 게임 연출) */
+/* 다음 행동 지목 — 굵은 노란 화살표가 항상 하나만 가리킨다 */
 function aimArrow() {
   document.querySelectorAll(".aimarr").forEach(a => a.remove());
-  let el = null;
-  if (GATE) {
-    if (BEAT === 4) { el = document.querySelector(".browser .search"); if (el) el.style.position = "relative"; }
-    else if (BEAT === 5) el = document.querySelector('[data-act="newGame"]');
-  } else {
-    const map = {
-      sector: () => S.charId ? document.querySelector('[data-act="startBiz"]') : document.querySelector(".actor"),
-      dashboard: () => document.querySelector('[data-act="toList"]'),
-      list: () => document.querySelector(".notice:not(.locked)"),
-      detail: () => document.querySelector('[data-act="apply"]') || document.querySelector('[data-act="applyCareless"]'),
-      bid: () => document.querySelector('[data-act="submitBid"]:not([disabled])'),
-      open: () => document.querySelector(".btn-row.actions .btn"),
-      qual: () => document.querySelector('[data-act="submitQual"]') || document.querySelector(".btn-row .btn"),
-      contract: () => document.querySelector('[data-act="signContract"]:not([disabled])'),
-      perform: () => document.querySelector(".card .btn-row .btn"),
-      end: () => document.querySelector('[data-act="restart"]')
-    };
-    const f = map[S.screen];
-    if (f) el = f();
-  }
+  const el = document.querySelector(".sc-act .btn:not([disabled])");
   if (!el) return;
   const a = document.createElement("i");
   a.className = "aimarr";
   el.appendChild(a);
 }
 
-/* 개찰 연출 */
+/* ---------------------------- 연출 ---------------------------- */
 function showReveal() {
   if (document.getElementById("reveal")) return;
   const win = S.result && S.result.outcome === "1순위";
   const d = document.createElement("div");
   d.className = "reveal"; d.id = "reveal";
-  d.innerHTML = '<div class="box"><div class="rt">개 찰</div>' +
-    '<div class="rnum" id="rnum">0</div>' +
-    '<div class="rbar"><i></i></div>' +
-    '<div class="rs">예정가격을 공개합니다 · 잠시만</div></div>';
+  d.innerHTML = '<div class="box"><div class="rt">개 찰</div><div class="rnum" id="rnum">0</div>' +
+    '<div class="rbar"><i></i></div><div class="rs">예정가격을 공개합니다 · 잠시만</div></div>';
   document.body.appendChild(d);
   const el = document.getElementById("rnum");
-  let t = 0;
   const iv = setInterval(() => {
-    t += 1;
     if (el) el.textContent = won(Math.round(S.result.yej * (0.97 + Math.random() * 0.07))) + "원";
   }, 80);
   setTimeout(() => {
@@ -2111,8 +2318,53 @@ function burst() {
     s.style.background = i % 3 === 0 ? "#fff6cf" : (i % 3 === 1 ? "#ffc73a" : "#33d69a");
     s.style.animationDelay = (i * 12) + "ms";
     document.body.appendChild(s);
-    setTimeout(() => s.remove(), 1600);
+    setTimeout(() => s.remove(), 1700);
   }
+}
+function burstGold() {
+  const cx = window.innerWidth / 2, cy = window.innerHeight / 2 - 60;
+  for (let i = 0; i < 10; i++) {
+    const el = document.createElement("i");
+    el.className = "spark";
+    const a = Math.PI * 2 * i / 10, r = 60 + Math.random() * 60;
+    el.style.left = cx + "px"; el.style.top = cy + "px";
+    el.style.setProperty("--dx", Math.cos(a) * r + "px");
+    el.style.setProperty("--dy", Math.sin(a) * r * 0.6 + "px");
+    el.style.background = i % 2 ? "#ffc73a" : "#fff6cf";
+    el.style.animationDelay = (i * 60) + "ms";
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1700);
+  }
+}
+/* 보상 팝업 — 진행바가 차고 [획득]으로 받아낸다 */
+function stampFx(title, sub, cb) {
+  document.getElementById("modal-root").innerHTML =
+    '<div class="modal-bg"><div class="modal" style="text-align:center;max-width:360px">' +
+    '<div class="gcoin">\u20A9</div>' +
+    "<h3 style=\"text-align:center\">" + title + "</h3>" +
+    '<p style="text-align:center">' + sub + "</p>" +
+    '<div class="pload"><i></i></div>' +
+    '<div style="position:relative"><i class="aimarr" style="top:-25px"></i>' +
+      '<button class="btn wide" data-act="fxGet" style="animation:blink 1.5s ease-in-out infinite">획득</button></div>' +
+    "</div></div>";
+  burstGold();
+  setTimeout(() => {
+    const r = document.getElementById("modal-root");
+    if (r && r.querySelector(".gcoin")) r.innerHTML = "";
+    if (cb) cb();
+  }, 1500);
+}
+
+/* ---------------------------- 공고문 자르기 ---------------------------- */
+function docChunks(n) {
+  const h = docHTML(n);
+  const bStart = h.indexOf('<div class="doc-body">');
+  const fIdx = h.indexOf('<div class="doc-foot">');
+  const head = h.slice(0, bStart);
+  const body = h.slice(bStart + '<div class="doc-body">'.length, h.lastIndexOf("</div>", fIdx));
+  const secs = body.split("<section ").slice(1).map(x => "<section " + x);
+  let foot = h.slice(fIdx).replace(/<\/div><\/div>\s*$/, "</div>");
+  return { head: head, secs: secs, foot: foot };
 }
 
 /* =====================================================================
@@ -2132,7 +2384,7 @@ function showTerm(key) {
     '<div class="tb-s">' + g.s + "</div>" +
     '<div class="tb-d">' + g.d.map(x => "<p>" + x + "</p>").join("") + "</div>" +
     '<div class="tb-a">이걸 몰라서 실제로 이런 질문이 올라옵니다<br><b>\u201C' + g.ask.q + '\u201D</b><br><a href="' + g.ask.u + '" target="_blank" rel="noopener">질문 원문 보기</a><br><span class="tiny muted">링크가 열리지 않아도 게임 진행에는 영향이 없습니다. 질문 원문은 위에 있습니다.</span></div>' +
-    '<div class="tiny muted" style="margin:8px 0 10px">나온 곳 · ' + g.where + ' · 배운 용어 ' + S.learned.length + "개" +
+    '<div class="tiny muted" style="margin:8px 0 10px">나온 곳 · ' + g.where + " · 배운 용어 " + S.learned.length + "개" +
     (rest.length ? " · 이 화면에 새 용어가 더 있습니다(점선이 그어진 말)" : "") + "</div>" +
     '<div class="tb-b"><button class="btn subtle" data-act="closeTerm">닫기</button>' +
     (rest.length ? '<button class="btn" data-act="nextTerm">다음 용어</button>' : "") + "</div>";
@@ -2140,7 +2392,7 @@ function showTerm(key) {
   if (old) old.remove();
   document.body.appendChild(box);
   clearTimeout(window.__termT);
-  window.__termT = setTimeout(() => { const b = document.getElementById("termbox"); if (b) b.remove(); }, 10000);
+  window.__termT = setTimeout(() => { const b = document.getElementById("termbox"); if (b) b.remove(); }, 11000);
 }
 function closeTerm() { const b = document.getElementById("termbox"); if (b) b.remove(); }
 function openGlossary() {
@@ -2154,50 +2406,84 @@ function openGlossary() {
 }
 
 /* =====================================================================
-   [20] 시작 화면 — 스플래시 · 스토리(대화 연출)
+   [20] 시작 — 스플래시 · 오프닝 영상 · 스토리 · 판 선택
    ===================================================================== */
 function icon(kind) {
-  if (kind === "coin") return '<svg viewBox="0 0 56 56" width="56" height="56"><circle cx="28" cy="28" r="23" fill="#ffc73a" stroke="#8a5a12" stroke-width="3"/><circle cx="28" cy="28" r="16" fill="none" stroke="#b4711a" stroke-width="2"/><text x="28" y="36" text-anchor="middle" font-size="20" font-weight="900" fill="#7c4f06" font-family="sans-serif">\u20A9</text></svg>';
-  if (kind === "doc") return '<svg viewBox="0 0 44 56" width="44" height="56"><rect x="3" y="3" width="38" height="50" rx="4" fill="#f7f3e6" stroke="#8a5a12" stroke-width="2.5"/><rect x="10" y="12" width="24" height="3" rx="1.5" fill="#b9ad91"/><rect x="10" y="20" width="24" height="3" rx="1.5" fill="#b9ad91"/><rect x="10" y="28" width="16" height="3" rx="1.5" fill="#b9ad91"/><circle cx="30" cy="42" r="8" fill="none" stroke="#e0392b" stroke-width="3"/></svg>';
-  if (kind === "truck") return '<svg viewBox="0 0 64 44" width="64" height="44"><rect x="2" y="10" width="34" height="24" rx="3" fill="#4d9bff" stroke="#1b52c0" stroke-width="2.5"/><path d="M36 16h14l10 10v8H36z" fill="#2f6ee0" stroke="#123a86" stroke-width="2.5"/><circle cx="15" cy="37" r="6" fill="#1b2634" stroke="#000" stroke-width="2"/><circle cx="49" cy="37" r="6" fill="#1b2634" stroke="#000" stroke-width="2"/><rect x="8" y="16" width="10" height="8" rx="1.5" fill="#dbe9ff"/></svg>';
-  if (kind === "helmet") return '<svg viewBox="0 0 60 46" width="60" height="46"><path d="M6 32c0-14 10-24 24-24s24 10 24 24z" fill="#ffc73a" stroke="#8a5a12" stroke-width="2.5"/><rect x="2" y="31" width="56" height="7" rx="3.5" fill="#ffa51f" stroke="#8a5a12" stroke-width="2.5"/><path d="M30 8v24" stroke="#c9820f" stroke-width="2.5"/></svg>';
-  if (kind === "box") return '<svg viewBox="0 0 54 54" width="54" height="54"><rect x="4" y="18" width="46" height="32" rx="4" fill="#33d69a" stroke="#0d7d57" stroke-width="2.5"/><rect x="16" y="11" width="22" height="14" rx="2" fill="#f7f3e6" stroke="#8a5a12" stroke-width="2"/><path d="M16 11l11 7 11-7" fill="none" stroke="#8a5a12" stroke-width="2"/><rect x="12" y="24" width="30" height="4" rx="2" fill="#0d7d57"/></svg>';
-  return '<svg viewBox="0 0 56 56" width="56" height="56"><rect x="24" y="8" width="7" height="40" fill="#ffc73a" stroke="#8a5a12" stroke-width="2"/><path d="M24 10h26l-6 5 6 5H24z" fill="#ffa51f" stroke="#8a5a12" stroke-width="2"/><rect x="14" y="46" width="30" height="6" rx="2" fill="#8a5a12"/><path d="M31 20v14" stroke="#8a5a12" stroke-width="2"/><circle cx="31" cy="36" r="3.5" fill="#ffc73a" stroke="#8a5a12" stroke-width="2"/></svg>';
+  if (kind === "coin") return '<svg viewBox="0 0 56 56" width="46" height="46"><circle cx="28" cy="28" r="23" fill="#ffc73a" stroke="#8a5a12" stroke-width="3"/><circle cx="28" cy="28" r="16" fill="none" stroke="#b4711a" stroke-width="2"/><text x="28" y="36" text-anchor="middle" font-size="20" font-weight="900" fill="#7c4f06" font-family="sans-serif">\u20A9</text></svg>';
+  if (kind === "doc") return '<svg viewBox="0 0 44 56" width="36" height="46"><rect x="3" y="3" width="38" height="50" rx="4" fill="#f7f3e6" stroke="#8a5a12" stroke-width="2.5"/><circle cx="30" cy="42" r="8" fill="none" stroke="#e0392b" stroke-width="3"/></svg>';
+  if (kind === "truck") return '<svg viewBox="0 0 64 44" width="50" height="34"><rect x="2" y="10" width="34" height="24" rx="3" fill="#4d9bff" stroke="#1b52c0" stroke-width="2.5"/><path d="M36 16h14l10 10v8H36z" fill="#2f6ee0" stroke="#123a86" stroke-width="2.5"/><circle cx="15" cy="37" r="6" fill="#1b2634"/><circle cx="49" cy="37" r="6" fill="#1b2634"/></svg>';
+  return '<svg viewBox="0 0 56 56" width="44" height="44"><rect x="24" y="8" width="7" height="40" fill="#ffc73a" stroke="#8a5a12" stroke-width="2"/><path d="M24 10h26l-6 5 6 5H24z" fill="#ffa51f" stroke="#8a5a12" stroke-width="2"/><rect x="14" y="46" width="30" height="6" rx="2" fill="#8a5a12"/></svg>';
 }
-function bustSVG(k, sad) {
-  const boss = k === "boss";
-  const skin = boss ? "#f2cba3" : "#f7d3b0";
-  const coat = boss ? "#31445f" : "#3f7f68";
-  const shirt = boss ? "#e8eef8" : "#dff3ea";
-  const hair = boss ? "#2b2118" : "#3a2a1c";
-  let s = '<svg viewBox="0 0 220 250" aria-hidden="true">';
-  s += '<path d="M18 250c0-56 40-84 92-84s92 28 92 84z" fill="' + coat + '"/>';
-  s += '<path d="M92 158h36v26H92z" fill="' + skin + '"/>';
-  s += '<path d="M110 168c-22 0-40-14-40-40h80c0 26-18 40-40 40z" fill="' + shirt + '"/>';
-  s += '<ellipse cx="110" cy="112" rx="54" ry="58" fill="' + skin + '"/>';
-  s += '<path d="M56 106c0-34 24-56 54-56s54 22 54 56c-4-20-18-28-30-28-12 0-18 8-30 8-16 0-26-10-36-2-8 6-12 14-12 22z" fill="' + hair + '"/>';
-  s += '<ellipse cx="88" cy="116" rx="5.5" ry="6.5" fill="#2b2118"/><ellipse cx="132" cy="116" rx="5.5" ry="6.5" fill="#2b2118"/>';
-  if (boss) {
-    s += '<path d="M76 100q12-8 24-4" stroke="#2b2118" stroke-width="4" fill="none" stroke-linecap="round"/>';
-    s += '<path d="M120 96q12-4 24 4" stroke="#2b2118" stroke-width="4" fill="none" stroke-linecap="round"/>';
-    /* sad = 고민하는 컷신 — 눈썹이 꺾이고 입이 내려가고 식은땀 */
-    s += sad
-      ? '<path d="M80 94q10-6 20-2" stroke="#2b2118" stroke-width="4" fill="none" stroke-linecap="round"/>' +
-        '<path d="M122 92q10-4 20 2" stroke="#2b2118" stroke-width="4" fill="none" stroke-linecap="round"/>' +
-        '<path d="M98 148q12-8 24 0" stroke="#8a4a3a" stroke-width="4" fill="none" stroke-linecap="round"/>' +
-        '<path d="M164 84c5 7 6 13 3 18" stroke="#7fc8ff" stroke-width="5" fill="none" stroke-linecap="round"/>' +
-        '<ellipse cx="172" cy="110" rx="4" ry="6" fill="#7fc8ff" opacity=".9"/>'
-      : '<path d="M98 142q12 6 24 0" stroke="#8a4a3a" stroke-width="4" fill="none" stroke-linecap="round"/>' +
-        '<path d="M158 78c6 8 8 16 4 22" stroke="#7fc8ff" stroke-width="5" fill="none" stroke-linecap="round" opacity=".9"/>';
-    s += '<path d="M110 168l0 40" stroke="#c9d6e8" stroke-width="3"/>';
-  } else {
-    s += '<circle cx="88" cy="116" r="12" fill="none" stroke="#2b2118" stroke-width="3"/>';
-    s += '<circle cx="132" cy="116" r="12" fill="none" stroke="#2b2118" stroke-width="3"/>';
-    s += '<path d="M100 116h20" stroke="#2b2118" stroke-width="3"/>';
-    s += '<path d="M98 140q12 8 24 0" stroke="#8a4a3a" stroke-width="4" fill="none" stroke-linecap="round"/>';
-    s += '<path d="M92 168h36l6 26H86z" fill="' + shirt + '" opacity=".7"/>';
-  }
-  return s + "</svg>";
+function splashHTML() {
+  return '<div class="splash" data-act="ib">' +
+    '<div class="ray"></div><div class="ring"></div>' +
+    '<i class="floaty f1">' + icon("coin") + '</i><i class="floaty f2">' + icon("doc") + "</i>" +
+    '<i class="floaty f3">' + icon("truck") + '</i><i class="floaty f4">' + icon("crane") + "</i>" +
+    '<div class="logo-box">' +
+      '<div class="logo-pre">나라장터 입찰 한 바퀴</div>' +
+      '<div class="logo-big">입찰<span class="hl">타이쿤</span></div>' +
+      '<div class="logo-en">BID TYCOON</div>' +
+      '<div class="trio">' +
+        '<img src="' + PORTRAITS.goods + '" alt="인쇄소 사장">' +
+        '<img src="' + PORTRAITS.service + '" alt="행사기획 사장">' +
+        '<img src="' + PORTRAITS.works + '" alt="건설 사장">' +
+      "</div>" +
+      '<div class="logo-load"><i></i></div>' +
+      '<div class="tap-hint">화면을 누르면 시작합니다</div>' +
+    "</div></div>";
+}
+/* 오프닝 챕터 영상 자리 — 파일이 없으면 첫 프레임 대신 일러스트로 대체 */
+function videoHTML() {
+  return '<div class="vwrap">' +
+    '<video id="openingV" src="' + OPENING_MP4 + '" muted playsinline autoplay preload="auto" poster="' + OWNER_IMG + '"></video>' +
+    '<div class="vfall"><img src="' + OWNER_IMG + '" alt="밤 사무실에서 걱정하는 사장님">' +
+      '<div class="vfb-t">오프닝 영상이 아직 없습니다 · 이야기로 바로 갑니다</div></div>' +
+    '<button class="vskip" data-act="ib">건너뛰기 ›</button>' +
+    "</div>";
+}
+function bindOpening() {
+  const v = document.getElementById("openingV");
+  if (!v) return;
+  const fail = () => { if (GATE && BEAT === 1) { BEAT = 2; render(); } };
+  v.addEventListener("error", fail);
+  v.addEventListener("ended", () => { if (GATE && BEAT === 1) { BEAT = 6; render(); } });
+  const pr = v.play ? v.play() : null;
+  if (pr && pr.catch) pr.catch(() => { const w = document.querySelector(".vwrap"); if (w) w.classList.add("blocked"); });
+  setTimeout(() => { if (GATE && BEAT === 1 && v.readyState === 0) fail(); }, 900);
+}
+const STORY_LINE = {
+  2: { who: "사장님", img: OWNER_IMG, say: "요즘 경기도 어렵고, 사업도 영업도 어려운데 어떻게 해야 되지?" },
+  3: { who: "지인", img: FRIEND_IMG, say: "그거 나라장터에 있다던데? 거기서 입찰하면 나라에 납품도 하고 돈도 번대." },
+  4: { who: "사장님", img: OWNER_IMG, say: "어, 그래요? 어디죠?" }
+};
+function storyHTML(b) {
+  const L = STORY_LINE[b];
+  return '<div class="storywrap">' + say(L.who, L.say, L.img, L.who === "지인" ? "rt" : "") +
+    '<div class="story-hint">' + (b === 2 ? "오늘 매출도 안 나오고, 직원 월급날은 다가오고…" :
+      b === 3 ? "옆 가게 사장님이 알려 준 방법입니다." : "처음 듣는 말입니다. 한 번 물어봐야겠습니다.") + "</div></div>";
+}
+function browserHTML() {
+  return '<div class="browser inline">' +
+    '<div class="bar2"><i class="dot"></i><i class="dot y"></i><i class="dot g"></i><div class="url">search.naver.com/search.naver?query=나라장터</div></div>' +
+    '<div class="body2">' +
+      '<div class="search"><span>\uD83D\uDD0D</span><span class="q">나라장터<span class="caret"></span></span></div>' +
+      '<div class="res">' +
+        '<div class="rr hl"><div class="u">www.g2b.go.kr</div><div class="t">나라장터 국가종합전자조달</div><div class="d">입찰공고 · 나라장터 이용 안내 · 전자입찰 · 계약정보</div></div>' +
+        '<div class="rr" style="animation-delay:.25s"><div class="u">kin.naver.com</div><div class="t">나라장터 입찰 처음 시작하는 법</div></div>' +
+      "</div></div></div>";
+}
+function modePickHTML() {
+  const saved = load();
+  const hasSave = saved && saved.company && saved.screen && ["intro", "end"].indexOf(saved.screen) < 0;
+  return '<div class="card" style="margin-top:2px">' +
+    '<div class="card-title"><span class="ico">\u2605</span>어떤 판으로 할까요</div>' +
+    '<div class="mode-row">' +
+      modeBtn("quick", "빠른 판(체험판)", "3분", "green", "공고 확인 → 투찰 → 개찰까지만 빠르게 봅니다.") +
+      modeBtn("full", "전체 판", "10분", "blue", "입찰 3번. 계약 → 납품 → 대금까지 다 겪습니다.") +
+    "</div>" +
+    '<button class="btn big-btn" style="margin-top:10px" data-act="newGame">입찰하러 가기</button>' +
+    (hasSave ? '<button class="btn subtle wide" style="margin-top:8px" data-act="continue">이어서 하기 (' + esc(saved.company) + ")</button>" : "") +
+    "</div>";
 }
 function modeBtn(v, label, tag, cls, desc) {
   return '<button class="mode ' + (S.mode === v ? "on" : "") + '" data-act="mode" data-v="' + v + '">' +
@@ -2206,468 +2492,406 @@ function modeBtn(v, label, tag, cls, desc) {
 }
 function screenIntro() {
   if (BEAT === 0) return splashHTML();
-  return storyHTML(BEAT);
-}
-function splashHTML() {
-  return '<div class="cine splash" data-act="splashGo">' +
-    '<div class="ray"></div><div class="ring"></div>' +
-    '<i class="floaty f1">' + icon("coin") + "</i>" +
-    '<i class="floaty f2">' + icon("doc") + "</i>" +
-    '<i class="floaty f3">' + icon("truck") + "</i>" +
-    '<i class="floaty f4">' + icon("helmet") + "</i>" +
-    '<i class="floaty f5">' + icon("box") + "</i>" +
-    '<i class="floaty f6">' + icon("crane") + "</i>" +
-    '<div class="logo-box">' +
-      '<div class="logo-pre">나라장터 입찰 한 바퀴</div>' +
-      '<div class="logo-big">입찰<span class="hl">타이쿤</span></div>' +
-      '<div class="logo-en">BID TYCOON</div>' +
-      '<div class="logo-load"><i></i></div>' +
-      '<div class="tap-hint">화면을 누르면 시작합니다</div>' +
-    "</div></div>";
-}
-const STORY_LINE = {
-  1: { who: "사장님", cls: "", bust: "boss", sad: true, say: "요즘 경기도 어렵고, 사업도 영업도 어려운데 어떻게 해야 되지?" },
-  2: { who: "지인", cls: "f", bust: "friend", say: "그거 나라장터에 있다던데? 거기서 입찰하면 나라에 납품도 하고 돈도 번대." },
-  3: { who: "사장님", cls: "", bust: "boss", say: "어, 그래요? 어디죠?" },
-  4: { who: "지인", cls: "f", bust: "friend", say: "이 사이트에 들어가 봐. 여기서 공고를 찾아서 입찰하는 거야." },
-  5: { who: "사장님", cls: "", bust: "boss", say: "아, 그래야겠다!" }
-};
-function storyHTML(b) {
-  const L = STORY_LINE[b] || STORY_LINE[1];
-  const dots = '<div class="beat-dots">' + [1, 2, 3, 4, 5].map(i => '<i class="' + (i <= b ? "on" : "") + '"></i>').join("") + "</div>";
-  if (b === 4) {
-    return '<div class="cine story">' + dots +
-      '<div style="margin-bottom:6px"><span class="sname f">' + L.who + '</span><div class="sbubble right">' + L.say + "</div></div>" +
-      '<div class="browser inline">' +
-        '<div class="bar2"><i class="dot"></i><i class="dot y"></i><i class="dot g"></i><div class="url">search.naver.com/search.naver?query=나라장터</div></div>' +
-        '<div class="body2">' +
-          '<div class="search"><span>\uD83D\uDD0D</span><span class="q">나라장터<span class="caret"></span></span></div>' +
-          '<div class="res">' +
-            '<div class="rr hl"><div class="u">www.g2b.go.kr</div><div class="t">나라장터 국가종합전자조달</div><div class="d">입찰공고 · 나라장터 이용 안내 · 전자입찰 · 계약정보</div></div>' +
-            '<div class="rr" style="animation-delay:.25s"><div class="u">kin.naver.com</div><div class="t">나라장터 입찰 처음 시작하는 법</div><div class="d">공고 확인 → 투찰 → 개찰 순서로 …</div></div>' +
-            '<div class="rr" style="animation-delay:.4s"><div class="u">blog.naver.com</div><div class="t">나라장터 입찰 잘하는 방법 정리</div><div class="d">낙찰하한율과 예정가격, 적격심사까지 …</div></div>' +
-          "</div>" +
-        "</div>" +
-      "</div>" +
-      '<div class="cine-foot"><div class="row"><button class="btn wide" data-act="introNext">다음</button></div>' +
-      '<div style="text-align:center"><button class="skip" data-act="skipStory">건너뛰기</button></div></div></div>';
-  }
-  if (b === 5) {
-    const saved = load();
-    const hasSave = saved && saved.company && saved.screen && ["intro", "end"].indexOf(saved.screen) < 0;
-    return '<div class="cine story">' + dots +
-      '<div style="margin-bottom:8px"><span class="sname">' + L.who + '</span><div class="sbubble">' + L.say + "</div></div>" +
-      '<div class="card" style="margin-top:0">' +
-        '<div class="card-title"><span class="ico">\u2605</span>어떤 판으로 할까요</div>' +
-        '<div class="mode-row">' +
-          modeBtn("quick", "빠른 판(체험판)", "3분", "green", "공고 2건 중 1건, 입찰 1번. 공고 확인 → 투찰 → 개찰까지만 빠르게 봅니다.") +
-          modeBtn("full", "전체 판", "10분", "blue", "입찰 3번. 개찰 → 적격심사 → 계약 → 납품 → 대금까지 다 겪습니다.") +
-        "</div>" +
-        '<button class="btn big-btn" style="margin-top:12px" data-act="newGame">입찰하러 가기</button>' +
-        (hasSave ? '<button class="btn subtle wide" style="margin-top:9px" data-act="continue">이어서 하기 (' + esc(saved.company) + ")</button>" +
-          '<p class="tiny muted" style="margin-top:7px">‘새로 시작’을 누르면 저장된 판이 지워집니다.</p>' : "") +
-      "</div>" +
-      guide("이 게임에서 하는 일",
-        ["업종을 고르면 그게 곧 난이도입니다. 물품(쉬움) · 용역(보통) · 공사(어려움).",
-         "공고문을 실제 문서처럼 끝까지 읽을 수 있습니다. 놓친 조건은 나중에 실제로 실패로 돌아옵니다.",
-         "처음 나오는 전문용어는 그 자리에서 풀이가 열리고, ‘배운 용어’에 차곡차곡 쌓입니다.",
-         "한 번이라도 조건을 맞추면 낙찰 → 적격심사 → 계약 → 납품 → 대금까지 끝까지 갈 수 있습니다."],
-        "start",
-        '<p class="tiny muted" style="margin-top:10px">작은 회사를 하나 차립니다. 그리고 나라장터 입찰을 <b>처음부터 끝까지 직접</b> 겪어 봅니다. 서류를 갖추고, 공고문을 읽고, 값을 써서 넣고, 개찰에서 순위를 보고, 계약하고, 일을 해내고, 돈을 받습니다.</p>' +
-        '<div class="note" style="margin-top:10px">나라장터는 정부와 공공기관이 물건과 서비스를 사는 곳입니다. 이 게임은 인터넷에 연결하지 않고, 판정은 모두 게임 안의 규칙으로 계산합니다. 결과는 이 브라우저에만 저장되고 실제 입찰은 하지 않습니다.</div>' +
-        '<div class="note" style="margin-top:8px">\u203B 날짜는 <b>게임 속 날짜</b>입니다. 실제 달력과 상관없이 ' + fDate(RULES.base) + " " + fTime(RULES.base) + "에 시작해 판이 바뀌면 며칠씩 흐르며, 실제 공모전 마감일(2026. 11. 22.)과는 관계없습니다.</div>" +
-        '<div class="note" style="margin-top:8px">빠른 판(약 3분) · 공고 2건 중 1건, 입찰 1번. 공고 확인 → 투찰 → 개찰까지만 빠르게 봅니다.<br>전체 판 · 입찰 3번. 개찰 → 적격심사 → 계약 → 납품 → 대금까지 다 겪습니다.</div>');
-  }
-  return '<div class="cine story">' + dots +
-    '<div class="story-set">' +
-      '<div class="win2"></div><div class="night"></div><div class="desk"></div>' +
-      '<div class="bubblebox"><span class="sname ' + L.cls + '">' + L.who + '</span>' +
-        '<div class="sbubble ' + (L.cls ? "right" : "") + '">' + L.say + "</div></div>" +
-      '<div class="bust">' + bustSVG(L.bust, L.sad) + "</div>" +
-    "</div>" +
-    '<div class="cine-foot"><div class="row"><button class="btn wide" data-act="introNext">다음</button></div>' +
-    '<div style="text-align:center"><button class="skip" data-act="skipStory">건너뛰기</button></div></div></div>';
+  if (BEAT === 1) return videoHTML();
+  const steps = [2, 3, 4, 5, 6];
+  const i = Math.max(0, steps.indexOf(BEAT));
+  const n = steps.length;
+  const act = BEAT < 6
+    ? '<button class="btn big-btn" data-act="ib">' + (BEAT === 5 ? "고개를 끄덕인다" : "다음") + "</button>" +
+      '<button class="btn subtle" data-act="iskip">건너뛰기</button>'
+    : '<button class="btn big-btn" data-act="newGame">입찰하러 가기</button>' +
+      '<button class="btn subtle" data-act="iskip">업종 고르기로</button>';
+  let body;
+  if (BEAT === 5) body = sayFriend("이 사이트에 들어가 봐. 여기서 공고를 찾아서 입찰하는 거야.") + browserHTML();
+  else if (BEAT === 6) body = sayBoss("아, 그래야겠다! 나도 한번 해 보자.") + modePickHTML() +
+    guide("이 게임에서 하는 일", [
+      "업종을 고르면 그게 곧 난이도입니다. 물품(쉬움) · 용역(보통) · 공사(어려움).",
+      "공고를 스캔해 고르고, 슬라이더로 투찰률을 정해 직접 낸 뒤 개찰을 봅니다.",
+      "낙찰·탈락의 확률과 경쟁사는 게임용 설정입니다. 공고문·기한·투찰률 기준은 자료에 나온 값을 그대로 썼습니다."], "start",
+      '<p class="tiny muted" style="margin-top:8px">\u203B 날짜는 <b>게임 속 날짜</b>입니다. 실제 달력과 관계없이 ' + fDate(RULES.base) + " " + fTime(RULES.base) + "에 시작하고, 판이 바뀌면 며칠씩 흐릅니다.</p>" +
+      '<div class="note" style="margin-top:8px">이 게임은 인터넷에 연결하지 않고 판정은 모두 게임 안의 규칙으로 계산합니다. 결과는 이 브라우저에만 저장되고 실제 입찰은 하지 않습니다.</div>');
+  else body = storyHTML(BEAT);
+  return hudHTML() + '<div class="play"><div class="sc-nav">' +
+    '<span class="dots">' + steps.map((s, k) => '<i class="' + (k === i ? "on" : k < i ? "past" : "") + '"></i>').join("") + "</span>" +
+    '<span class="lbl">' + (i + 1) + " / " + n + " · 이야기</span></div>" +
+    '<div class="page">' + body + "</div>" +
+    '<div class="sc-act">' + act + "</div></div>";
 }
 
 /* =====================================================================
-   [21] 업종 고르기 — 캐릭터 3개를 무대에 세운다
+   [21] 업종 고르기 — 일러스트 캐릭터 3개
    ===================================================================== */
 function screenSector() {
   const pick = S.charId ? charOf(S.charId) : null;
   const cast = CHARACTERS.map(c => {
     const dots = [1, 2, 3].map(i => '<i class="' + (i <= c.diff ? "f" : "") + '"></i>').join("");
     return '<button class="actor ' + (S.charId === c.id ? "on" : "") + '" data-act="pickChar" data-id="' + c.id + '">' +
-      '<span class="pad"></span>' +
       '<span class="fig">' + portraitMarkup(c) + "</span>" +
-      '<span class="nm">' + c.name + '</span>' +
+      '<span class="nm">' + c.name + "</span>" +
+      '<span class="who2">' + c.owner + " · " + c.shop + "</span>" +
       '<span class="diff"><span class="dots">' + dots + "</span> " + c.diffLabel + "</span></button>";
   }).join("");
-  const detail = pick
-    ? '<div class="card lit"><div style="display:flex;gap:11px;align-items:flex-start">' +
-        '<div class="prof" style="width:64px;height:64px;border-radius:16px">' + portraitMarkup(pick) + "</div>" +
-        '<div style="min-width:0;flex:1 1 auto">' +
-          '<div class="tiny" style="color:#ffdc7a;font-weight:900">' + pick.name + " · " + pick.diffLabel + "</div>" +
-          '<div class="big" style="font-size:20px">' + pick.shop + "</div>" +
-          '<div class="tiny muted">' + pick.owner + " · " + pick.who + "</div>" +
-        "</div></div>" +
-        '<p class="tiny" style="margin-top:9px;color:#c4d8f6">' + pick.line + "</p>" +
-        '<div class="sheetgrid">' +
-          '<div class="sq"><div class="k">자본</div><div class="v">' + eok(pick.start.capital) + "</div></div>" +
-          '<div class="sq"><div class="k">실적</div><div class="v">' + (pick.start.perf ? eok(pick.start.perf) : "없음") + "</div></div>" +
-          '<div class="sq"><div class="k">인력</div><div class="v">' + pick.start.staff + "명</div></div>" +
-          '<div class="sq"><div class="k">신용</div><div class="v">' + pick.credit + "</div></div>" +
-        "</div>" +
-        '<div class="note" style="margin-top:10px">첫 관문 · ' + pick.firstGate + "</div>" +
-        '<button class="btn big-btn" style="margin-top:12px" data-act="startBiz">이 업종으로 개업하기</button>' +
-      "</div>"
-    : "";
-  const rec = recommendSector();
+  const p0 = {
+    tag: "업종 = 난이도",
+    say: sayBoss("나는 어떤 일로 시작해 볼까.", pick ? null : OWNER_IMG),
+    body: '<div class="cast-row">' + cast + "</div>" +
+      (pick ? '<div class="pickbox"><div class="tiny" style="color:#ffdc7a;font-weight:900">' + pick.name + " · " + pick.diffLabel + "</div>" +
+        '<div class="big" style="font-size:18px">' + pick.shop + "</div>" +
+        '<div class="tiny muted">' + pick.owner + " · " + pick.who + "</div>" +
+        '<p class="tiny" style="margin-top:6px;color:#c4d8f6">' + pick.line + "</p>" +
+        '<div class="mini4">' + miniStat("자본", eok(pick.start.capital)) + miniStat("실적", pick.start.perf ? eok(pick.start.perf) : "없음") +
+          miniStat("인력", pick.start.staff + "명") + miniStat("신용", pick.credit) + "</div>" +
+        '<div class="note" style="margin-top:7px">첫 관문 · ' + pick.firstGate + "</div></div>"
+        : '<div class="hintc">캐릭터를 눌러 업종을 고르세요</div>'),
+    acts: pick ? '<button class="btn big-btn" data-act="startBiz">이 업종으로 개업하기</button>' : ""
+  };
   const quiz = QUIZ.map((q, qi) =>
-    '<div class="quiz" style="margin-bottom:9px"><div class="qtext" style="font-size:13.5px;font-weight:800;color:#eaf3ff;margin-bottom:6px">' + (qi + 1) + ". " + q.q + "</div>" +
+    '<div class="quiz"><div class="qtext">' + (qi + 1) + ". " + q.q + "</div>" +
     '<div class="opts">' + q.opts.map(o =>
       '<button class="opt ' + (S.quiz[qi] === o[1] ? "on" : "") + '" data-act="quiz" data-q="' + qi + '" data-v="' + o[1] + '">' + o[0] + "</button>").join("") + "</div></div>").join("");
-  const body =
-    objbar("<b>업종을 고르세요</b> · 업종이 곧 난이도입니다") +
-    '<div class="sec-head"><h2>입찰 종류를 고르세요</h2><span class="hint">업종이 곧 난이도입니다 · 물품 쉬움 / 용역 보통 / 공사 어려움, 캐릭터를 누르면 그 업종으로 시작합니다</span></div>' +
-    '<div class="cast"><div class="cast-row">' + cast + "</div>" +
-      '<div class="cast-hint">' + (pick ? "누르면 그 업종 회사로 바로 개업합니다" : "캐릭터를 눌러 업종을 고르세요") + "</div></div>" +
-    detail +
-    '<div class="card">' +
-      '<div class="card-title"><span class="ico">?</span>나와 비슷한 유형 찾기</div>' +
-      '<p class="tiny muted" style="margin-bottom:10px">세 가지만 고르면 어울리는 업종을 골라 드립니다. 원하는 업종을 직접 골라도 됩니다.</p>' +
-      quiz + (rec ? '<div class="good" style="margin-top:6px">추천 업종 · <b>' + charOf(rec).name + " (" + charOf(rec).diffLabel + ")</b> — " + charOf(rec).line + "</div>" : "") +
-    "</div>" +
-    guide("업종마다 준비할 것이 다릅니다",
-      ["물품은 세부품명 등록, 용역은 업종 등록, 공사는 건설업 등록이 필요합니다.",
-       "1인 사업자는 4대보험 가입자 명부(상시근로자 1명 이상)에서 막히는 경우가 많습니다.",
-       "등록 처리에 8근무시간이 걸립니다. 마감 하루 전에 시작하면 늦습니다."],
-      "start",
-      '<p class="tiny muted" style="margin-top:8px">이 게임의 순서 · 업종 선택 → 회사 이름 짓기 → 공고 읽기 → 보증금 → 투찰 → 개찰 → 적격심사 → 계약 → 수행·대금 → 사고·제재</p>') +
-    (pick ? '' : '<p class="tiny muted" style="text-align:center;margin-top:12px">위 캐릭터를 먼저 눌러 주세요.</p>');
-  return chrome(body, { bar: !!S.company });
+  const rec = recommendSector();
+  const p1 = {
+    tag: "유형 찾기",
+    body: '<div class="card"><div class="card-title"><span class="ico">?</span>나와 비슷한 유형 찾기</div>' +
+      '<p class="tiny muted">세 가지만 고르면 어울리는 업종을 골라 드립니다. 직접 골라도 됩니다.</p>' + quiz +
+      (rec ? '<div class="good">추천 업종 · <b>' + charOf(rec).name + " (" + charOf(rec).diffLabel + ")</b> — " + charOf(rec).line + "</div>" : "") +
+      "</div>" + guide("업종마다 준비할 것이 다릅니다", [
+        "물품은 세부품명 등록, 용역은 업종 등록, 공사는 건설업 등록이 필요합니다.",
+        "1인 사업자는 4대보험 가입자 명부(상시근로자 1명 이상)에서 막히는 경우가 많습니다.",
+        "등록 처리에 8근무시간이 걸립니다. 마감 하루 전에 시작하면 늦습니다."], "start"),
+    acts: '<button class="btn subtle" data-act="pg" data-k="-1">캐릭터로 돌아가기</button>'
+  };
+  return frame([p0, p1], "sector" + (S.charId || "") + (S.quiz.join("")), 0);
 }
+function miniStat(k, v) { return '<div class="ms"><span>' + k + "</span><b>" + v + "</b></div>"; }
 function portraitMarkup(c, cls) {
   const src = PORTRAITS[c.id] || "";
-  if (!src) return '<div class="ph"><div class="t">' + c.name + " \u00b7 " + c.who + "</div></div>";
-  return '<img class="' + (cls || "") + '" src="' + src + '" alt="' + c.shop + " " + c.owner + '"' +
-    ' onerror="this.closest(&quot;.portrait&quot;).classList.add(&quot;no-img&quot;)" loading="lazy">';
+  if (!src) return '<div class="ph"><div class="t">' + c.name + " · " + c.who + "</div></div>";
+  return '<img class="' + (cls || "") + '" src="' + src + '" alt="' + c.shop + " " + c.owner + '" loading="lazy">';
 }
 function recommendSector() {
   if (S.quiz.some(v => !v)) return null;
   const cnt = { goods: 0, service: 0, works: 0 };
-  S.quiz.forEach(v => cnt[v]++);
+  S.quiz.forEach(v => { if (cnt[v] !== undefined) cnt[v]++; });
   return Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0];
 }
 
 /* =====================================================================
-   [22] 회사 간판 — 회사는 이미 차려져 있다. 이름만 간판에 건다.
+   [22] 회사 간판 — 회사는 이미 차려져 있다
    ===================================================================== */
 function screenName() {
   const c = CH();
   if (!c) { S.screen = "sector"; return screenSector(); }
   if (!S.autoName) S.autoName = genName(S.charId);
-  const body =
-    objbar("<b>회사 이름을 정하세요</b> · 이 이름이 계약서·개찰표까지 따라갑니다") +
-    '<div class="signstage">' +
-      '<div style="text-align:center;font-size:11.5px;font-weight:900;color:#ffdc7a;letter-spacing:.08em;margin-bottom:8px">이런 이름은 어떠세요</div>' +
-      '<div class="signboard"><div class="sn" id="autoName">' + esc(S.autoName) + '</div><div class="ss">' + c.name + " · " + c.owner + "</div></div>" +
-      '<div class="boss"><div class="fig2">' + portraitMarkup(c) + "</div>" +
-        '<div class="say">' + c.shop + " 문 열었습니다! 오늘부터 나라장터에 입찰해 볼 겁니다.</div></div>" +
-      '<div class="sheetgrid">' +
-        '<div class="sq"><div class="k">자본금</div><div class="v">' + eok(c.start.capital) + "</div></div>" +
-        '<div class="sq"><div class="k">신용등급</div><div class="v">' + c.credit + "</div></div>" +
-        '<div class="sq"><div class="k">최근 3년 실적</div><div class="v">' + (c.start.perf ? eok(c.start.perf) : "없음") + "</div></div>" +
-        '<div class="sq"><div class="k">직원</div><div class="v">' + c.start.staff + "명</div></div>" +
+  const p = {
+    tag: "개업",
+    say: sayBoss("간판만 걸면 됩니다. 나라장터에도 등록해 둘게요.", null),
+    body: '<div class="signstage">' +
+      '<div class="signboard"><div class="sn">' + esc(S.autoName) + '</div><div class="ss">' + c.name + " · " + c.owner + "</div></div>" +
+      '<div class="note" style="margin-top:8px">' + c.shop + " 문 열었습니다! 오늘부터 나라장터에 입찰해 볼 겁니다.</div>" +
+      '<div class="mini4">' + miniStat("자본금", eok(c.start.capital)) + miniStat("신용", c.credit) +
+        miniStat("실적", c.start.perf ? eok(c.start.perf) : "없음") + miniStat("직원", c.start.staff + "명") + "</div>" +
+      '<p class="tiny muted" style="margin-top:8px">한글·영문·숫자만, 2~20자. 이 이름이 계약서·개찰표까지 따라갑니다.</p>' +
       "</div>" +
-      '<div class="btn-row"><button class="btn subtle" data-act="reroll">다시 뽑기</button>' +
-        '<button class="btn" style="flex:2" data-act="useAuto">이 이름 쓰기</button></div>' +
-      '<p class="tiny muted" style="margin-top:9px;text-align:center">회사 이름 (2~20자), 한글·영문·숫자만, 빈칸 없이 2~20자로 지어집니다</p>' +
-    "</div>" +
-    guide("이 이름은 어디까지 따라갑니까",
-      ["입찰 참가 신청서, 투찰 화면, 개찰 결과표, 적격심사 대상자 통보문, 계약서, 제재 안내문, 결과 카드에 계속 나옵니다.",
-       "실제 나라장터에서는 사업자등록증의 상호와 똑같이 써야 합니다. 다르면 ‘상호·대표자 변경등록 누락’으로 입찰이 무효가 될 수 있습니다."], null,
-      '<p class="tiny" style="margin-top:9px;color:#c4d8f6">이 이름이 계약서·개찰표까지 따라갑니다.</p>'+
-      '<div class="note" style="margin-top:9px">게임 안에서만 쓰는 가상 이름이며, 실제 사업자 등록과는 아무 관계가 없습니다.</div>');
-  return chrome(body, { bar: false });
+      guide("이 이름은 어디까지 따라갑니까", [
+        "입찰 참가 신청서, 투찰 화면, 개찰 결과표, 적격심사 통보문, 계약서, 제재 안내문, 결과 카드에 계속 나옵니다.",
+        "실제 나라장터에서는 사업자등록증의 상호와 똑같이 써야 합니다. 다르면 ‘상호·대표자 변경등록 누락’으로 입찰이 무효가 될 수 있습니다."]),
+    acts: '<button class="btn subtle" data-act="reroll">다시 뽑기</button>' +
+      '<button class="btn big-btn" data-act="useAuto">이 이름 쓰기</button>'
+  };
+  return frame([p], "name" + S.autoName);
 }
-function bindNameInput() {
-  const inp = document.getElementById("nameInput");
-  if (!inp) return;
-  inp.addEventListener("input", () => {
-    S.typedName = inp.value;
-    const v = validateName(inp.value), h = document.getElementById("nameHint");
-    if (!h) return;
-    h.textContent = v.msg;
-    h.style.color = v.ok ? "var(--green)" : (inp.value.length ? "var(--red)" : "var(--muted)");
-  });
-  inp.addEventListener("keydown", e => { if (e.key === "Enter") { const b = document.querySelector('[data-act="useManual"]'); if (b) b.click(); } });
-}
+function bindNameInput() { }
 
 /* =====================================================================
-   [23] 내 회사 (대시보드)
+   [23] 내 회사 — 자본·성장·다음 할 일
    ===================================================================== */
 function nextTodo() {
   if (S.phase === "list") {
     const open = S.notices.filter(n => { const d = noticeDef(n.nid); return d && eligible(d) && n.close > S.now; });
-    if (!open.length) return "지금은 참가할 수 있는 공고가 없습니다. 조건을 갖추거나 다음 공고를 기다리십시오.";
+    if (!open.length) return "지금은 참가할 수 있는 공고가 없습니다. 회사를 키우거나 다시 스캔하십시오.";
     return "공고를 골라 참가 신청을 하십시오. 참가할 수 있는 공고가 " + open.length + "건 있습니다.";
   }
   return "진행 중인 입찰을 마무리하십시오.";
 }
 function screenDashboard() {
   const c = CH();
+  if (!c) { S.screen = "sector"; return screenSector(); }
   const canCert = c.id === "goods" && !S.ownProd && S.wins >= 1;
-  const certBox = canCert
-    ? '<div class="good" style="margin-top:11px">낙찰 실적이 생겼습니다. ' + T("ownProd", "직접생산확인") +
-      "을 신청할 수 있습니다. (소상공인·소기업 첫 신청 무료, 처리 7일 — " + GS +
-      ')<div class="btn-row" style="margin-top:9px"><button class="btn sm" data-act="applyCert">직접생산확인 신청하기</button></div></div>'
-    : "";
-  const ns = (S.notices || []).map(x => noticeDef(x.nid)).filter(Boolean);
-  const maxBase = ns.length ? Math.max.apply(null, ns.map(x => x.base)) : 0;
-  const maxPerf = ns.length ? Math.max.apply(null, ns.map(x => (x.need && x.need.perf) || 0)) : 0;
-  const cl = (v, max, min) => (max > 0 ? Math.max(min, Math.min(100, Math.round(v / max * 100))) : 0);
+  const ns = (S.notices && S.notices.length ? S.notices : []).map(x => noticeDef(x.nid)).filter(Boolean);
+  const maxBase = ns.length ? Math.max.apply(null, ns.map(x => x.base)) : 1;
+  const cl = v => Math.max(4, Math.min(100, Math.round(v / maxBase * 100)));
   const g = (k, v, p, cls) => '<div class="grow"><span class="gk">' + k + '</span>' +
-    '<div class="gbar"><i class="' + cls + '" style="width:' + p + '%"></i></div>' +
-    '<span class="gv">' + v + "</span></div>";
+    '<div class="gbar"><i class="' + cls + '" style="width:' + p + '%"></i></div><span class="gv">' + v + "</span></div>";
+
+  const p0 = {
+    tag: "다음 할 일",
+    say: sayBoss(nextTodo(), null),
+    body: '<div class="vaultbox" id="capStat"><span class="vcoin">\u20A9</span>' +
+      '<div class="vv"><div class="vk">자본금 · 내 금고</div><div class="vnum" id="capVal">' + eok(S.capital) + "</div></div>" +
+      '<div class="hchip" style="flex-direction:column;align-items:flex-end;gap:2px"><div class="hk">낙찰</div><div class="hv">' + S.wins + "건</div></div></div>" +
+      '<div class="mini4">' + miniStat("최근 3년 실적", S.perf ? eok(S.perf) : "없음") + miniStat("신용등급", S.credit) +
+        miniStat("직원", S.staff + "명") + miniStat("면허", (S.license || "없음").replace(" (사업자등록만)", "없음")) + "</div>" +
+      (S.sanctioned.length ? '<div class="bad" style="margin-top:8px">제재 이력 · ' + S.sanctioned.join(" / ") + "</div>" : "") +
+      (canCert ? '<div class="good" style="margin-top:8px">낙찰 실적이 생겼습니다. ' + T("ownProd", "직접생산확인") + "을 신청할 수 있습니다.<div class=\"btn-row\" style=\"margin-top:7px\"><button class=\"btn sm\" data-act=\"applyCert\">직접생산확인 신청하기</button></div></div>" : ""),
+    acts: '<button class="btn subtle" data-act="toInvest">회사 키우기</button>' +
+      '<button class="btn big-btn" data-act="scan">공고 찾기 (스캔)</button>'
+  };
+
   const ladder = ns.slice().sort((a, b) => a.base - b.base).map((x, i) => {
     const rows = eligibility(x), open = rows.every(r => r.ok);
-    return '<div class="lv ' + (open ? "open" : "lock") + '">' +
-      '<span class="no">' + (i + 1) + "</span>" +
+    return '<div class="lv ' + (open ? "open" : "lock") + '"><span class="no">' + (i + 1) + "</span>" +
       '<div class="bd"><div class="nm">' + x.name + "</div>" +
-      '<div class="req">' + (rows.length
-        ? rows.map(r => '<span class="' + (r.ok ? "" : "no") + '">' + (r.ok ? "\u2713 " : "\u2715 ") + r.label + "</span>").join("")
-        : "<span>자격 조건 없음</span>") + "</div></div>" +
-      '<span class="go2">' + (open ? "도전 가능" : "\uD83D\uDD12 자격 미달") + "</span></div>";
+      '<div class="req">' + (rows.length ? rows.map(r => '<span class="' + (r.ok ? "" : "no") + '">' + (r.ok ? "\u2713 " : "\u2715 ") + r.label + "</span>").join("") : "<span>자격 조건 없음</span>") + "</div></div>" +
+      '<span class="go2">' + (open ? "도전 가능" : "\uD83D\uDD12 잠김") + "</span></div>";
   }).join("");
+  const p1 = {
+    tag: "성장",
+    body: '<div class="card"><div class="card-title"><span class="ico">\u25B2</span>성장 게이지</div>' +
+      g("자본금", eok(S.capital), cl(S.capital), "gold") +
+      g("실적", S.perf ? eok(S.perf) : "없음", cl(S.perf), "") +
+      g("도전", Math.min(S.rounds + 1, ROUNDS()) + " / " + ROUNDS(), Math.round(Math.min(1, S.rounds / Math.max(1, ROUNDS())) * 100), "blue") +
+      '<div class="card-title" style="margin-top:10px"><span class="ico">\u2605</span>단계 해금 · 공고 자격</div>' +
+      '<div class="ladder">' + (ladder || '<div class="tiny muted">아직 공고를 스캔하지 않았습니다.</div>') + "</div>" +
+      '<p class="tiny muted" style="margin-top:8px">낙찰해 수행을 마치면 자본과 실적이 함께 오릅니다. 실적이 쌓이면 더 큰 공고가 열립니다.</p></div>' +
+      guide("이 화면에서 실제로 보는 것", [
+        "나라장터의 ‘나의 입찰’ 화면과 같습니다. 진행 중인 건, 마감된 건, 낙찰·탈락 결과가 모입니다.",
+        "자본금과 실적은 공고의 참가자격을 가르는 기준입니다. 실적은 낙찰받아 수행을 마쳐야 쌓입니다.",
+        "신용등급과 실적은 적격심사의 비가격 점수에도 쓰입니다."], "notice"),
+    acts: '<button class="btn subtle" data-act="scan">공고 다시 스캔</button>' +
+      '<button class="btn big-btn" data-act="toList">공고 목록 보기</button>'
+  };
+  return frame([p0, p1], "dash" + S.wins + S.capital + S.staff + S.credit + S.perf);
+}
 
-  const body =
-    stepsHTML(1) +
-    objbar("<b>다음 할 일</b> · " + nextTodo()) +
-    '<div class="vaultbox" id="capStat" style="margin-top:12px"><span class="vcoin">\u20A9</span>' +
-      '<div class="vv"><div class="vk">자본금 · 내 금고</div>' +
-        '<div class="vnum" id="capVal">' + eok(S.capital) + "</div></div>" +
-      '<div class="hchip" style="flex-direction:column;align-items:flex-end;gap:2px">' +
-        '<div class="hk">낙찰</div><div class="hv">' + S.wins + "건</div></div></div>" +
-    '<div class="mgr"><div class="ph2">' + portraitMarkup(c) + "</div>" +
-      '<div><div class="t1">' + esc(S.company) + " · 사무소 · 직원 " + S.staff + "명</div>" +
-      '<div class="t2">' + c.owner + " · " + c.name + " · " + fDate(S.now) + "</div></div>" +
-      '<span class="tag">' + c.diffLabel + "</span></div>" +
-    '<div class="card">' +
-      '<div class="statgrid">' +
-        '<div class="stat"><div class="k">최근 3년 실적</div><div class="v">' + (S.perf ? eok(S.perf) : "없음") + "</div></div>" +
-        '<div class="stat"><div class="k">신용등급</div><div class="v">' + S.credit + "</div></div>" +
-        '<div class="stat"><div class="k">낙찰</div><div class="v">' + S.wins + "건 <small>/ " + Math.min(S.rounds, ROUNDS()) + "회 도전</small></div></div>" +
-        '<div class="stat"><div class="k">남은 기회</div><div class="v">' + heartsRow() + "</div></div>" +
-      "</div>" +
-      '<div class="ladder-wrap">' +
-        '<div class="ladder-head"><span class="ico">\u25B2</span>성장 게이지 · 자본 · 실적 · 도전</div>' +
-        '<div class="gauges">' +
-          g("자본금", eok(S.capital), cl(S.capital, maxBase, 4), "gold") +
-          g("실적", (S.perf ? eok(S.perf) : "없음"), cl(S.perf, maxPerf, 4), "") +
-          g("도전", Math.min(S.rounds + 1, ROUNDS()) + " / " + ROUNDS(), cl(S.rounds, Math.max(1, ROUNDS()), 5), "blue") +
-        "</div>" +
-        '<div class="ladder-head" style="margin-top:13px"><span class="ico">\u2605</span>단계 해금 · 공고 자격</div>' +
-        '<div class="ladder">' + ladder + "</div>" +
-      "</div>" +
-      (S.sanctioned.length ? '<div class="bad" style="margin-top:11px">제재 이력 · ' + S.sanctioned.join(" / ") + "</div>" : "") +
-      certBox +
-      '<div class="btn-row actions"><button class="btn big-btn" data-act="toList">공고 목록 보기</button>' +
-        '<button class="btn subtle" data-act="toEnd">여기서 마치기</button></div>' +
-    "</div>" +
-    guide("이 화면에서 실제로 보는 것",
-      ["나라장터의 ‘나의 입찰’ 화면과 같습니다. 진행 중인 건, 마감된 건, 낙찰·탈락 결과가 모입니다.",
-       "자본금과 실적은 공고의 참가자격을 가르는 기준입니다. 실적은 낙찰받아 수행을 마쳐야 쌓입니다.",
-       "신용등급과 실적은 적격심사의 비가격 점수에도 쓰입니다."],
-      "notice");
-  return chrome(body);
+/* ---------------------------- 공고 스캔 연출 ---------------------------- */
+let SCAN_RESULT = null;
+function finishScan() {
+  if (!S.notices.length) buildNotices();
+  S.screen = "list"; S.phase = "list"; render();
+}
+function screenScan() {
+  const c = CH();
+  return hudHTML() + '<div class="play"><div class="sc-nav"><span class="dots"><i class="on"></i></span>' +
+    '<span class="lbl">공고 스캔 · 나라장터</span></div>' +
+    '<div class="page"><div class="scanwrap"><div class="radar"><i></i><i></i><i></i></div>' +
+    '<div class="scan-t">나라장터에서 <b>' + c.name + '</b> 공고를 찾는 중…</div>' +
+    '<div class="scan-s">참가자격 · 기초금액 · 마감을 확인합니다</div></div></div>' +
+    '<div class="sc-act"><button class="btn big-btn" disabled>검색 중…</button></div></div>';
+}
+
+/* ---------------------------- 회사 키우기 (성장 투자) ---------------------------- */
+const UPGRADES = [
+  { id: "staff", k: "직원 채용", d: "상시근로자 +1명 · 4대보험 가입자 명부 여력", cost: 8000000, on: () => true, apply: () => { S.staff += 1; } },
+  { id: "credit1", k: "신용등급 상향 BBB → A", d: "신용평가등급 확인서 기준 · 회사 신용", cost: 12000000, on: () => S.credit === "BBB", apply: () => { S.credit = "A"; } },
+  { id: "credit2", k: "신용등급 상향 A → AA", d: "신용평가등급 확인서 기준 · 회사 신용", cost: 25000000, on: () => S.credit === "A", apply: () => { S.credit = "AA"; } },
+  { id: "ownProd", k: "직접생산확인 취득", d: "인쇄물 직접생산확인증명서 · 유효기간 2년", cost: 5000000, on: () => !S.ownProd, apply: () => { S.ownProd = true; } },
+  { id: "license", k: "건설업 등록(토목)", d: "건설산업기본법에 따른 업종 등록", cost: 30000000, on: () => !S.license || S.license.indexOf("건설업") !== 0, apply: () => { S.license = "건설업 등록 (토목)"; } }
+];
+function upgradesOpen() { return UPGRADES.filter(u => u.on()); }
+function screenInvest() {
+  const list = UPGRADES.filter(u => u.on()).map(u => {
+    const can = S.capital >= u.cost;
+    return '<div class="uprow"><div class="ub"><div class="uk">' + u.k + "</div><div class=\"ud\">" + u.d + "</div></div>" +
+      '<button class="btn sm ' + (can ? "" : "subtle") + '" data-act="buy" data-u="' + u.id + '"' + (can ? "" : " disabled") + ">" +
+      eok(u.cost) + "</button></div>";
+  }).join("") || '<div class="tiny muted">지금 올릴 수 있는 것이 없습니다.</div>';
+  const p = {
+    tag: "성장 투자",
+    say: sayBoss("번 돈을 회사에 다시 넣어 봅니다. 어떤 걸 먼저 올릴까.", null),
+    body: '<div class="vaultbox"><span class="vcoin">\u20A9</span><div class="vv"><div class="vk">지금 쓸 수 있는 돈</div>' +
+      '<div class="vnum">' + eok(S.capital) + "</div></div></div>" +
+      '<div class="mini4">' + miniStat("직원", S.staff + "명") + miniStat("신용", S.credit) +
+        miniStat("면허", (S.license || "없음").replace(" (사업자등록만)", "없음")) + miniStat("직접생산", S.ownProd ? "보유" : "없음") + "</div>" +
+      '<div class="card" style="margin-top:8px"><div class="card-title"><span class="ico">\u25B2</span>무엇에 투자할까요</div>' + list +
+      '<p class="tiny muted" style="margin-top:8px">투자 금액과 효과는 <b>게임용 설정</b>입니다. 실제 나라장터의 등록·평가 기준과는 다릅니다.</p></div>' +
+      guide("돈은 어떻게 굴러갑니까", [
+        "자본은 낙찰 → 수행 → 입금으로 늘어납니다. 지출은 계약보증금·원가·투자에서 나갑니다.",
+        "자본과 실적이 공고의 참가자격을 가릅니다. 실적은 수행을 마쳐야 쌓입니다.",
+        "투자로 직원·신용·면허·직접생산을 올려 두면 다음 공고에서 유리합니다."], null),
+    acts: '<button class="btn subtle" data-act="toDash">회사로</button>' +
+      '<button class="btn big-btn" data-act="scan">공고 찾기 (스캔)</button>'
+  };
+  return frame([p], "invest" + S.capital + S.staff + S.credit + (S.ownProd ? 1 : 0) + (S.license || ""));
 }
 
 /* =====================================================================
-   [24] 공고 목록 — 게시판
+   [24] 공고 목록 — 게임판
    ===================================================================== */
 function screenList() {
   if (!S.notices.length) buildNotices();
-  const rows = S.notices.map(n => {
+  const cards = S.notices.map((n, i) => {
     const d = noticeDef(n.nid);
     if (!d) return "";
-    const okAll = eligible(d);
-    const left = n.close - S.now;
-    const dd = dDay(S.now, n.close);           // 날짜끼리 비교 — 시각 때문에 하루가 더 세지지 않는다
-    const closed = left <= 0;
-    return '<button class="notice ' + (okAll ? "" : "locked") + '" data-act="openNotice" data-id="' + d.id + '">' +
-      '<div class="row1"><div><div class="nm">' + d.name + (d.flagship ? ' <span class="tag blue">공고문 전문</span>' : "") + "</div>" +
-      '<div class="tiny muted" style="margin-top:3px">' + d.org + " · " + d.demand + "</div></div>" +
-      (closed ? '<span class="dday soon">마감</span>' : '<span class="dday ' + (dd <= 1 ? "soon" : "") + '">' + (dd === 0 ? "오늘 마감" : "D-" + dd) + "</span>") +
-      "</div>" +
-      '<div class="meta"><span>기초금액 <b>' + won(d.base) + "원</b></span>" +
-        "<span>마감 <b>" + fDT(n.close) + "</b></span>" +
-        (okAll ? '<span class="tag green">참가 가능</span>' : '<span class="tag red">\uD83D\uDD12 참가자격 미달</span>') +
-      "</div></button>";
+    const rows = eligibility(d), ok = rows.every(r => r.ok);
+    const left = n.close - S.now, dd = dDay(S.now, n.close), closed = left <= 0;
+    const base = { id: d.id, name: d.name, base: d.base };
+    const chipz = rows.length ? rows.map(r => '<span class="mini ' + (r.ok ? "on" : "off") + '">' + (r.ok ? "✓ " : "✕ ") + r.label + "</span>").join("") : '<span class="mini on">✓ 자격 조건 없음</span>';
+    return '<button class="ncard ' + (ok && !closed ? "" : "locked") + '" data-act="' + (ok && !closed ? "openNotice" : "") + '" data-id="' + d.id + '" style="animation-delay:' + (i * 90) + 'ms">' +
+      '<div class="nc-top"><span class="nc-dday ' + (dd <= 1 ? "soon" : "") + '">' + (closed ? "마감" : dd === 0 ? "오늘 마감" : "D-" + dd) + "</span>" +
+      (d.flagship ? '<span class="tag blue">공고문 전문</span>' : "") +
+      '<span class="nc-go">' + (ok && !closed ? "입찰하기 ›" : "\uD83D\uDD12 자격 미달") + "</span></div>" +
+      '<div class="nc-name">' + d.name + "</div>" +
+      '<div class="nc-org">' + d.org + " · " + d.demand + "</div>" +
+      '<div class="nc-money">기초금액 <b>' + won(d.base) + "원</b> <span class=\"tiny muted\">· 마감 " + fDT(n.close) + "</span></div>" +
+      '<div class="nc-chips">' + chipz + "</div></button>";
   }).join("");
-
-  const body =
-    stepsHTML(1) +
-    objbar("<b>입찰 공고</b> · 공고를 골라 공고문을 읽으십시오") +
-    '<div class="sec-head"><h2>입찰 공고</h2><span class="hint">' + (S.rounds + 1) + "번째 도전 · " + S.notices.length + "건</span></div>" +
-    '<p class="tiny muted" style="margin:0 2px 10px">공고를 누르면 공고문 전문을 볼 수 있습니다. 참가자격이 모자란 공고는 흐리게 표시됩니다.<br>\u203B 게시 후 제출 개시 시각은 공고마다 다릅니다. 이 게임은 마감 3일 전부터 제출할 수 있습니다.</p>' +
-    '<div class="boards">' + rows + "</div>" +
-    guide("공고문에서 꼭 보는 다섯 가지",
-      ["① 무엇을 사는지 ② 낙찰자를 어떻게 정하는지 ③ 기초금액 ④ 참가자격(자본·실적·면허·직접생산) ⑤ 마감 시각",
-       "공고문 본문에 없고 ‘붙임 서류·특수조건’에만 있는 요건이 있습니다. 그것을 놓쳐 탈락하는 경우가 가장 많습니다.",
-       "정정공고가 나면 남은 기간에 5일 이상을 더해 다시 공고해야 합니다."],
-      "notice") +
-    '<div class="btn-row actions"><button class="btn subtle" data-act="toDash">내 회사로</button></div>';
-  return chrome(body);
+  const open = S.notices.filter(n => { const d = noticeDef(n.nid); return d && eligible(d) && n.close > S.now; }).length;
+  const p = {
+    tag: "공고 " + S.notices.length + "건",
+    say: sayBoss(open ? "참가할 수 있는 공고가 " + open + "건 보입니다. 하나 골라 봅시다." : "지금은 자격이 되는 공고가 없습니다. 회사를 키워야겠습니다.", null),
+    body: '<div class="boards">' + cards + "</div>" +
+      '<p class="tiny muted" style="margin-top:6px">\u203B 제출 개시 시각은 공고마다 다릅니다. 이 게임은 마감 3일 전부터 제출하는 것으로 단순화했습니다.</p>' +
+      guide("공고문에서 꼭 보는 다섯 가지", [
+        "① 무엇을 사는지 ② 낙찰자를 어떻게 정하는지 ③ 기초금액 ④ 참가자격(자본·실적·면허·직접생산) ⑤ 마감 시각",
+        "공고문 본문에 없고 ‘붙임 서류·특수조건’에만 있는 요건이 있습니다. 그것을 놓쳐 탈락하는 경우가 가장 많습니다.",
+        "정정공고가 나면 남은 기간에 5일 이상을 더해 다시 공고해야 합니다."], "notice"),
+    acts: '<button class="btn subtle" data-act="toDash">내 회사로</button>' +
+      '<button class="btn subtle" data-act="scan">다시 스캔</button>'
+  };
+  return frame([p], "list" + S.rounds);
 }
 
 /* =====================================================================
-   [25] 공고 상세 + 공고문 전문
+   [25] 공고 상세 — 요약 · 자격 · 보증금 · 공고문(장면 분할) · 조건 5개
    ===================================================================== */
-function stampFx(title, sub, cb) {
-  /* 보상 팝업 — 진행바가 차고, 아이콘이 빛나고, [획득]으로 받아낸다 (참고 게임 09번 연출) */
-  document.getElementById("modal-root").innerHTML =
-    '<div class="modal-bg"><div class="modal" style="text-align:center;max-width:360px">' +
-    '<div style="width:76px;height:76px;margin:2px auto 10px;border-radius:50%;display:grid;place-items:center;' +
-      'font-size:34px;font-weight:900;color:#8a5a12;background:radial-gradient(circle at 34% 28%,#fff6cf,#ffc73a 52%,#b4711a 100%);' +
-      'border:3px solid #8a5a12;box-shadow:0 6px 0 #6d4408, 0 0 30px rgba(255,199,58,.6);' +
-      'animation:stampIn .75s cubic-bezier(.3,1.3,.5,1) both">\u20A9</div>' +
-    "<h3 style=\"text-align:center\">" + title + "</h3>" +
-    '<p style="text-align:center">' + sub + "</p>" +
-    '<div style="height:13px;border-radius:99px;background:#08101c;overflow:hidden;margin:13px 0 12px;box-shadow:inset 0 2px 5px #000">' +
-      '<i style="display:block;height:100%;width:0;background:linear-gradient(90deg,#ffa51f,#ffe08a);' +
-      'box-shadow:0 0 14px rgba(255,199,58,.9);animation:loadBar 1.15s cubic-bezier(.4,.1,.3,1) forwards"></i></div>' +
-    '<div style="position:relative"><i class="aimarr" style="top:-25px"></i>' +
-      '<button class="btn wide" data-act="fxGet" style="animation:blink 1.5s ease-in-out infinite">획득</button></div>' +
-    "</div></div>";
-  burstGold();
-  setTimeout(() => { document.getElementById("modal-root").innerHTML = ""; if (cb) cb(); }, 1500);
-}
-/* 보상 입자 — 팝업이 떠 있는 동안에도 연출이 계속 돈다 (참고 게임 MOOD 패널 연출) */
-function burstGold() {
-  const cx = window.innerWidth / 2, cy = window.innerHeight / 2 - 60;
-  for (let i = 0; i < 10; i++) {
-    const el = document.createElement("i");
-    el.className = "spark";
-    const a = Math.PI * 2 * i / 10, r = 60 + Math.random() * 60;
-    el.style.left = cx + "px"; el.style.top = cy + "px";
-    el.style.setProperty("--dx", Math.cos(a) * r + "px");
-    el.style.setProperty("--dy", Math.sin(a) * r * 0.6 + "px");
-    el.style.background = i % 2 ? "#ffc73a" : "#fff6cf";
-    el.style.animationDelay = (i * 60) + "ms";
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 1600);
-  }
-}
-
 function screenDetail() {
   const n = noticeOf();
   if (!n) { S.screen = "list"; return screenList(); }
   const c = CH();
   const el3 = eligibility(n), allOk = el3.every(r => r.ok);
   const closed = n.close <= S.now;
-  const qual = el3.map(r =>
-    '<div style="display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed #e6edf4;font-size:14px">' +
-    "<span>" + r.label + "</span>" +
-    '<span style="text-align:right;white-space:nowrap"><b style="color:' + (r.ok ? "var(--green)" : "var(--red)") + '">' + (r.ok ? "충족" : "미달") + '</b> <span class="tiny muted">' + r.mine + "</span></span></div>").join("");
-  if (!el3.length) qual = '<div class="tiny muted">이 공고는 별도 자본·실적 요건을 두지 않았습니다.</div>';
+  const watch = S.watch || (S.watch = buildWatch(n));
+  const answered = watch.items.filter(it => it.right && watch.ans[it.n] === it.right).length;
 
+  /* 1) 요약 */
+  const p0 = {
+    tag: "공고 요약",
+    say: sayBoss("공고를 하나 집었습니다. 먼저 무엇을 사는지, 얼마짜리인지 봅시다.", null),
+    body: '<div class="doc-sum"><div class="tiny muted">' + n.org + " · " + n.demand + "</div>" +
+      '<div class="ds-name">' + n.name + "</div>" +
+      '<div class="tagrow"><span class="tag blue">' + n.method + '</span><span class="tag">' + n.award + '</span><span class="tag">' + n.priceHow + "</span>" +
+      (closed ? '<span class="tag red">마감됨</span>' : '<span class="tag amber">마감 ' + fDT(n.close) + "</span>") + "</div>" +
+      '<div class="mini4">' + miniStat(T("basePrice", "기초금액"), won(n.base)) + miniStat("적격 통과", c.qualScore + "점") +
+        miniStat(T("lowerBound", "낙찰하한율"), n.lbLabel) + miniStat("납품·이행", n.deliverDays + "일") + "</div>" +
+      '<div class="note" style="margin-top:8px">' + n.note + "</div></div>",
+    acts: ""
+  };
+  /* 2) 자격 */
+  const qual = el3.length ? el3.map(r => '<div class="qrow"><span>' + r.label + "</span><b class=\"" + (r.ok ? "ok" : "no") + "\">" + (r.ok ? "충족" : "미달") + "</b></div>").join("")
+    : '<div class="tiny muted">이 공고는 별도 자본·실적 요건을 두지 않았습니다.</div>';
+  const p1 = {
+    tag: "참가자격",
+    say: sayBoss("내 회사로 들어갈 수 있는 공고인지 확인합니다.", null),
+    body: '<div class="card"><div class="card-title"><span class="ico">✓</span>내 자격으로 참가할 수 있습니까</div>' + qual +
+      (allOk ? '<div class="good" style="margin-top:8px">참가자격을 모두 채웠습니다.</div>'
+        : '<div class="bad" style="margin-top:8px">참가자격이 모자랍니다. 이대로는 접수되지 않습니다. 회사를 키우거나 다른 공고를 고르십시오.</div>') + "</div>",
+    acts: ""
+  };
+  /* 3) 보증금 */
   const bondNote = n.base <= RULES.contractBondExempt
     ? "기초금액이 5천만원 이하라 낙찰금액도 5천만원을 넘지 않습니다. 계약보증금은 면제 대상이지만 ‘지급확약서’는 반드시 내야 합니다."
     : "계약보증금은 계약금액의 10%입니다. (낙찰금액이 5천만원 이하가 되면 면제 + 지급확약서)";
-
-  const w = S.watch || (S.watch = buildWatch(n));
-  const answered = w.items.filter(it => w.ans[it.n]).length;
-  const watchHTML = w.items.map(it => {
-    const chosen = w.ans[it.n];
-    const right = chosen === it.right;
+  const p2 = {
+    tag: "보증금",
+    say: sayBoss("돈이 드는 자리입니다. 각서로 넘길 수 있는지 봅시다.", null),
+    body: '<div class="card"><div class="card-title"><span class="ico">\u20A9</span>' + T("bidBond", "입찰보증금") + "을 어떻게 하시겠습니까</div>" +
+      '<p class="tiny muted">입찰금액의 5%(약 ' + won(n.base * RULES.bidBondRate) + '원) 이상을 걸어야 합니다. 조달청은 신용거래불량자 등 예외를 빼고 ' + T("memo", "지급각서") + "로 면제해 줍니다.</p>" +
+      '<div class="opts">' +
+        '<button class="opt ' + (S.bondChoice === "memo" ? "on" : "") + '" data-act="bond" data-v="memo">지급각서로 면제 (돈은 안 냄)</button>' +
+        '<button class="opt ' + (S.bondChoice === "cash" ? "on" : "") + '" data-act="bond" data-v="cash">현금으로 5% 납부</button>' +
+      "</div>" +
+      '<div class="warn" style="margin-top:8px">면제는 ‘안 내도 된다’가 아닙니다. 낙찰받고 정당한 이유 없이 계약하지 않으면 <b>그 금액을 현금으로 징수</b>하고 6개월 입찰 제한을 받습니다.</div>' +
+      '<div class="note" style="margin-top:8px">' + bondNote + "</div></div>",
+    acts: ""
+  };
+  /* 4~) 공고문 — 11개 절을 장면으로 나눈다 (문장은 자르지 않는다) */
+  const dc = docChunks(n);
+  const groups = [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9], [10]];
+  const pages = [p0, p1, p2];
+  groups.forEach((grp, gi) => {
+    const secs = grp.map(k => dc.secs[k]).filter(Boolean).join("");
+    pages.push({
+      tag: "공고문 " + (gi + 1) + "/" + groups.length,
+      body: '<div class="docwrap">' + (gi === 0 ? dc.head : "") + secs + (gi === groups.length - 1 ? dc.foot : "") + "</div>",
+      acts: gi === groups.length - 1 ? "" : ""
+    });
+  });
+  /* 조건 5개 */
+  const watchHTML = watch.items.map(it => {
+    const chosen = watch.ans[it.n], right = chosen === it.right;
     return '<div class="wq ' + (chosen ? (right ? "right" : "wrong") : "") + '">' +
       '<div class="wt"><span class="wn">' + (chosen ? (right ? "✓" : "!") : it.n) + "</span>" + it.q + "</div>" +
       '<div class="opts">' + it.opts.map(o =>
         '<button class="opt ' + (chosen === o ? (o === it.right ? "right" : "wrong") : "") + '" data-act="watch" data-n="' + it.n + '" data-v="' + esc(o) + '">' + o + "</button>").join("") +
       "</div></div>";
   }).join("");
-
-  const body =
-    stepsHTML(1) +
-    objbar("<b>공고 읽기</b> · " + (watchDone() ? "다섯 가지를 모두 짚었습니다. 준비가 되었습니다." : "조건 5개 찾기")) +
-    '<div class="card" style="margin-top:12px">' +
-      '<div class="tiny muted">' + n.org + " · " + n.demand + "</div>" +
-      '<div class="big" style="margin:4px 0 10px;font-size:23px">' + n.name + "</div>" +
-      '<div class="opts" style="margin-bottom:12px">' +
-        '<span class="tag blue">' + n.method + "</span>" +
-        "<span class=\"tag\">" + n.award + "</span>" +
-        "<span class=\"tag\">" + n.priceHow + "</span>" +
-        (closed ? '<span class="tag red">마감됨</span>' : '<span class="tag amber">마감 ' + fDT(n.close) + "</span>") +
-      "</div>" +
-      '<p class="tiny muted" style="margin:-4px 0 12px">※ 게시 후 제출 개시 시각은 <b>공고마다 다릅니다</b>. 아래 입찰서 제출기간은 게임 설정입니다.</p>' +
-      '<div class="statgrid">' +
-        '<div class="stat"><div class="k">' + T("basePrice", "기초금액") + '</div><div class="v">' + won(n.base) + "<small>원</small></div></div>" +
-        '<div class="stat"><div class="k">' + T("qual", "적격심사") + ' 통과점수</div><div class="v">' + c.qualScore + "<small>점</small></div></div>" +
-        '<div class="stat"><div class="k">' + T("lowerBound", "낙찰하한율") + '</div><div class="v">' + n.lbLabel + "</div></div>" +
-        '<div class="stat"><div class="k">납품·이행</div><div class="v">' + n.deliverDays + "<small>일</small></div></div>" +
-      "</div>" +
-      '<div class="note" style="margin-top:12px">' + n.note + "</div>" +
-    "</div>" +
-
-    '<div class="card">' +
-      '<details class="docwrap" id="docWrap" open>' +
-        '<summary><span class="ico">📄</span>공고문 전문 <span class="arrow"></span></summary>' +
-        '<p class="tiny muted" style="margin:10px 0 8px">실제 나라장터 공고문과 같은 순서로 적었습니다. 끝까지 내려 읽어 보십시오. 조건 하나를 놓치면 실제로 실패합니다.</p>' +
-        '<div class="doc-tools">' +
-          '<button class="btn subtle sm" data-act="docAll" data-v="close">모두 접기</button>' +
-          '<button class="btn subtle sm" data-act="docAll" data-v="open">모두 펼치기</button>' +
-          '<button class="btn ghost sm" data-act="docTop">맨 위로</button>' +
-        "</div>" +
-        docHTML(n) +
-      "</details>" +
-    "</div>" +
-
-    '<div class="card">' +
-      '<div class="card-title"><span class="ico">✓</span>내 자격으로 참가할 수 있습니까</div>' + qual +
-      (allOk ? '<div class="good" style="margin-top:12px">참가자격을 모두 채웠습니다.</div>'
-             : '<div class="bad" style="margin-top:12px">참가자격이 모자랍니다. 이대로는 접수되지 않습니다. 다른 공고를 고르십시오.</div>') +
-    "</div>" +
-
-    '<div class="card">' +
-      '<div class="card-title"><span class="ico">₩</span>' + T("bidBond", "입찰보증금") + "을 어떻게 하시겠습니까</div>" +
-      '<p class="tiny muted">입찰금액의 5%(약 ' + won(n.base * RULES.bidBondRate) + '원) 이상을 걸어야 합니다. 조달청은 신용거래불량자 등 예외를 빼고 ' + T("memo", "지급각서") + "로 면제해 줍니다.</p>" +
-      '<div class="opts" style="margin-top:10px">' +
-        '<button class="opt ' + (S.bondChoice === "memo" ? "on" : "") + '" data-act="bond" data-v="memo">지급각서로 면제 (돈은 안 냄)</button>' +
-        '<button class="opt ' + (S.bondChoice === "cash" ? "on" : "") + '" data-act="bond" data-v="cash">현금으로 5% 납부</button>' +
-      "</div>" +
-      '<div class="warn" style="margin-top:12px">면제는 ‘안 내도 된다’가 아닙니다. 낙찰받고 정당한 이유 없이 계약하지 않으면 <b>그 금액을 현금으로 징수</b>하고 6개월 입찰 제한을 받습니다.</div>' +
-    "</div>" +
-
-    '<div class="card">' +
-      '<div class="card-title"><span class="ico">⑤</span>조건 5개 찾기 <span class="tag ' + (watchDone() ? "green" : "line") + '" style="margin-left:6px">' + answered + "/5 확인</span></div>" +
-      '<p class="tiny muted" style="margin-bottom:12px">공고문에서 방금 읽은 다섯 가지입니다. 짚어 두면 투찰 화면 위쪽에 그대로 다시 나옵니다.<br><b>짚지 않고 투찰하면 다음 판에서 서류 하나가 빠져 입찰이 무효가 됩니다.</b></p>' +
-      '<div class="watch">' + watchHTML + "</div>" +
-      (watchDone() ? '<div class="good" style="margin-top:12px">다섯 가지를 모두 짚었습니다. 준비가 되었습니다.</div>' : "") +
-    "</div>" +
-
-    '<div class="btn-row actions">' +
-      (closed ? '<button class="btn big-btn" disabled>마감된 공고입니다</button>'
-        : allOk
-          ? (watchDone()
-              ? '<button class="btn big-btn" data-act="apply">참가 신청하고 투찰하기</button>'
-              : '<button class="btn ghost big-btn" data-act="applyCareless">확인 없이 바로 투찰하기</button>')
-          : '<button class="btn big-btn" disabled>참가자격 미달</button>') +
-      '<button class="btn subtle" data-act="toList">다른 공고 보기</button>' +
-    "</div>" +
-    guide("공고문을 읽지 않으면 100% 틀립니다",
-      ["참가자격은 자본·실적·면허·직접생산 등 여러 항목입니다. 하나만 모자라도 접수 자체가 되지 않습니다.",
-       "기초금액이 본문에 없고 붙임이나 규격서에 붙는 경우가 있습니다. 그럴 때는 발주기관에 문의합니다.",
-       "‘1순위’는 낙찰이 아니라 심사 순서입니다. 계약은 심사를 통과해야 합니다."],
-      "notice");
-  return chrome(body);
+  const done = watchDone();
+  pages.push({
+    tag: "조건 5개",
+    say: sayBoss(done ? "다섯 가지를 다 짚었습니다. 이제 낼 수 있습니다." : "공고문에서 본 다섯 가지를 짚어 둡시다. 놓치면 무효가 됩니다.", null),
+    body: '<div class="card"><div class="card-title"><span class="ico">⑤</span>조건 5개 찾기 <span class="tag ' + (done ? "green" : "line") + '">' + answered + "/5</span></div>" +
+      '<div class="watch">' + watchHTML + "</div></div>",
+    acts: closed ? '<button class="btn big-btn" disabled>마감된 공고입니다</button>'
+      : allOk
+        ? (done ? '<button class="btn subtle" data-act="toList">다른 공고</button><button class="btn big-btn" data-act="apply">참가 신청하고 투찰</button>'
+                : '<button class="btn subtle" data-act="toList">다른 공고</button><button class="btn ghost big-btn" data-act="applyCareless">확인 없이 투찰</button>')
+        : '<button class="btn subtle" data-act="toInvest">회사 키우기</button><button class="btn big-btn" disabled>참가자격 미달</button>'
+  });
+  return frame(pages, "detail:" + S.noticeId + ":" + (S.bondChoice || "") + ":" + answered);
 }
+
 /* =====================================================================
-   [26] 투찰
+   [26] 투찰 — 예비가격번호 · 투찰률 슬라이더
    ===================================================================== */
 function bidError(msg) {
   const box = document.getElementById("bidErr");
-  if (box) { box.className = "bad"; box.innerHTML = msg; box.style.display = "block"; box.scrollIntoView({ block: "center", behavior: "smooth" }); }
+  if (box) { box.className = "bad"; box.innerHTML = msg; box.style.display = "block"; }
   toast("접수되지 않았습니다. 이유를 확인하십시오.");
+}
+/* 낙찰 확률 — 경쟁자 모델로 140번 굴려 본 게임용 추정값 */
+function oddsPct(n, amt) {
+  if (!amt) return 0;
+  const c = CH(), T = 140;
+  let win = 0;
+  for (let i = 0; i < T; i++) {
+    const yej = n.base * (1 + (Math.random() * 0.04 - 0.02));
+    if (amt > yej) continue;
+    if (amt / yej < n.lb) continue;
+    const cnt = int(c.rivals[0], c.rivals[1]);
+    let beaten = false;
+    for (let k = 0; k < cnt; k++) {
+      const ramt = Math.round(n.base * (rivalFloor(n) + Math.random() * RULES.rivalSpread) / 1000) * 1000;
+      if (ramt < amt && ramt <= yej && ramt / yej >= n.lb) { beaten = true; break; }
+    }
+    if (!beaten) win++;
+  }
+  return Math.round(win / T * 100);
+}
+function bidReadoutHTML(n, amt) {
+  amt = Math.floor(amt || 0);
+  if (!amt) return '<div class="tiny muted">슬라이더를 움직이면 확률과 이익이 바로 나옵니다.</div>';
+  const c = CH();
+  const cap = Math.floor(n.base * RULES.capRate), lbAmt = Math.ceil(n.base * n.lb);
+  const rate = amt / n.base * 100;
+  const over = amt >= cap, under = amt < lbAmt;
+  const odds = oddsPct(n, amt);
+  const profit = Math.round(amt * (1 - c.costRate));
+  const cl = over || under ? "bad" : odds >= 60 ? "good" : odds >= 25 ? "warn" : "bad";
+  const msg = over ? "102% 상한 초과 — 접수되지 않습니다 (게임 설정)"
+    : under ? "낙찰하한 아래 — 1순위여도 심사 대상이 아닙니다"
+      : odds >= 60 ? "안전 구간입니다. 이기면 이익은 조금 줄어듭니다."
+        : odds >= 25 ? "승부 구간입니다. 확률과 이익이 맞서는 자리입니다."
+          : "위험 구간입니다. 이익은 크지만 이길 가능성이 낮습니다.";
+  return '<div class="readout ' + cl + '">' +
+    '<div class="ro-top"><div><div class="ro-k">내 투찰률</div><div class="ro-v">' + rate.toFixed(2) + "<small>%</small></div></div>" +
+      '<div style="text-align:right"><div class="ro-k">내 투찰가</div><div class="ro-v2">' + won(amt) + "</div></div></div>" +
+    '<div class="ro-bar"><i style="width:' + Math.min(100, Math.max(2, odds)) + '%"></i><b>' + (over || under ? "0" : odds) + "%</b></div>" +
+    '<div class="ro-row"><span>낙찰 확률 <b>' + (over || under ? 0 : odds) + "%</b></span>" +
+      '<span>예상 이익 <b>' + won(profit) + "원</b></span></div>" +
+    '<div class="ro-msg">' + msg + "</div>" +
+    '<div class="tiny muted" style="margin-top:4px">확률·이익은 <b>게임용 설정</b>입니다. 하한 ' + n.lbLabel + " · 상한 " + won(cap) + "원 미만.</div>" +
+    "</div>";
 }
 function screenBid() {
   const n = noticeOf();
@@ -2675,119 +2899,79 @@ function screenBid() {
   const c = CH();
   if (!S.bid) S.bid = { amount: 0, picks: [], step: "pick" };
   const cap = Math.floor(n.base * RULES.capRate);
-  const lbAmt = Math.ceil(n.base * n.lb);
-  const sb = safeBand(n), safeLow = sb.low, safeHigh = sb.high;
-  /* 안전 구간이 하한율보다 몇 %p 위인지 — 실제 산식 값으로 표시한다 */
-  const pLow = (((safeLow / n.base) * 100) - (n.lb * 100)).toFixed(2);
-  const pHigh = (((safeHigh / n.base) * 100) - (n.lb * 100)).toFixed(2);
   const picksDone = S.bid.picks.length === 2;
-  const amt = S.bid.amount;
-
   const pickBtns = Array.from({ length: 15 }, (_, i) => i + 1).map(k =>
-    '<button class="pn ' + (S.bid.picks.indexOf(k) >= 0 ? "on" : "") + '" data-act="pickNo" data-k="' + k + '"' + (picksDone && S.bid.picks.indexOf(k) < 0 ? " disabled" : "") + ">" + k + "</button>").join("");
+    '<button class="pn ' + (S.bid.picks.indexOf(k) >= 0 ? "on" : "") + '" data-act="pickNo" data-k="' + k + '"' +
+    (picksDone && S.bid.picks.indexOf(k) < 0 ? " disabled" : "") + ">" + k + "</button>").join("");
 
-  const recap = S.watch ? '<div class="card tight" style="background:#fbfdff">' +
-    '<div class="tiny muted" style="margin-bottom:6px">공고문에서 짚어 둔 다섯 가지</div>' +
-    '<dl class="kv" style="font-size:13.5px">' +
-      "<dt>참가자격</dt><dd>" + (S.watch.ans[1] || "확인 안 함") + "</dd>" +
-      "<dt>보증금</dt><dd>" + (S.watch.ans[2] || "확인 안 함") + "</dd>" +
-      "<dt>마감</dt><dd>" + (S.watch.ans[3] || "확인 안 함") + "</dd>" +
-      "<dt>심사기준</dt><dd>" + (S.watch.ans[4] || "확인 안 함") + "</dd>" +
-      "<dt>납기</dt><dd>" + (S.watch.ans[5] || "확인 안 함") + "</dd>" +
-    "</dl></div>" : "";
+  const p0 = {
+    tag: "예비가격번호",
+    say: sayBoss("먼저 번호를 두 개 뽑습니다. 이게 예정가격을 만듭니다.", null),
+    body: '<div class="card"><div class="card-title"><span class="ico">1</span>' + T("yebi", "예비가격") + "번호 2개를 뽑으십시오</div>" +
+      '<p class="tiny muted">조달청 복수예가 입찰은 <b>반드시 2개</b>를 뽑아야 합니다. 15개의 예비가격 중 가장 많이 뽑힌 4개의 평균이 ' + T("yejeong", "예정가격") + "이 됩니다.</p>" +
+      '<div class="picks">' + pickBtns + "</div>" +
+      '<div class="tiny muted" style="margin-top:6px">뽑은 번호 <b>' + (S.bid.picks.length ? S.bid.picks.join(", ") : "없음") + "</b> · " + S.bid.picks.length + "/2</div></div>",
+    acts: picksDone ? '<button class="btn big-btn" data-act="pg" data-k="1">투찰률 정하러 가기</button>' : '<button class="btn big-btn" disabled>번호 2개를 뽑으세요</button>'
+  };
 
-  const body =
-    stepsHTML(3) +
-    objbar("<b>투찰</b> · " + (picksDone ? "투찰가를 쓰십시오" : "예비가격번호 2개를 뽑으십시오")) +
-    '<div class="card" style="margin-top:12px">' +
-      '<div class="tiny muted">' + esc(S.company) + " · " + n.name + "</div>" +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-top:4px">' +
-        '<div><div class="tiny muted">' + T("basePrice", "기초금액") + '</div><div class="big">' + won(n.base) + "<small>원</small></div></div>" +
-        '<div style="text-align:right"><div class="tiny muted">마감</div><div style="font-weight:700">' + fDT(n.close) + "</div></div>" +
-      "</div>" +
-      '<div class="tw" style="margin-top:12px"><table><tbody>' +
-        "<tr><th style='width:38%'>제출할 수 있는 상한</th><td>기초금액의 102% <b>미만</b> — " + won(cap) + "원 미만 <span class='tiny muted'>(게임 설정 기준 · 공고에 따라 다름)</span></td></tr>" +
-        "<tr><th>" + T("lowerBound", "낙찰하한율") + " (예정가격 대비 " + n.lbLabel + ")</th><td>기초금액 기준 참고 금액 <b>" + won(lbAmt) + "원</b> <span class='tiny muted'>" + n.lbBasis + "</span></td></tr>" +
-        "<tr><th>가장 안전한 구간</th><td><b>" + won(safeLow) + " ~ " + won(safeHigh) + "원</b> <span class='tiny muted'>(기초금액 기준 · 하한율보다 " + pLow + "~" + pHigh + "%p 높게, " + GS + ")</span></td></tr>" +
-        "<tr><th>입찰보증금</th><td>" + (S.bondChoice === "memo" ? "지급각서 제출 (면제)" : "현금 " + eok(n.base * RULES.bidBondRate) + " 납부") + "</td></tr>" +
-      "</tbody></table></div>" +
-      '<div class="note" style="margin-top:10px">※ 하한·안전 구간은 <b>기초금액</b> 기준으로 표시한 게임 설정 참고값입니다. <b>실제 판정은 예정가격 기준(±2%)</b>입니다 — 예정가격은 기초금액의 ±2% 안에서 정해지므로, 예정가격이 높게 나오면 같은 금액도 하한 아래로 떨어질 수 있습니다. 하한율·투찰 제한은 공고마다 다르니 공고문을 확인하십시오.</div>' +
-    "</div>" +
-    (S.watch ? recap : '<div class="warn">공고문의 조건 5개를 짚지 않고 왔습니다. 이대로 투찰하면 <b>다음 판에서 서류가 빠져 입찰이 무효</b>가 됩니다.</div>') +
+  const amt = S.bid.amount || Math.round(n.base * 0.95);
+  const ratePct = Math.min(101.99, Math.max(78, amt / n.base * 100));
+  const lbPos = ((n.lb * 100) - 78) / (101.99 - 78) * 100;
+  const recap = S.watch ? '<div class="recap">공고문에서 짚은 것 · ' + (watchDone() ? "5개 모두 확인" : watchScore() + "/5 확인") + "</div>"
+    : '<div class="warn" style="margin-bottom:6px">공고문의 조건 5개를 짚지 않고 왔습니다. 이대로 투찰하면 <b>다음 판에서 서류가 빠져 입찰이 무효</b>가 됩니다.</div>';
 
-    '<div class="card' + (picksDone ? "" : " lockstep") + '">' +
-      '<div class="card-title"><span class="ico">1</span>' + T("yebi", "예비가격") + "번호 2개를 뽑으십시오</div>" +
-      '<p class="tiny muted">조달청 복수예가 입찰은 <b>반드시 2개</b>를 뽑아야 합니다. 15개의 예비가격이 미리 밀봉되어 있고, 가장 많이 뽑힌 4개의 평균이 ' + T("yejeong", "예정가격") + "이 됩니다.</p>" +
-      '<div class="picks" style="margin-top:10px">' + pickBtns + "</div>" +
-      '<div class="tiny muted" style="margin-top:8px">뽑은 번호 <b>' + (S.bid.picks.length ? S.bid.picks.join(", ") : "없음") + "</b> · " + S.bid.picks.length + "/2</div>" +
-    "</div>" +
-
-    '<div class="card' + (picksDone ? "" : " lockstep") + '">' +
-      '<div class="card-title"><span class="ico">2</span>투찰가를 쓰십시오</div>' +
-      '<div class="money-in"><input id="bidAmount" inputmode="numeric" placeholder="0" value="' + (amt ? won(amt) : "") + '"' + (picksDone ? "" : " disabled") + '><span class="unit">원</span></div>' +
-      '<div id="bidJudgeWrap"' + (amt ? "" : ' style="display:none"') + ">" + bidJudgeHTML(n, amt) + "</div>" +
-      '<div class="pricechips">' +
-        '<button class="chip" data-act="fill" data-v="safe"' + (picksDone ? "" : " disabled") + ">안전 구간</button>" +
-        '<button class="chip" data-act="fill" data-v="lb"' + (picksDone ? "" : " disabled") + ">낙찰하한 바로 위 (위험)</button>" +
-        '<button class="chip" data-act="fill" data-v="mid"' + (picksDone ? "" : " disabled") + ">기초금액의 95%</button>" +
-        '<button class="chip" data-act="fill" data-v="base"' + (picksDone ? "" : " disabled") + ">기초금액 그대로</button>" +
-        '<button class="chip" data-act="fill" data-v="under"' + (picksDone ? "" : " disabled") + ">하한 아래</button>" +
-        '<button class="chip" data-act="fill" data-v="over"' + (picksDone ? "" : " disabled") + ">102% 넘겨 보기</button>" +
-      "</div>" +
-      '<div id="bidErr" class="bad" style="display:none;margin-top:10px"></div>' +
-      '<div class="warn" style="margin-top:12px">제출하면 <b>교환·변경·취소가 되지 않습니다.</b> 마감은 내 컴퓨터가 아니라 <b>서버에 도착한 시각</b>으로 봅니다.</div>' +
-    "</div>" +
-
-    guide("값을 어디에 쓰면 좋을까요",
-      ["낙찰하한율보다 낮으면 1순위여도 심사 대상이 되지 않습니다. 다만 실제 판정은 예정가격 기준이라, 하한선 겨우 위에 쓰면 예정가격이 높게 나올 때 하한 아래로 떨어집니다. 그래서 안전 구간을 따로 표시합니다.",
-       "기초금액의 102%를 넘는 투찰은 게임 설정상 시스템이 받지 않습니다(일부 공고 기준). 예정가격을 넘어도 낙찰 대상이 아닙니다.",
-       "같은 곳(같은 IP)에서 두 번 내면 무효입니다.",
-       "이 화면의 상한·하한·안전 구간은 게임 설정 기준입니다. 실제로는 그 공고문과 나라장터 유의사항이 기준입니다."],
-      "bid") +
-
-    '<div class="btn-row actions">' +
-      '<button class="btn big-btn" data-act="submitBid"' + (picksDone ? "" : " disabled") + ">투찰서 제출</button>" +
-      (S.undoLeft > 0 ? '<button class="btn subtle" data-act="undo">참가 신청 되돌리기 (한 판 1번)</button>' : "") +
-      '<button class="btn subtle" data-act="toDetail">공고로 돌아가기</button>' +
-    "</div>" +
-    '<p class="tiny muted" style="margin-top:8px">되돌리기는 이 게임에서만 한 번 허용합니다. 실제로는 투찰한 입찰서를 교환·변경·취소할 수 없습니다.</p>';
-  return chrome(body);
-}
-/* 입력한 금액의 비율·판정 — 값이 바뀔 때마다 다시 그린다 */
-function bidJudgeHTML(n, amt) {
-  amt = Math.floor(amt || 0);
-  if (!n || !amt) return "";
-  const cap = Math.floor(n.base * RULES.capRate), lbAmt = Math.ceil(n.base * n.lb);
-  const rate = amt / n.base * 100;
-  const bad = amt < lbAmt || amt >= cap;
-  /* 하한·상한에 바짝 붙었을 때는 퍼센트 대신 몇 원 차이인지 적는다 */
-  const dLb = amt - lbAmt, dCap = cap - amt;
-  let edge = "";
-  if (Math.abs(dLb) <= 1000) edge = " · 낙찰하한 " + won(lbAmt) + "원" + (dLb === 0 ? "과 같은 금액" : dLb > 0 ? "보다 " + won(dLb) + "원 위" : "보다 " + won(-dLb) + "원 아래");
-  else if (Math.abs(dCap) <= 1000) edge = " · 102% 상한 " + won(cap) + "원" + (dCap > 0 ? "보다 " + won(dCap) + "원 아래" : "과 같은 금액 (접수 안 됨)");
-  return '<div class="gauge"><i class="' + (bad ? "low" : "mid") + '" style="width:' + Math.min(100, Math.max(0, rate - 60) / 45 * 100) + '%"></i></div>' +
-    '<div class="tiny" style="margin-top:6px;color:' + (bad ? "var(--red)" : "var(--green)") + '">' +
-    "기초금액의 " + rate.toFixed(3) + "% (" + won(amt) + "원" + edge + ") · " +
-    (amt < lbAmt ? "낙찰하한 아래 — 1순위여도 심사 대상이 아닙니다" : amt >= cap ? "102% 상한 초과 — 접수되지 않습니다 (게임 설정)" : "제출 가능한 구간입니다") + "</div>";
+  const p1 = {
+    tag: "투찰률",
+    say: sayBoss("낮게 쓰면 이기기 쉽고 남는 게 적습니다. 어디에 걸까요?", null),
+    body: recap +
+      '<div class="card tight"><div class="sl-head"><span>낮게 · 이기기 쉬움</span><span>높게 · 많이 남음</span></div>' +
+      '<div class="sl-wrap"><input id="rateSlider" type="range" min="7800" max="10199" step="5" value="' + Math.round(ratePct * 100) + '" aria-label="투찰률">' +
+        '<i class="sl-mark" style="left:' + lbPos + '%"><b>하한</b></i></div>' +
+      '<div class="sl-pick"><button class="chip" data-act="fill" data-v="safe">안전 구간</button>' +
+        '<button class="chip" data-act="fill" data-v="lb">하한 바로 위</button>' +
+        '<button class="chip" data-act="fill" data-v="mid">95%</button>' +
+        '<button class="chip" data-act="fill" data-v="over">102% 넘겨 보기</button></div>' +
+      '<div id="bidJudgeWrap">' + bidReadoutHTML(n, amt) + "</div>" +
+      '<div class="money-in" style="margin-top:6px"><input id="bidAmount" inputmode="numeric" placeholder="0" value="' + (S.bid.amount ? won(S.bid.amount) : "") + '"><span class="unit">원</span></div>' +
+      '<div id="bidErr" class="bad" style="display:none"></div>' +
+      '<div class="tiny muted" style="margin-top:5px">제출하면 교환·변경·취소가 되지 않습니다. 마감은 서버에 도착한 시각으로 봅니다.</div></div>',
+    acts: '<button class="btn subtle" data-act="pg" data-k="-1">번호 다시</button>' +
+      '<button class="btn big-btn" data-act="submitBid">투찰서 제출</button>'
+  };
+  return frame([p0, p1], "bid:" + S.noticeId + ":" + S.bid.picks.length, picksDone ? 1 : 0);
 }
 function bindBidInput() {
+  const n = noticeOf();
+  const sl = document.getElementById("rateSlider");
   const inp = document.getElementById("bidAmount");
-  if (!inp) return;
-  const apply = () => {
-    const digits = inp.value.replace(/[^0-9]/g, "");
-    const v = digits ? parseInt(digits, 10) : 0;
-    S.bid.amount = v;
-    const pretty = digits ? won(v) : "";
-    if (inp.value !== pretty) inp.value = pretty;
-    const wrap = document.getElementById("bidJudgeWrap");
-    if (wrap) {
-      wrap.innerHTML = bidJudgeHTML(noticeOf(), v);
-      wrap.style.display = v ? "" : "none";
-    }
+  const wrap = document.getElementById("bidJudgeWrap");
+  const paint = amt => {
+    if (wrap) wrap.innerHTML = bidReadoutHTML(n, amt);
+    if (inp && amt) inp.value = won(amt);
   };
-  inp.addEventListener("input", apply);
-  inp.addEventListener("change", apply);
-  inp.addEventListener("keydown", e => { if (e.key === "Enter") { const b = document.querySelector('[data-act="submitBid"]'); if (b) b.click(); } });
+  if (sl) {
+    sl.addEventListener("input", () => {
+      const rate = (+sl.value) / 100;
+      const amt = Math.round(n.base * rate / 1000) * 1000;
+      S.bid.amount = amt;
+      paint(amt);
+    });
+    sl.addEventListener("change", () => { save(); });
+  }
+  if (inp) {
+    const apply = () => {
+      const digits = inp.value.replace(/[^0-9]/g, "");
+      const v = digits ? parseInt(digits, 10) : 0;
+      S.bid.amount = v;
+      const pretty = digits ? won(v) : "";
+      if (inp.value !== pretty) inp.value = pretty;
+      if (sl && v) sl.value = String(Math.min(10199, Math.max(7800, Math.round(v / n.base * 10000))));
+      paint(v);
+    };
+    inp.addEventListener("input", apply);
+    inp.addEventListener("change", apply);
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") { const b = document.querySelector('[data-act="submitBid"]'); if (b) b.click(); } });
+  }
 }
 function submitBid() {
   const n = noticeOf();
@@ -2798,34 +2982,29 @@ function submitBid() {
   if (amt <= 0) return bidError("투찰가를 입력하십시오.");
   if (amt >= cap) return bidError("기초금액의 <b>102%(" + won(cap) + "원)를 넘긴 금액이라 접수되지 않았습니다.</b><br>복수예가 입찰은 기초금액의 102%를 넘는 투찰을 시스템이 제한하는 경우가 많고(게임은 102% 이상 접수 불가로 단순화), 상한은 공고마다 다를 수 있습니다. 금액을 낮춰 다시 쓰십시오.");
   if (n.close <= S.now) return bidError("마감 시각이 지나 접수되지 않았습니다. 서버 접수 시각이 기준입니다.");
-  /* 투찰이 끝나면 게임 시계도 개찰 시각으로 넘어간다 — 통지일·마감일이 개찰보다 앞서지 않게 */
   S.now = n.close;
   S.bid.amount = amt;
   S.rivals = makeRivals(n);
   S.draw = drawYejeong(n);
   S.careless = !watchDone();
-  /* 제출 연출 */
   document.getElementById("modal-root").innerHTML =
     '<div class="modal-bg"><div class="modal" style="max-width:430px">' +
-    '<h3>투찰서를 보내는 중입니다</h3>' +
+    "<h3>투찰서를 보내는 중입니다</h3>" +
     '<p class="tiny muted">서버에 도착한 시각으로 접수됩니다.</p>' +
-    '<svg viewBox="0 0 460 160" width="100%" height="150" aria-hidden="true" style="margin-top:6px">' +
-      '<rect x="0" y="120" width="460" height="2" fill="#dbe3ec"/>' +
+    '<svg viewBox="0 0 460 160" width="100%" height="130" aria-hidden="true"><rect x="0" y="120" width="460" height="2" fill="#dbe3ec"/>' +
       '<g class="env-fly"><rect x="40" y="70" width="54" height="36" rx="3" fill="#fff" stroke="#1163ad" stroke-width="2"/>' +
       '<path d="M40 70 L67 90 L94 70" fill="none" stroke="#1163ad" stroke-width="2"/></g>' +
       '<g class="env-target"><rect x="330" y="34" width="86" height="82" rx="8" fill="#0b2b49"/>' +
-      '<rect x="342" y="48" width="62" height="6" rx="3" fill="#4c7fae"/>' +
-      '<rect x="342" y="62" width="62" height="6" rx="3" fill="#4c7fae"/>' +
       '<circle cx="373" cy="92" r="6" fill="#62d29a"/></g>' +
-      '<text x="373" y="132" text-anchor="middle" font-size="12" fill="#64748b" font-family="sans-serif">나라장터 서버</text>' +
-    "</svg>" +
-    '<div class="tiny" style="text-align:center;color:var(--muted)">접수 후에는 취소할 수 없습니다</div></div></div>';
+      '<text x="373" y="132" text-anchor="middle" font-size="12" fill="#64748b" font-family="sans-serif">나라장터 서버</text></svg>' +
+    '<div class="tiny" style="text-align:center;color:var(--dim)">접수 후에는 취소할 수 없습니다</div></div></div>';
   setTimeout(() => {
     document.getElementById("modal-root").innerHTML = "";
     finishBid();
     S.rounds++;
     S.screen = "open";
     S.phase = "open";
+    window.__revealKey = null;
     render();
   }, 1850);
 }
@@ -2842,13 +3021,11 @@ function finishBid() {
     r.invalid = false;
   });
   const mine = rows.find(r => r.mine);
-  /* 산출내역서 미제출 → 무효 (공고문 10항, 시행규칙 §44) */
   if (S.careless) { mine.invalid = true; mine.valid = false; }
   let rk = 0;
   rows.forEach(r => { if (r.valid) r.rank = ++rk; });
   const qualified = rows.filter(r => r.valid && !r.lbFail);
   qualified.forEach((r, i) => r.qualRank = i + 1);
-
   let outcome;
   if (!rows.some(r => r.valid)) outcome = "유찰";
   else if (mine.invalid) outcome = "무효";
@@ -2856,98 +3033,78 @@ function finishBid() {
   else if (mine.lbFail) outcome = "하한미달";
   else if (qualified.length && qualified[0].mine) outcome = "1순위";
   else outcome = "탈락";
-
   const second = qualified.find(r => !r.mine);
   S.result = { yej, rows, mine, outcome, second, lb: n.lb, careless: !!S.careless, notifiedAt: S.now };
   S.phase = "open";
 }
+
 /* =====================================================================
    [27] 개찰 결과
    ===================================================================== */
 function screenOpen() {
-  const n = noticeOf();
-  const R = S.result;
+  const n = noticeOf(), R = S.result;
   if (!n || !R) { S.screen = "list"; return screenList(); }
-  const d = S.draw;
-  const yej = R.yej;
-  const tone = { "1순위": "good", "탈락": "bad", "하한미달": "bad", "초과": "bad", "무효": "bad", "유찰": "warn" }[R.outcome] || "warn";
-
+  const d = S.draw, yej = R.yej;
   let msg = "";
   if (R.outcome === "1순위") msg = "<b>1순위입니다. 그러나 낙찰이 아닙니다.</b> 여기서부터 " + T("qual", "적격심사") + "가 시작됩니다. 통보를 받은 날부터 <b>5일 안에</b> 서류를 내지 않으면 차순위에게 넘어가고 6개월 제재를 받을 수 있습니다.";
-  else if (R.outcome === "탈락") msg = "1순위는 <b>" + (R.second ? "다른 업체" : "다른 업체") + "</b>가 가져갔습니다. 내 투찰률은 예정가격의 " + (R.mine.rate * 100).toFixed(2) + "%였습니다. 하한선(" + n.lbLabel + ")에 더 가까이 쓰면 다음에는 이길 수 있습니다.";
+  else if (R.outcome === "탈락") msg = "1순위는 <b>다른 업체</b>가 가져갔습니다. 내 투찰률은 예정가격의 " + (R.mine.rate * 100).toFixed(2) + "%였습니다. 하한선(" + n.lbLabel + ")에 더 가까이 쓰면 다음에는 이길 수 있습니다.";
   else if (R.outcome === "하한미달") msg = "<b>가장 낮은 금액을 썼지만 심사 대상이 되지 못했습니다.</b> " + T("lowerBound", "낙찰하한율") + " " + n.lbLabel + "보다 낮았기 때문입니다. 1순위여도 하한 아래면 아예 심사하지 않습니다.";
   else if (R.outcome === "초과") msg = "<b>예정가격을 넘겼습니다.</b> 예정가격(" + won(yej) + "원)보다 비싼 입찰은 낙찰 대상이 되지 않습니다.";
-  else if (R.outcome === "무효") msg = "<b>입찰이 무효가 되었습니다.</b> 산출내역서를 함께 내지 않았습니다. 공고문 10항 유의사항에 적혀 있던 조건입니다. 무효가 되면 순위에도 들지 못합니다. (국가계약법 시행규칙 제44조)";
-  else msg = "<b>유찰입니다.</b> 유효한 입찰자가 없습니다. 재공고하게 되며, 한 번 유찰됐다고 바로 수의계약으로 바뀌지는 않습니다. 재공고 횟수와 수의계약 전환 조건은 계약방법·공고에 따라 다릅니다.";
+  else if (R.outcome === "무효") msg = "<b>입찰이 무효가 되었습니다.</b> 산출내역서를 함께 내지 않았습니다. 공고문 10항 유의사항에 적혀 있던 조건입니다. (국가계약법 시행규칙 제44조)";
+  else msg = "<b>유찰입니다.</b> 유효한 입찰자가 없습니다. 재공고하게 되며, 한 번 유찰됐다고 바로 수의계약으로 바뀌지는 않습니다.";
 
   const rowsH = R.rows.map((r, i) => {
-    const note = r.invalid ? "무효 (산출내역서 미제출)" : r.over ? "예정가격 초과" : r.lbFail ? "하한 미달 · 심사 대상 아님" : (r.qualRank === 1 ? "심사 1순위" : "심사 " + r.qualRank + "순위");
-    return '<tr class="' + (r.mine ? "mine" : "") + '" style="animation-delay:' + (0.12 + i * 0.09) + 's">' +
+    const note = r.invalid ? "무효 (산출내역서 미제출)" : r.over ? "예정가격 초과" : r.lbFail ? "하한 미달" : (r.qualRank === 1 ? "심사 1순위" : "심사 " + r.qualRank + "순위");
+    return '<tr class="' + (r.mine ? "mine" : "") + '">' +
       "<td>" + (r.valid ? '<span class="rankbadge ' + (r.rank === 1 ? "one" : "") + '">' + r.rank + "</span>" : "-") + "</td>" +
       "<td>" + esc(r.name) + (r.mine ? " (나)" : "") + "</td>" +
-      '<td class="r">' + won(r.amount) + "</td>" +
-      '<td class="r">' + (r.rate * 100).toFixed(2) + "%</td>" +
-      '<td style="font-size:12.5px;color:' + (r.invalid || r.over || r.lbFail ? "var(--red)" : "var(--green)") + '">' + note + "</td></tr>";
+      '<td class="r">' + won(r.amount) + '</td><td class="r">' + (r.rate * 100).toFixed(2) + "%</td>" +
+      '<td style="font-size:11.5px;color:' + (r.invalid || r.over || r.lbFail ? "var(--red)" : "var(--mint)") + '">' + note + "</td></tr>";
   }).join("");
 
   const priceList = d.prices.map((p, i) => {
     const no = i + 1, isTop = d.top.indexOf(no) >= 0, cnt = d.counts[no] || 0;
-    return '<div style="display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px dotted #eef2f7;font-size:12.5px;' +
-      (isTop ? "background:#eaf7ef;font-weight:700;color:#0a5c3b;" : "color:#5b6b7d;") + '">' +
-      "<span>" + no + "번" + (isTop ? " ★" : "") + "</span><span>" + won(p) + "원</span><span>" + cnt + "표</span></div>";
+    return '<div class="pz ' + (isTop ? "top" : "") + '">' + no + "번" + (isTop ? "★" : "") + " " + won(p) + " <b>" + cnt + "표</b></div>";
   }).join("");
 
-  const body =
-    stepsHTML(4) +
-    objbar("<b>개찰 결과</b> · " + R.outcome) +
-    '<div class="res-hero ' + (R.outcome === "1순위" ? "win" : "lose") + '" style="margin-top:12px">' +
-      '<div class="stampbig ' + (R.outcome === "1순위" ? "" : "fail") + '" style="color:' + (R.outcome === "1순위" ? "#0a7f5c" : "#a82a21") + '">' + R.outcome + "<small>개찰 결과</small></div>" +
-      '<div class="res-badge">' + (R.outcome === "1순위" ? "✓" : "✕") + "</div>" +
+  const p0 = {
+    tag: "개찰",
+    body: '<div class="res-hero ' + (R.outcome === "1순위" ? "win" : "lose") + '">' +
       '<div class="res-word">' + R.outcome + "</div>" +
-    "</div>" +
-    '<div class="card">' +
-      '<div class="tiny muted">' + n.org + " · " + fDT(n.close) + " 개찰</div>" +
-      '<div class="big" style="margin:3px 0 10px">개찰 결과</div>' +
-      '<div class="statgrid">' +
-        '<div class="stat"><div class="k">' + T("yejeong", "예정가격") + '</div><div class="v">' + won(yej) + "<small>원</small></div></div>" +
-        '<div class="stat"><div class="k">내 투찰가</div><div class="v">' + won(R.mine.amount) + "<small>원</small></div></div>" +
-        '<div class="stat"><div class="k">내 투찰률 (예정가격 대비)</div><div class="v">' + (R.mine.rate * 100).toFixed(2) + "<small>%</small></div></div>" +
-        '<div class="stat"><div class="k">낙찰하한율 (예정가격 대비)</div><div class="v">' + n.lbLabel + "</div></div>" +
-      "</div>" +
-    "</div>" +
-
-    '<div class="card"><div class="card-title"><span class="ico">!</span>결과</div>' +
-      '<div class="' + tone + '">' + msg + "</div>" +
-      (R.careless ? '<div class="bad" style="margin-top:10px">지난 공고문의 조건 5개를 짚지 않고 투찰했습니다. 이번 판의 실패 원인입니다.</div>' : "") +
-    "</div>" +
-
-    '<div class="card sheet-drop">' +
-      '<div class="card-title"><span class="ico">≡</span>개찰 결과표</div>' +
-      '<div class="tw anim"><table><thead><tr><th>순위</th><th>업체명</th><th>투찰가(원)</th><th>투찰률<br><span style="font-weight:400;font-size:11px">예정가격 대비</span></th><th>비고</th></tr></thead>' +
-      "<tbody>" + rowsH + "</tbody></table></div>" +
-      '<p class="tiny muted" style="margin-top:8px"><b>투찰률·낙찰하한율은 모두 예정가격 대비 비율</b>입니다. 1순위는 낙찰 확정이 아니라 <b>심사 순서</b>이며, 심사에서 떨어지면 차순위에게 다시 통보가 갑니다.</p>' +
-    "</div>" +
-
-    '<div class="card"><div class="card-title"><span class="ico">★</span>' + T("yejeong", "예정가격") + "은 이렇게 정해졌습니다</div>" +
+      '<div class="res-sub">' + n.name + "</div></div>" +
+      '<div class="mini4" style="margin-top:8px">' + miniStat(T("yejeong", "예정가격"), won(yej)) + miniStat("내 투찰가", won(R.mine.amount)) +
+        miniStat("내 투찰률", (R.mine.rate * 100).toFixed(2) + "%") + miniStat("낙찰하한율", n.lbLabel) + "</div>" +
+      '<div class="' + (R.outcome === "1순위" ? "good" : "bad") + '" style="margin-top:8px">' + msg + "</div>" +
+      (R.careless ? '<div class="bad" style="margin-top:6px">공고문의 조건 5개를 짚지 않고 투찰했습니다. 이번 판의 실패 원인입니다.</div>' : ""),
+    acts: nextAfterOpen(R)
+  };
+  const p1 = {
+    tag: "결과표",
+    body: '<div class="card"><div class="card-title"><span class="ico">≡</span>개찰 결과표</div>' +
+      '<div class="tw"><table><thead><tr><th>순위</th><th>업체</th><th>투찰가</th><th>투찰률</th><th>비고</th></tr></thead><tbody>' + rowsH + "</tbody></table></div>" +
+      '<p class="tiny muted" style="margin-top:6px">투찰률은 모두 <b>예정가격 대비</b>입니다. 1순위는 낙찰 확정이 아니라 <b>심사 순서</b>입니다.</p></div>',
+    acts: '<button class="btn subtle" data-act="pg" data-k="-1">결과로</button>'
+  };
+  const p2 = {
+    tag: "예정가격",
+    body: '<div class="card"><div class="card-title"><span class="ico">★</span>' + T("yejeong", "예정가격") + "은 이렇게 정해졌습니다</div>" +
       '<p class="tiny muted">' + T("yebi", "예비가격") + " 15개 중 가장 많이 뽑힌 4개(★)의 평균입니다. 끝수는 소수점 첫째자리에서 올림합니다.</p>" +
-      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:8px">' + priceList + "</div>" +
-      '<div class="calc" style="margin-top:10px">(' + d.list.map(v => won(v)).join(" + ") + ") ÷ 4 = " + wonP(d.avg) + "원\n→ " + (d.avg === yej ? "끝수 없음 — 그대로 " : "소수점 이하 올림 — ") + won(yej) + "원</div>" +
-    "</div>" +
-
-    guide("개찰 뒤에 할 일",
-      ["1순위면 적격심사 서류를 5일 안에 냅니다. 부족하면 7일 안에 보완합니다.",
-       "부적격 통보를 받으면 3일 안에 재심사를 요청할 수 있지만, 새 서류를 붙일 수는 없습니다.",
-       "내 입찰이 무효인지, 자격 미달인지도 이때 확인합니다."],
-      "open") +
-    '<div class="btn-row actions">' + nextAfterOpen(R) + "</div>";
-  return chrome(body);
+      '<div class="pzgrid">' + priceList + "</div>" +
+      '<div class="calc" style="margin-top:8px">(' + d.list.map(v => won(v)).join(" + ") + ") ÷ 4 = " + wonP(d.avg) + "원\n→ " + (d.avg === yej ? "끝수 없음 — 그대로 " : "소수점 이하 올림 — ") + won(yej) + "원</div></div>" +
+      guide("개찰 뒤에 할 일", [
+        "1순위면 적격심사 서류를 5일 안에 냅니다. 부족하면 7일 안에 보완합니다.",
+        "부적격 통보를 받으면 3일 안에 재심사를 요청할 수 있지만, 새 서류를 붙일 수는 없습니다.",
+        "내 입찰이 무효인지, 자격 미달인지도 이때 확인합니다."], "open"),
+    acts: '<button class="btn subtle" data-act="pg" data-k="-1">결과표로</button>'
+  };
+  return frame([p0, p1, p2], "open:" + yej + ":" + R.mine.amount + ":" + R.outcome);
 }
 function nextAfterOpen(R) {
   if (R.outcome === "1순위") return '<button class="btn big-btn" data-act="toQual">적격심사 서류 내러 가기</button>';
-  if (R.outcome === "유찰") return '<button class="btn big-btn" data-act="afterLose">다음 공고 보기</button>';
   return '<button class="btn big-btn" data-act="afterLose">다음 공고 보기</button>' +
-    '<button class="btn subtle" data-act="toEnd">결과 카드 보기</button>';
+    '<button class="btn subtle" data-act="toEnd">결과 카드</button>';
 }
+
 /* =====================================================================
    [28] 적격심사
    ===================================================================== */
@@ -2966,69 +3123,53 @@ function screenQual() {
     S.qual = { docs: QUAL_DOCS.map(() => auto), notifiedAt: S.now, deadline: addBizDays(S.now, RULES.qualDocDays), fixDeadline: null, phase: "form", score: null, tried: 0 };
   }
   const q = S.qual;
-  const left = bizDaysLeft(S.now, q.deadline);   // 토·일·공휴일은 세지 않는다
-  const docsH = QUAL_DOCS.map((d, i) =>
-    '<li class="' + (q.docs[i] ? "on" : "") + '" data-act="doc" data-i="' + i + '"><span class="box">' + (q.docs[i] ? "✓" : "") + "</span><span>" + d + "</span></li>").join("");
+  const left = bizDaysLeft(S.now, q.deadline);
+  const docsH = QUAL_DOCS.map((d2, i) =>
+    '<li class="' + (q.docs[i] ? "on" : "") + '" data-act="doc" data-i="' + i + '"><span class="box">' + (q.docs[i] ? "✓" : "") + "</span><span>" + d2 + "</span></li>").join("");
   const missing = q.docs.filter(x => !x).length;
 
-  let core = "";
+  let p1, p2;
   if (q.phase === "form") {
-    core =
-      '<div class="card">' +
-        '<div class="card-title"><span class="ico">1</span>서류를 5일 안에 내십시오</div>' +
-        '<p class="tiny muted">' + T("qual", "적격심사") + ' 통보를 받은 날부터 <b>5일</b>(공휴일 제외) 안에 나라장터로 제출합니다. 부족하면 <b>7일</b> 안에 보완합니다.</p>' +
-        '<div class="warn" style="margin:10px 0"><b>남은 기한 ' + left + "영업일 (D-" + left + ")</b> (마감 " + fDate(q.deadline) + ")" +
-        (q.fixDeadline ? " · 보완 기한 " + fDate(q.fixDeadline) : "") + "</div>" +
-        '<p class="tiny muted" style="margin:-4px 0 10px">토요일·일요일·공휴일은 기한에 세지 않습니다. 그래서 마감일이 일요일로 떨어지지 않습니다.</p>' +
+    p1 = {
+      tag: "서류 5일",
+      say: sayBoss("1순위입니다. 낙찰이 아니라 심사 대상입니다. 5일 안에 서류를 내야 합니다.", null),
+      body: '<div class="noticebox"><div class="tiny muted">적격심사 대상자 통보</div>' +
+        '<div class="nb-name">' + esc(S.company) + " 귀하</div>" +
+        '<div class="tiny">「' + n.name + '」에 대하여 <b>적격심사 대상자</b>로 선정되었음을 통보합니다. 심사를 통과해야 낙찰자로 확정됩니다.' +
+        "<br>심사 대상 금액(내 투찰가)은 <b>" + won(R.mine.amount) + "원</b>입니다.</div>" +
+        '<div class="tiny muted">' + n.org + " · " + fDT(q.notifiedAt || S.now) + "</div></div>" +
+        '<div class="warn" style="margin-top:8px"><b>남은 기한 ' + left + "영업일 (D-" + left + ")</b> · 마감 " + fDate(q.deadline) + (q.fixDeadline ? " · 보완 기한 " + fDate(q.fixDeadline) : "") + "</div>" +
         '<ul class="checklist">' + docsH + "</ul>" +
-        (q.tried > 0 ? '<div class="warn">서류가 빠져 보완 요청을 받았습니다. <b>빠진 서류를 채워 다시 내십시오.</b></div>' : "") +
-        '<div class="tiny muted" style="margin-top:6px">※ 서류 5종 구성은 게임에서 단순화했습니다 (' + GS + ").</div>" +
-        '<div class="btn-row">' +
-          '<button class="btn" data-act="submitQual">서류 제출하기' + (missing ? " (" + missing + "개 빠짐)" : "") + "</button>" +
-          '<button class="btn subtle" data-act="delayQual">하루 미루기</button>' +
-        "</div>" +
-      "</div>";
-  } else if (q.phase === "result") {
+        (q.tried > 0 ? '<div class="warn">서류가 빠져 보완 요청을 받았습니다. 빠진 서류를 채워 다시 내십시오.</div>' : "") +
+        '<div class="tiny muted" style="margin-top:4px">토·일·공휴일은 기한에 세지 않습니다. 서류 5종 구성은 게임에서 단순화했습니다 (' + GS + ").</div>",
+      acts: '<button class="btn subtle" data-act="delayQual">하루 미루기</button>' +
+        '<button class="btn big-btn" data-act="submitQual">서류 제출' + (missing ? " (" + missing + "개 빠짐)" : "") + "</button>"
+    };
+  } else {
     const pass = !q.failed && q.score >= c.qualScore;
     let headline = pass ? "적격 — 통과했습니다."
       : q.failed === "late" ? "서류를 내지 않아 차순위로 넘어갑니다."
-      : q.failed === "docs" ? "보완 기한 안에 서류를 채우지 못했습니다."
-      : "부적격 — " + c.qualScore + "점에 " + (c.qualScore - q.score).toFixed(2) + "점 모자랍니다.";
+        : q.failed === "docs" ? "보완 기한 안에 서류를 채우지 못했습니다."
+          : "부적격 — " + c.qualScore + "점에 " + (c.qualScore - q.score).toFixed(2) + "점 모자랍니다.";
     const sub = pass ? "이제 낙찰자로 확정됩니다. 다음은 계약입니다."
       : q.failed ? "정당한 사유 없이 계약을 체결하지 않은 것으로 보아 <b>6개월 입찰참가자격 제한</b>이 남습니다. (시행규칙 별표2 제13호 가목)"
-      : "부적격 통보를 받으면 <b>3일 안에</b> 재심사를 요청할 수 있습니다. 다만 <b>새 서류를 덧붙일 수는 없습니다.</b>";
-    core =
-      '<div class="card"><div class="card-title"><span class="ico">2</span>심사 결과</div>' +
+        : "부적격 통보를 받으면 <b>3일 안에</b> 재심사를 요청할 수 있습니다. 다만 <b>새 서류를 덧붙일 수는 없습니다.</b>";
+    p2 = {
+      tag: "심사 결과",
+      body: '<div class="card"><div class="card-title"><span class="ico">2</span>심사 결과</div>' +
         '<div class="' + (pass ? "good" : "bad") + '"><b>' + headline + "</b> " + sub + "</div>" +
-        (!q.failed ? '<div class="calc" style="margin-top:12px">입찰가격 평점 = 70 − 2 × |90 − (내 투찰가 ÷ 예정가격 × 100)|\n' +
-          "            = 70 − 2 × |90 − " + (R.mine.rate * 100).toFixed(2) + "|\n" +
-          "            = " + q.pricePart.toFixed(2) + "점\n" +
+        (!q.failed ? '<div class="calc" style="margin-top:8px">입찰가격 평점 = 70 − 2 × |90 − (내 투찰가 ÷ 예정가격 × 100)|\n' +
+          "            = 70 − 2 × |90 − " + (R.mine.rate * 100).toFixed(2) + "|\n            = " + q.pricePart.toFixed(2) + "점\n" +
           "비가격 평점 (실적·신용·경영상태) = " + RULES.nonPriceScore.toFixed(2) + "점 (" + GS + ")\n" +
           "합계 = " + q.score.toFixed(2) + "점 / 통과점수 " + c.qualScore + "점</div>" : "") +
-        '<p class="tiny muted" style="margin-top:8px">근거 · ' + c.qualBasis + ". 비가격 배점은 게임에서 30점 만점으로 단순화했습니다.</p>" +
-        (pass ? '<div class="tiny muted" style="margin-top:8px">낙찰자 결정 통지 · <b>' + fDT(R.awardedAt || S.now) + '</b> — 계약은 이 통지를 받은 날부터 10일 이내입니다.</div>' : "") +
-        '<div class="btn-row">' +
-          (pass ? '<button class="btn" data-act="toContract">계약하러 가기</button>'
-                : (q.failed ? '<button class="btn" data-act="giveUpQual">다음 공고로</button>'
-                            : '<button class="btn ghost" data-act="reexam">재심사 요청 (3일)</button>' +
-                              '<button class="btn subtle" data-act="giveUpQual">포기하고 다음 공고</button>')) +
-        "</div>" +
-      "</div>";
+        '<p class="tiny muted" style="margin-top:6px">근거 · ' + c.qualBasis + ". 비가격 배점은 게임에서 30점 만점으로 단순화했습니다.</p>" +
+        (pass ? '<div class="tiny muted" style="margin-top:6px">낙찰자 결정 통지 · <b>' + fDT(R.awardedAt || S.now) + "</b> — 계약은 이 통지를 받은 날부터 10일 이내입니다.</div>" : ""),
+      acts: pass ? '<button class="btn big-btn" data-act="toContract">계약하러 가기</button>'
+        : (q.failed ? '<button class="btn big-btn" data-act="giveUpQual">다음 공고로</button>'
+          : '<button class="btn subtle" data-act="giveUpQual">포기하고 다음 공고</button><button class="btn big-btn" data-act="reexam">재심사 요청 (3일)</button>')
+    };
   }
-  const body =
-    stepsHTML(5) +
-    objbar("<b>적격심사</b> · " + (q.phase === "result" ? "심사 결과" : "서류를 5일 안에 내십시오")) +
-    '<div class="card tight" style="background:#fbfdff;margin-top:12px"><div class="tiny muted">적격심사 대상자 통보</div>' +
-      '<div style="font-weight:700;font-size:16px;margin:3px 0">' + esc(S.company) + " 귀하</div>" +
-      '<div class="tiny">「' + n.name + '」에 대하여 <b>적격심사 대상자</b>로 선정되었음을 통보합니다. 이것은 낙찰 확정이 아니라 심사 대상 통보입니다. 심사를 통과해야 낙찰자로 확정됩니다.<br>심사 대상 금액(내 투찰가)은 <b>' + won(R.mine.amount) + "원</b>입니다.</div>" +
-      '<div class="tiny muted" style="margin-top:5px">' + n.org + " · " + fDT(q.notifiedAt || S.now) + '</div><div class="seal" style="position:absolute"></div></div>' +
-    core +
-    guide("적격심사에서 실제로 많이 틀립니다",
-      ["자기평가 및 심사표를 잘못 써서 점수가 깎입니다. 실적증명서를 미리 발급받아 두어야 합니다.",
-       "서류를 안 내고 버티면 차순위로 넘어가고, 6개월 입찰 제한을 받을 수 있습니다.",
-       "재심사는 ‘다시 계산해 달라’는 것이지, 새 서류를 붙이는 자리가 아닙니다."],
-      "qual");
-  return chrome(body);
+  return frame([p1, p2], "qual:" + q.phase + ":" + q.tried + ":" + (q.failed || ""));
 }
 
 /* =====================================================================
@@ -3043,45 +3184,37 @@ function screenContract() {
     const exempt = amount <= RULES.contractBondExempt;
     S.contract = { amount, bond, exempt, promised: false, done: false };
   }
-  const k = S.contract;
-  const amount = k.amount;
-  const late = lateFee(amount, c.lateRate, 1);
-
+  const k = S.contract, amount = k.amount, late = lateFee(amount, c.lateRate, 1);
+  const p0 = {
+    tag: "계약서",
+    say: sayBoss("낙찰됐습니다. 계약서를 봅시다. 10일 안에 해야 합니다.", null),
+    body: '<div class="card"><div class="tiny muted">낙찰자 결정 통지 후 10일 안에 계약합니다 · 남은 기한 ' +
+      Math.max(0, RULES.contractDays - dDay(R.awardedAt || R.notifiedAt || S.now, S.now)) + "일 (통지 " + fDate(R.awardedAt || R.notifiedAt || S.now) + ")</div>" +
+      '<dl class="kv"><dt>계약상대자</dt><dd>' + esc(S.company) + "</dd>" +
+      "<dt>계약명</dt><dd>" + n.name + "</dd>" +
+      "<dt>계약금액</dt><dd>" + won(amount) + "원 (부가세 포함)</dd>" +
+      "<dt>계약기간</dt><dd>계약일부터 " + n.deliverDays + "일</dd>" +
+      "<dt>" + T("late", "지체상금") + "률</dt><dd>" + c.lateLabel + " · 하루 " + won(late.raw) + "원</dd>" +
+      "<dt>지체상금 상한</dt><dd>계약금액의 30% = " + won(late.cap) + "원</dd>" +
+      "<dt>" + T("contractBond", "계약보증금") + "</dt><dd>" + (k.exempt ? "면제 (지급확약서 제출)" : won(k.bond) + "원 (10%)") + "</dd>" +
+      "<dt>검사·대금</dt><dd>검사 14일 이내 · 청구 후 5일 이내</dd></dl></div>",
+    acts: ""
+  };
   const bondBox = k.exempt
-    ? '<div class="good"><b>계약보증금 면제</b> — 계약금액 ' + won(amount) + "원은 5천만원 이하입니다.<br>" +
-      "면제여도 <b>지급확약서</b>는 내야 합니다. 계약을 어기면 계약금액의 10%(" + won(k.bond) + "원)를 현금으로 냅니다.</div>"
-    : '<div class="warn"><b>계약보증금 ' + won(k.bond) + "원</b> — 계약금액의 10%입니다. 계약체결일까지 내야 합니다.<br>" +
-      "내 자본 " + eok(S.capital) + "에서 빼면 " + eok(S.capital - k.bond) + "이 남습니다.</div>";
-
-  const body =
-    stepsHTML(6) +
-    objbar("<b>계약</b> · 낙찰자 결정 통지 후 10일 안에 계약합니다") +
-    '<div class="card" style="margin-top:12px">' +
-      '<div class="tiny muted">낙찰자 결정 통지 후 10일 안에 계약합니다 · 남은 기한 ' + Math.max(0, RULES.contractDays - dDay(R.awardedAt || R.notifiedAt || S.now, S.now)) + "일 (통지 " + fDate(R.awardedAt || R.notifiedAt || S.now) + ")" +
-      '<div class="big" style="margin:4px 0 8px">계약서</div>' +
-      '<dl class="kv">' +
-        "<dt>계약상대자</dt><dd>" + esc(S.company) + "</dd>" +
-        "<dt>계약명</dt><dd>" + n.name + "</dd>" +
-        "<dt>계약금액</dt><dd>" + won(amount) + "원 (부가세 포함)</dd>" +
-        "<dt>계약기간</dt><dd>계약일부터 " + n.deliverDays + "일</dd>" +
-        "<dt>" + T("late", "지체상금") + "률</dt><dd>" + c.lateLabel + " · 하루 " + won(late.raw) + "원</dd>" +
-        "<dt>지체상금 상한</dt><dd>계약금액의 30% = " + won(late.cap) + "원</dd>" +
-        "<dt>" + T("contractBond", "계약보증금") + "</dt><dd>" + (k.exempt ? "면제 (지급확약서 제출)" : won(k.bond) + "원 (10%)") + "</dd>" +
-        "<dt>검사·대금</dt><dd>검사 14일 이내 · 청구 후 5일 이내(공휴일·토요일 제외)</dd>" +
-      "</dl>" +
-      '<div style="margin-top:12px">' + bondBox + "</div>" +
-      (k.exempt ? '<ul class="checklist" style="margin-top:10px"><li class="' + (k.promised ? "on" : "") + '" data-act="promise"><span class="box">' + (k.promised ? "✓" : "") + '</span><span>지급확약서를 제출했습니다</span></li></ul>' : "") +
-      '<div class="btn-row">' +
-        '<button class="btn" data-act="signContract"' + (k.exempt && !k.promised ? " disabled" : "") + ">계약 체결</button>" +
-        '<button class="btn danger" data-act="giveUpContract">계약 포기</button>' +
-      "</div>" +
+    ? '<div class="good"><b>계약보증금 면제</b> — 계약금액 ' + won(amount) + "원은 5천만원 이하입니다.<br>면제여도 <b>지급확약서</b>는 내야 합니다. 어기면 10%(" + won(k.bond) + "원)를 현금으로 냅니다.</div>"
+    : '<div class="warn"><b>계약보증금 ' + won(k.bond) + "원</b> — 계약금액의 10%입니다. 계약체결일까지 내야 합니다.<br>내 자본 " + eok(S.capital) + "에서 빼면 " + eok(S.capital - k.bond) + "이 남습니다.</div>";
+  const p1 = {
+    tag: "체결",
+    body: '<div class="card">' + bondBox +
+      (k.exempt ? '<ul class="checklist" style="margin-top:8px"><li class="' + (k.promised ? "on" : "") + '" data-act="promise"><span class="box">' + (k.promised ? "✓" : "") + "</span><span>지급확약서를 제출했습니다</span></li></ul>" : "") +
       '<p class="tiny muted" style="margin-top:8px">계약 포기는 보증금을 잃고 <b>6개월 입찰 제한</b>을 받습니다. 화면에 남겨 둔 이유는 실제로 그렇게 되기 때문입니다.</p>' +
-    "</div>" +
-    guide("계약에서 걸리는 두 가지",
-      ["계약보증금을 안 내면 계약 자체가 안 됩니다. 면제여도 지급확약서가 필요합니다.",
-       "낙찰통지 후 10일 안에 계약서를 작성하지 않으면 계약을 포기한 것으로 처리될 수 있습니다."],
-      "contract");
-  return chrome(body);
+      guide("계약에서 걸리는 두 가지", [
+        "계약보증금을 안 내면 계약 자체가 안 됩니다. 면제여도 지급확약서가 필요합니다.",
+        "낙찰통지 후 10일 안에 계약서를 작성하지 않으면 계약을 포기한 것으로 처리될 수 있습니다."], "contract") + "</div>",
+    acts: '<button class="btn danger" data-act="giveUpContract">계약 포기</button>' +
+      '<button class="btn big-btn" data-act="signContract"' + (k.exempt && !k.promised ? " disabled" : "") + ">계약 체결</button>"
+  };
+  return frame([p0, p1], "contract:" + (k.promised ? 1 : 0));
 }
 
 /* =====================================================================
@@ -3092,86 +3225,64 @@ function screenPerform() {
   if (!n || !R || !S.contract) { S.screen = "list"; return screenList(); }
   const k = S.contract;
   if (!S.perform) S.perform = { step: 0, lateDays: 0, fee: 0, invoice: null, paid: null, delivered: false, inspAsk: null, inspDue: null, claimDay: null, payDue: null };
-  const p = S.perform;
-  const amount = k.amount;
+  const p = S.perform, amount = k.amount;
   const targets = [0.08, 0.42, 0.72, 0.95];
-  const scene = sceneSVG(c.id, targets[Math.min(p.step, targets.length - 1)]);
-
-  let core = "";
+  const art = (p.step <= 2) ? sceneSVG(c.id, targets[Math.min(p.step, targets.length - 1)]) : "";
+  let body = "", acts = "", tag = "";
   if (p.step === 0) {
-    core = '<div class="card"><div class="card-title"><span class="ico">1</span>일을 시작합니다</div>' +
-      "<p>계약기간은 계약일부터 <b>" + n.deliverDays + "일</b>입니다. 지정 납품일은 <b>" + fDate(k.due || nextBiz(addDays(S.now, n.deliverDays))) + "</b>이고, 오늘 착수합니다.</p>" +
-      '<div class="btn-row"><button class="btn" data-act="work" data-step="1">작업 시작</button></div></div>';
+    tag = "착수";
+    body = '<div class="card"><div class="card-title"><span class="ico">1</span>일을 시작합니다</div>' +
+      "<p>계약기간은 계약일부터 <b>" + n.deliverDays + "일</b>입니다. 지정 납품일은 <b>" + fDate(k.due || nextBiz(addDays(S.now, n.deliverDays))) + "</b>이고, 오늘 착수합니다.</p></div>";
+    acts = '<button class="btn big-btn" data-act="work" data-step="1">작업 시작</button>';
   } else if (p.step === 1) {
-    core = '<div class="card"><div class="card-title"><span class="ico">2</span>작업 중</div>' +
-      "<p>" + (c.id === "goods" ? "원단에 인쇄가 올라가고 있습니다." : c.id === "service" ? "무대와 조명을 세우고 있습니다." : "기초를 놓고 골조를 올리고 있습니다.") + "</p>" +
-      '<div class="btn-row"><button class="btn" data-act="work" data-step="2">계속 진행</button></div></div>';
+    tag = "작업 중";
+    body = '<div class="card"><div class="card-title"><span class="ico">2</span>작업 중</div>' +
+      "<p>" + (c.id === "goods" ? "원단에 인쇄가 올라가고 있습니다." : c.id === "service" ? "무대와 조명을 세우고 있습니다." : "기초를 놓고 골조를 올리고 있습니다.") + "</p></div>";
+    acts = '<button class="btn big-btn" data-act="work" data-step="2">계속 진행</button>';
   } else if (p.step === 2) {
-    core = '<div class="card"><div class="card-title"><span class="ico">3</span>완성했습니다</div>' +
-      '<p class="tiny muted">지정 납품일은 <b>' + fDate(k.due || nextBiz(addDays(S.now, n.deliverDays))) + "</b>입니다. (계약일부터 " + n.deliverDays + "일 · 그날이 주말·공휴일이면 다음 영업일)</p>" +
-      "<p>납품·이행완료 통지를 <b>날짜가 남는 형태</b>로 해야 합니다. 구두 통지는 나중에 지체일수 다툼이 됩니다.</p>" +
-      '<div class="btn-row"><button class="btn" data-act="work" data-step="3">납품 완료 보고</button></div></div>';
+    tag = "완성";
+    body = '<div class="card"><div class="card-title"><span class="ico">3</span>완성했습니다</div>' +
+      '<p class="tiny muted">지정 납품일은 <b>' + fDate(k.due || nextBiz(addDays(S.now, n.deliverDays))) + "</b>입니다. (계약일부터 " + n.deliverDays + "일)</p>" +
+      "<p>납품·이행완료 통지를 <b>날짜가 남는 형태</b>로 해야 합니다. 구두 통지는 나중에 지체일수 다툼이 됩니다.</p></div>";
+    acts = '<button class="btn big-btn" data-act="work" data-step="3">납품 완료 보고</button>';
   } else if (p.step === 3) {
+    tag = "지체상금";
     const lf = lateFee(amount, c.lateRate, p.lateDays);
-    core = '<div class="card"><div class="card-title"><span class="ico">4</span>' + T("late", "지체상금") + "</div>" +
+    body = '<div class="card"><div class="card-title"><span class="ico">4</span>' + T("late", "지체상금") + "</div>" +
       '<div class="bad">지정 납품일 <b>' + fDate(k.due || S.now) + "</b>보다 <b>" + p.lateDays + "일</b> 늦은 <b>" + fDate(p.actual || S.now) + "</b>에 납품했습니다. (자재 입고 지연) " + T("late", "지체상금") + "이 붙습니다.</div>" +
-      '<div class="calc" style="margin-top:10px">지체상금 = 계약금액 × 지체상금률 × 지체일수\n' +
-      "        = " + won(amount) + " × " + c.lateRate + " × " + p.lateDays + "\n" +
-      "        = " + won(lf.fee) + "원" + (lf.capped ? "\n(상한 30% 적용)" : "") + "</div>" +
-      '<p class="tiny muted" style="margin-top:8px">지체상금은 협상 대상이 아닙니다. 발주기관이 책임 있는 일수는 자료로 증명해야 뺄 수 있습니다.</p>' +
-      '<div class="btn-row"><button class="btn" data-act="work" data-step="4">검사 신청</button></div></div>';
+      '<div class="calc" style="margin-top:8px">지체상금 = 계약금액 × 지체상금률 × 지체일수\n        = ' + won(amount) + " × " + c.lateRate + " × " + p.lateDays + "\n        = " + won(lf.fee) + "원" + (lf.capped ? "\n(상한 30% 적용)" : "") + "</div>" +
+      '<p class="tiny muted" style="margin-top:6px">지체상금은 협상 대상이 아닙니다. 발주기관이 책임 있는 일수는 자료로 증명해야 뺄 수 있습니다.</p></div>';
+    acts = '<button class="btn big-btn" data-act="work" data-step="4">검사 신청</button>';
   } else if (p.step === 4) {
+    tag = "검사·계산서";
     const inspDate = p.inspDue || prevBiz(addDays(S.now, RULES.inspectDays));
-    core = '<div class="card"><div class="card-title"><span class="ico">5</span>' + T("inspect", "검사") + "</div>" +
+    body = '<div class="card"><div class="card-title"><span class="ico">5</span>' + T("inspect", "검사") + "</div>" +
       "<p>발주기관은 이행완료 통지를 받은 날부터 <b>14일</b> 안에 검사합니다. 검사에 합격해야 대금을 청구할 수 있습니다.</p>" +
-      '<div class="warn">이행완료 통지일 · <b>' + fDate(p.inspAsk || S.now) + "</b> <span class='tiny muted'>(토·일·공휴일이면 다음 영업일)</span><br>검사 예정일 · <b>" + fDate(inspDate) + "</b> <span class='tiny muted'>(통지일부터 14일 이내 · 그날이 주말·공휴일이면 앞 영업일)</span></div>" +
-      '<div class="card-title" style="margin-top:14px"><span class="ico">6</span>세금계산서를 언제 낼까요</div>' +
-      '<p class="tiny muted">세금계산서 발행일이 청구일로 관리됩니다. 검사 전에 내면 반송될 수 있습니다.</p>' +
-      '<div class="opts" style="margin-top:8px">' +
-        '<button class="opt" data-act="invoice" data-v="after">검사가 끝난 뒤 낸다 (안전)</button>' +
-        '<button class="opt" data-act="invoice" data-v="before">먼저 낸다 (빠를 것 같다)</button>' +
-      "</div></div>";
+      '<div class="warn">이행완료 통지일 · <b>' + fDate(p.inspAsk || S.now) + "</b><br>검사 예정일 · <b>" + fDate(inspDate) + "</b></div>" +
+      '<div class="card-title" style="margin-top:10px"><span class="ico">6</span>세금계산서를 언제 낼까요</div>' +
+      '<p class="tiny muted">발행일이 청구일로 관리됩니다. 검사 전에 내면 반송될 수 있습니다.</p>' +
+      '<div class="opts"><button class="opt" data-act="invoice" data-v="after">검사가 끝난 뒤 낸다 (안전)</button>' +
+      '<button class="opt" data-act="invoice" data-v="before">먼저 낸다 (빠를 것 같다)</button></div></div>';
   } else if (p.step === 5) {
+    tag = "대금";
     const due = p.payDue || addBizDays(p.claimDay || S.now, RULES.payDays);
-    core = '<div class="card"><div class="card-title"><span class="ico">7</span>대금 지급</div>' +
+    body = '<div class="card"><div class="card-title"><span class="ico">7</span>대금 지급</div>' +
       (p.invoice === "before"
-        ? '<div class="warn"><b>세금계산서가 반송되었습니다.</b> 검사 완료 전에 발행했기 때문입니다. 반송일부터 다시 청구한 날까지는 지급기간에 넣지 않습니다. 5영업일이 다시 시작됩니다.</div>'
-        : '<div class="good">검사 완료 후 청구했습니다. 청구를 받은 날부터 5영업일 안에 지급됩니다. (공휴일·토요일 제외)</div>') +
-      '<div class="calc" style="margin-top:10px">계약금액        ' + won(amount) + "원\n" +
-      "(-) 지체상금      " + won(p.fee) + "원\n" +
-      "= 지급액         " + won(amount - p.fee) + "원\n" +
-      "청구일           " + fDate(p.claimDay || S.now) + "\n" +
-      "지급 예정일       " + fDate(due) + "  (청구 후 " + RULES.payDays + "영업일)</div>" +
-      (k.bondPaid ? '<p class="tiny muted" style="margin-top:8px">계약보증금 ' + won(k.bond) + "원은 계약이 끝난 뒤 그대로 돌려받습니다. 위 지급액과는 따로 움직입니다.</p>" : "") +
-      '<div class="btn-row"><button class="btn" data-act="work" data-step="6">대금을 받습니다</button></div></div>';
+        ? '<div class="warn"><b>세금계산서가 반송되었습니다.</b> 검사 완료 전에 발행했기 때문입니다. 5영업일이 다시 시작됩니다.</div>'
+        : '<div class="good">검사 완료 후 청구했습니다. 청구를 받은 날부터 5영업일 안에 지급됩니다.</div>') +
+      '<div class="calc" style="margin-top:8px">계약금액        ' + won(amount) + "원\n(-) 지체상금      " + won(p.fee) + "원\n= 지급액         " + won(amount - p.fee) + "원\n청구일           " + fDate(p.claimDay || S.now) + "\n지급 예정일       " + fDate(due) + "  (청구 후 " + RULES.payDays + "영업일)</div></div>";
+    acts = '<button class="btn big-btn" data-act="work" data-step="6">대금을 받습니다</button>';
   } else {
-    core = '<div class="card"><div class="card-title"><span class="ico">✓</span>이번 계약 결과</div>' +
+    tag = "입금";
+    body = '<div class="card"><div class="card-title"><span class="ico">✓</span>이번 계약 결과</div>' +
       '<div class="good">대금이 입금되었습니다. 낙찰 1건을 완수했습니다.</div>' +
-      '<div class="calc" style="margin-top:10px">계약금액        ' + won(amount) + "원\n" +
-      "(-) 지체상금      " + won(p.fee) + "원\n" +
-      "= 받은 대금      " + won(amount - p.fee) + "원\n" +
-      "(-) 원가          " + won(k.cost || 0) + "원\n" +
-      "= 이번 계약 손익  " + won(amount - p.fee - (k.cost || 0)) + "원\n" +
-      "입금일           " + fDate(p.paid || S.now) + "</div>" +
-      '<p class="tiny muted" style="margin-top:8px">지체상금은 받은 대금에서 이미 빠져 있습니다. 손익에서 다시 빼지 않습니다.</p>' +
-      '<div class="btn-row"><button class="btn" data-act="finishJob">회사로 돌아가기</button></div></div>';
+      '<div class="calc" style="margin-top:8px">계약금액        ' + won(amount) + "원\n(-) 지체상금      " + won(p.fee) + "원\n= 받은 대금      " + won(amount - p.fee) + "원\n(-) 원가          " + won(k.cost || 0) + "원\n= 이번 계약 손익  " + won(amount - p.fee - (k.cost || 0)) + "원\n입금일           " + fDate(p.paid || S.now) + "</div>" +
+      '<p class="tiny muted" style="margin-top:6px">지체상금은 받은 대금에서 이미 빠져 있습니다. 손익에서 다시 빼지 않습니다.</p></div>';
+    acts = '<button class="btn big-btn" data-act="finishJob">회사로 돌아가기</button>';
   }
-
-  const body =
-    stepsHTML(7) +
-    objbar("<b>수행·대금</b> · " + (p.step === 0 ? "일을 시작합니다" : p.step === 1 ? "작업 중" : p.step === 2 ? "완성했습니다" : p.step === 3 ? "지체상금" : p.step === 4 ? "검사 · 세금계산서" : p.step === 5 ? "대금 지급" : "이번 계약 결과")) +
-    '<div class="card" style="margin-top:12px">' +
-      '<div class="tiny muted">수행 중 · ' + esc(S.company) + "</div>" +
-      '<div class="big" style="font-size:20px;margin:2px 0 0">' + n.name + "</div>" +
-      '<div class="tiny muted" style="margin-top:3px">계약금액 <b style="color:var(--ink)">' + won(amount) + "원</b> · 계약일부터 " + n.deliverDays + "일</div>" +
-      scene + "</div>" +
-    core +
-    guide("수행·대금에서 실제로 걸리는 것",
-      ["이행완료 통지는 날짜가 남게 합니다. 나중에 지체일수로 다툼이 생깁니다.",
-       "검사 완료 전 세금계산서 발행은 반송 위험이 있습니다. 발행일이 청구일로 관리됩니다.",
-       "지체상금이 계약보증금 상당액에 이르면 보증금이 국고로 들어가거나 추가 보증금을 내야 합니다."],
-      "perform");
-  return chrome(body);
+  const head = '<div class="perfhead"><div class="tiny muted">수행 중 · ' + esc(S.company) + "</div>" +
+    '<div class="ph-name">' + n.name + '</div><div class="tiny muted">계약금액 <b style="color:#fff">' + won(amount) + "원</b></div></div>";
+  return frame([{ tag: tag, body: head + art + body, acts: acts }], "perform:" + p.step + ":" + (p.invoice || ""));
 }
 
 /* =====================================================================
@@ -3188,46 +3299,71 @@ function screenEnd() {
     : "공고문의 참가자격과 마감 시각을 먼저 확인하는 것만으로 절반은 이깁니다.";
   const learned = S.learned.length;
   const slogan = "나는 ‘" + S.company + "’" + josaRo(S.company) + " 나라장터 입찰 " + Math.min(S.rounds, ROUNDS()) + "건에 도전해 " + S.wins + "건 낙찰, 최종 자본 " + eok(S.capital) + ". 1순위가 낙찰이 아니라는 걸 이제 압니다.";
-
-  const body =
-    stepsHTML(8) +
-    objbar("<b>결과 카드</b> · 낙찰 " + S.wins + "건") +
-    '<div class="result-card" style="margin-top:12px">' +
-      '<div class="stampbig ' + (S.wins > 0 ? "" : "fail") + '" style="color:' + (S.wins > 0 ? "#7ff0c0" : "#ffb2ab") + '">' + (S.wins > 0 ? "낙찰 " + S.wins : "낙찰 없음") + "<small>결과 카드</small></div>" +
+  const p0 = {
+    tag: "결과 카드",
+    body: '<div class="result-card">' +
       '<div class="rc-top"><span>결과 카드</span><span>' + fDate(S.now) + "</span></div>" +
       "<h2>" + esc(S.company) + "</h2>" +
       '<div class="rsub">' + c.name + " · " + c.who + "</div>" +
-      '<div class="rgrid">' +
-        '<div><div class="k">최종 자본</div><div class="v">' + eok(S.capital) + "</div></div>" +
+      '<div class="rgrid"><div><div class="k">최종 자본</div><div class="v">' + eok(S.capital) + "</div></div>" +
         '<div><div class="k">낙찰</div><div class="v">' + S.wins + "건</div></div>" +
         '<div><div class="k">도전</div><div class="v">' + Math.min(S.rounds, ROUNDS()) + "회</div></div>" +
-        '<div><div class="k">제재 이력</div><div class="v">' + (S.sanctioned.length ? S.sanctioned.length + "건" : "없음") + "</div></div>" +
-      "</div>" +
+        '<div><div class="k">제재</div><div class="v">' + (S.sanctioned.length ? S.sanctioned.length + "건" : "없음") + "</div></div></div>" +
       '<div class="rline"><b>배운 용어 ' + learned + "개</b> · " + (S.sanctioned.length ? "제재 " + S.sanctioned.join(", ") : "제재 없음") + "</div>" +
-      '<div class="slogan">' + slogan + "</div>" +
-    "</div>" +
-    '<div class="card" style="margin-top:14px">' +
-      '<div class="card-title"><span class="ico">✓</span>이 게임에서 배운 것</div>' +
-      "<p>1. " + line1 + "</p><p>2. " + line2 + "</p><p>3. " + line3 + "</p>" +
-    "</div>" +
-    '<div class="card">' +
-      '<div class="card-title"><span class="ico">→</span>실제로 나라장터를 할 때 확인할 것</div>' +
-      "<p>1. 공고문의 <b>참가자격</b>과 <b>마감 시각</b>을 먼저 확인하십시오. 내 업종이라도 직접생산확인·면허가 없으면 들어갈 수 없습니다.</p>" +
-      "<p>2. 공고문의 <b>낙찰자 결정방법</b>과 <b>낙찰하한율</b>을 보고 값을 정하십시오. 기초금액의 102%를 넘는 투찰은 접수되지 않는 경우가 많으니, 공고에 적힌 투찰 상한을 먼저 확인하십시오.</p>" +
-      "<p>3. 낙찰되면 <b>5일 안에 적격심사 서류</b>, <b>10일 안에 계약</b>입니다. 이 두 기한을 놓치면 낙찰이 사라집니다.</p>" +
-      "<p>4. 이 게임의 수치·판정(투찰 상한, 하한·안전 구간, 점수, 기한, 보증금)은 교육을 위해 단순화한 <b>게임 설정</b>입니다. 공고마다 다를 수 있으므로 실제 입찰에서는 해당 <b>공고문과 나라장터 유의사항</b>을 확인하십시오.</p>" +
-    "</div>" +
-    '<div class="card"><div class="card-title"></div>' +
-      '<div class="btn-row actions">' +
-        '<button class="btn big-btn" data-act="restart">같은 업종으로 다시</button>' +
-        '<button class="btn ghost" data-act="newGame">업종부터 다시</button>' +
-        '<button class="btn subtle" data-act="glossary">배운 용어 ' + learned + "개 보기</button>" +
-      "</div></div>" +
-    guide("결과를 어떻게 읽으면 좋을까요",
-      ["낙찰 건수보다 <b>왜 그렇게 됐는지</b>가 중요합니다. 개찰표의 투찰률(예정가격 대비)을 다시 보십시오.",
-       "제재 이력이 있다면 그 이유를 확인하십시오. 실제로는 1개월에서 2년까지 이어집니다."]);
-  return chrome(body);
+      '<div class="slogan">' + slogan + "</div></div>",
+    acts: '<button class="btn subtle" data-act="toInvest">회사 키우기</button><button class="btn big-btn" data-act="restart">같은 업종으로 다시</button>'
+  };
+  const p1 = {
+    tag: "배운 것",
+    body: '<div class="card"><div class="card-title"><span class="ico">✓</span>이 게임에서 배운 것</div>' +
+      "<p>1. " + line1 + "</p><p>2. " + line2 + "</p><p>3. " + line3 + "</p></div>" +
+      '<div class="card"><div class="card-title"><span class="ico">→</span>실제로 나라장터를 할 때</div>' +
+      "<p>1. 공고문의 <b>참가자격</b>과 <b>마감 시각</b>을 먼저 확인하십시오.</p>" +
+      "<p>2. <b>낙찰자 결정방법</b>과 <b>낙찰하한율</b>을 보고 값을 정하십시오. 기초금액의 102%를 넘는 투찰은 접수되지 않는 경우가 많습니다.</p>" +
+      "<p>3. 낙찰되면 <b>5일 안에 적격심사 서류</b>, <b>10일 안에 계약</b>입니다.</p>" +
+      "<p>4. 이 게임의 수치·판정(투찰 상한, 하한·안전 구간, 확률, 점수, 기한, 보증금)은 교육을 위해 단순화한 <b>게임 설정</b>입니다.</p></div>",
+    acts: '<button class="btn subtle" data-act="newGame">업종부터 다시</button><button class="btn big-btn" data-act="restart">한 판 더</button>'
+  };
+  return frame([p0, p1], "end");
 }
+
+/* =====================================================================
+   [31b] 이 화면에서만 쓰는 조작 — 장면 넘김 · 스캔 · 투자 · 인트로
+   ===================================================================== */
+document.addEventListener("click", e => {
+  const t = e.target.closest ? e.target.closest("[data-act]") : null;
+  if (!t) return;
+  const a = t.dataset.act;
+  const mine = { pg: 1, ib: 1, iskip: 1, scan: 1, toInvest: 1, buy: 1, help: 1 };
+  if (!mine[a]) return;
+  if (a === "pg") {
+    PG.i += (+t.dataset.k || 1);
+    render();
+    closeTerm();
+    return;
+  }
+  if (a === "ib") { BEAT = Math.min(6, BEAT + 1); render(); return; }
+  if (a === "iskip") { if (GATE) { BEAT = 6; render(); } else { S.screen = "sector"; render(); } return; }
+  if (a === "help") { openGuide(t.dataset.g); return; }
+  if (a === "scan") {
+    S.screen = "scan"; S.phase = "list"; closeTerm();
+    if (S.notices.length === 0) buildNotices();
+    render();
+    return;
+  }
+  if (a === "toInvest") { S.screen = "invest"; render(); return; }
+  if (a === "buy") {
+    const u = UPGRADES.find(x => x.id === t.dataset.u);
+    if (!u) return;
+    if (S.capital < u.cost) { toast("자본이 모자랍니다."); return; }
+    S.capital -= u.cost;
+    u.apply();
+    save();
+    stampFx(u.k, "회사 역량이 올라갔습니다 · " + eok(u.cost) + " 투자", () => { render(); });
+    render();
+    return;
+  }
+}, false);
 /* =====================================================================
    [32] 조작 처리
    ===================================================================== */
