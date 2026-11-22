@@ -2838,7 +2838,7 @@ function screenDetail() {
                 : '<button class="btn subtle" data-act="toList">다른 공고</button><button class="btn ghost big-btn" data-act="applyCareless">확인 없이 투찰</button>')
         : '<button class="btn subtle" data-act="toInvest">회사 키우기</button><button class="btn big-btn" disabled>참가자격 미달</button>'
   });
-  return frame(pages, "detail:" + S.noticeId + ":" + (S.bondChoice || "") + ":" + answered);
+  return frame(pages, "detail:" + S.noticeId, 0);
 }
 
 /* =====================================================================
@@ -3214,7 +3214,7 @@ function screenContract() {
     acts: '<button class="btn danger" data-act="giveUpContract">계약 포기</button>' +
       '<button class="btn big-btn" data-act="signContract"' + (k.exempt && !k.promised ? " disabled" : "") + ">계약 체결</button>"
   };
-  return frame([p0, p1], "contract:" + (k.promised ? 1 : 0));
+  return frame([p0, p1], "contract" + S.noticeId, 1);
 }
 
 /* =====================================================================
@@ -3372,7 +3372,7 @@ async function selfTest() {
   const T = ms => new Promise(r => setTimeout(r, ms));
   const Q = s => document.querySelector(s);
   const C = s => { const e = Q(s); if (e) { e.click(); return true; } return false; };
-  const rep = { pages: [], events: [], errors: [], shots: [] };
+  const rep = window.__report; rep.pages = []; rep.events = []; rep.errors = [];
   window.addEventListener("error", e => rep.errors.push(String(e.message)));
   const snap = tag => {
     const b = Q(".sc-body"), lbl = (Q(".sc-nav .lbl") || {}).textContent || "";
@@ -3491,7 +3491,9 @@ window.addEventListener("load", function () {
   selfTest().then(r => {
     window.__report = r; r.done = true;
   }).catch(e => {
-    window.__report.err = String((e && e.stack) || e); window.__report.done = true;
+    window.__report.err = String((e && e.stack) || e);
+    window.__report.at = (GATE ? "intro" : S.screen) + " pg=" + PG.i;
+    window.__report.done = true;
   });
 });
 
