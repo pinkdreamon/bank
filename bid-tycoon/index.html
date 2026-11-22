@@ -387,7 +387,7 @@
   .term{display:inline;padding:0 1px;margin:0;border:0;background:none;font:inherit;color:#0b4d86;
     cursor:help;border-bottom:1px dotted #7aa9d2;line-height:inherit;text-align:inherit;letter-spacing:inherit}
   .term:hover{background:#e8f2fb;border-bottom-color:var(--blue)}
-  .term.new:after{content:"•";color:#e0523e;font-size:11px;margin-left:1px;vertical-align:super}
+  .term.new{background:linear-gradient(transparent 58%, #ffe3bf 58%)}
   .termbox{position:fixed;left:50%;transform:translateX(-50%);top:62px;width:min(470px,calc(100vw - 24px));
     background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 22px 50px -18px rgba(11,43,73,.45);
     z-index:90;padding:15px 16px;animation:sheetUp .32s cubic-bezier(.2,.9,.3,1) both;max-height:44vh;overflow-y:auto}
@@ -460,6 +460,7 @@ const RULES = {
   contractDays: 10,                    // 낙찰통지 후 10일 내 계약
   inspectDays: 14,                     // 검사 14일 (영 §55①)
   payDays: 5,                          // 청구 후 5일 (영 §58①, 공휴일·토요일 제외)
+  invoiceBounceDays: 6,               // 검사 전 발행 → 반송 후 다시 청구까지 (게임용 설정)
   sanctionMonths: 6,                   // 계약 미체결 6개월 (별표2 제13호 가목)
   collusionMonths: 6,                  // 단순 담합 6개월 (별표2 제4호)
   collusionLeadMonths: 24,             // 담합 주도 낙찰 2년
@@ -876,6 +877,7 @@ const QUIZ = [
 const WD = ["일", "월", "화", "수", "목", "금", "토"];
 const p2 = n => String(n).padStart(2, "0");
 const won = n => Math.round(n).toLocaleString("ko-KR");
+const wonP = n => Number(n).toLocaleString("ko-KR", { maximumFractionDigits: 2 });
 const eok = n => {
   const v = Math.round(n);
   const s = v < 0 ? "-" : "";
@@ -899,6 +901,30 @@ function addBizDays(ms, n) {
   let t = ms, c = 0, guard = 0;
   while (c < n && guard++ < 400) { t = addDays(t, 1); if (!isBn(t)) c++; }
   return t;
+}
+/* 주말·공휴일이면 다음 영업일 같은 시각으로 */
+function nextBiz(ms) {
+  let t = ms, guard = 0;
+  while (isBn(t) && guard++ < 30) t = addDays(t, 1);
+  return t;
+}
+/* a 다음날부터 b(마감일)까지 남은 영업일 수 — 토·일·공휴일은 세지 않는다 */
+function bizDaysLeft(a, b) {
+  let c = 0, t = a, guard = 0;
+  while (t < b && guard++ < 400) { t = addDays(t, 1); if (t <= b && !isBn(t)) c++; }
+  return c;
+}
+/* 날짜만 보고 세는 D-day — 03.03 09:00 에서 03.06 마감이면 D-3 */
+const dayKey = ms => { const d = new Date(ms); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()); };
+const dDay = (from, to) => Math.max(0, Math.round((dayKey(to) - dayKey(from)) / 86400000));
+/* 받침에 따라 ‘로 / 으로’ */
+function josaRo(word) {
+  const s = String(word || "").trim();
+  if (!s) return "로";
+  const code = s.charCodeAt(s.length - 1);
+  if (code < 0xac00 || code > 0xd7a3) return "로";
+  const jong = (code - 0xac00) % 28;
+  return (jong === 0 || jong === 8) ? "로" : "으로";
 }
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -958,15 +984,27 @@ function rivalName(charId) { return pick(NAME_PARTS.region) + pick(NAME_PARTS.fi
 /* =====================================================================
    [12] 공고 목록
    ===================================================================== */
+/* 공고마다 마감까지 남은 날과 시각이 하나로 고정되어 있다 —
+   판이 바뀌어 목록 순서가 돌아도 같은 공고의 마감은 같은 규칙을 따른다. */
+const CLOSE_PLAN = [
+  { d: 3, h: 11, m: 0 },
+  { d: 4, h: 14, m: 0 },
+  { d: 6, h: 10, m: 0 },
+  { d: 5, h: 16, m: 0 }
+];
 function buildNotices() {
-  const pool = NOTICES[S.charId].slice();
+  const all = NOTICES[S.charId];
   const cut = (S.rounds % 2 === 0) ? 0 : 1;
-  const rot = pool.slice(cut).concat(pool.slice(0, cut));
+  const rot = all.slice(cut).concat(all.slice(0, cut));
   const three = (S.mode === "quick" ? rot.slice(0, 2) : rot.slice(0, 3));
-  const offs = [3, 4, 6], times = [[11, 0], [14, 0], [10, 0]];
   const d = new Date(S.now);
   const mid = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0);
-  S.notices = three.map((n, i) => ({ nid: n.id, close: mid + offs[i] * 86400000 + times[i][0] * 3600000 + times[i][1] * 60000 }));
+  S.notices = three.map(n => {
+    const idx = all.findIndex(x => x.id === n.id);
+    const plan = CLOSE_PLAN[idx % CLOSE_PLAN.length];
+    const raw = mid + plan.d * 86400000 + plan.h * 3600000 + plan.m * 60000;
+    return { nid: n.id, close: nextBiz(raw) };
+  });
   S.noticeId = null;
   S.bid = null;
   S.watch = null;
@@ -1637,7 +1675,7 @@ function screenList() {
     if (!d) return "";
     const okAll = eligible(d);
     const left = n.close - S.now;
-    const dd = Math.max(0, Math.ceil(left / 86400000));
+    const dd = dDay(S.now, n.close);           // 날짜끼리 비교 — 시각 때문에 하루가 더 세지지 않는다
     const closed = left <= 0;
     return '<button class="notice ' + (okAll ? "" : "locked") + '" data-act="openNotice" data-id="' + d.id + '">' +
       '<div class="row1"><div><div class="nm">' + d.name + (d.flagship ? ' <span class="tag blue">공고문 전문</span>' : "") + "</div>" +
@@ -1796,9 +1834,6 @@ function screenBid() {
   const sb = safeBand(n), safeLow = sb.low, safeHigh = sb.high;
   const picksDone = S.bid.picks.length === 2;
   const amt = S.bid.amount;
-  const rate = amt ? amt / n.base * 100 : 0;
-  const gcls = !amt ? "" : (amt < lbAmt ? "low" : amt >= cap ? "low" : "mid");
-  const gwidth = amt ? Math.min(100, Math.max(0, rate - 60) / 45 * 100) : 0;
 
   const pickBtns = Array.from({ length: 15 }, (_, i) => i + 1).map(k =>
     '<button class="pn ' + (S.bid.picks.indexOf(k) >= 0 ? "on" : "") + '" data-act="pickNo" data-k="' + k + '"' + (picksDone && S.bid.picks.indexOf(k) < 0 ? " disabled" : "") + ">" + k + "</button>").join("");
@@ -1848,9 +1883,7 @@ function screenBid() {
         '<button class="chip" data-act="fill" data-v="under"' + (picksDone ? "" : " disabled") + ">하한 아래</button>" +
         '<button class="chip" data-act="fill" data-v="over"' + (picksDone ? "" : " disabled") + ">102% 넘겨 보기</button>" +
       "</div>" +
-      (amt ? '<div class="gauge"><i class="' + gcls + '" style="width:' + gwidth + '%"></i></div>' +
-        '<div class="tiny" style="margin-top:6px;color:' + (amt < lbAmt ? "var(--red)" : amt >= cap ? "var(--red)" : "var(--green)") + '">' +
-        "기초금액의 " + (amt / n.base * 100).toFixed(2) + "% · " + (amt < lbAmt ? "낙찰하한 아래 — 1순위여도 심사 대상이 아닙니다" : amt >= cap ? "102% 상한 초과 — 접수되지 않습니다" : "제출 가능한 구간입니다") + "</div>" : "") +
+      '<div id="bidJudgeWrap"' + (amt ? "" : ' style="display:none"') + ">" + bidJudgeHTML(n, amt) + "</div>" +
       '<div id="bidErr" class="bad" style="display:none;margin-top:10px"></div>' +
       '<div class="warn" style="margin-top:12px">제출하면 <b>교환·변경·취소가 되지 않습니다.</b> 마감은 내 컴퓨터가 아니라 <b>서버에 도착한 시각</b>으로 봅니다.</div>' +
     "</div>" +
@@ -1869,15 +1902,35 @@ function screenBid() {
     '<p class="tiny muted" style="margin-top:8px">되돌리기는 이 게임에서만 한 번 허용합니다. 실제로는 투찰한 입찰서를 교환·변경·취소할 수 없습니다.</p>';
   return chrome(body);
 }
+/* 입력한 금액의 비율·판정 — 값이 바뀔 때마다 다시 그린다 */
+function bidJudgeHTML(n, amt) {
+  amt = Math.floor(amt || 0);
+  if (!n || !amt) return "";
+  const cap = Math.floor(n.base * RULES.capRate), lbAmt = Math.ceil(n.base * n.lb);
+  const rate = amt / n.base * 100;
+  const bad = amt < lbAmt || amt >= cap;
+  return '<div class="gauge"><i class="' + (bad ? "low" : "mid") + '" style="width:' + Math.min(100, Math.max(0, rate - 60) / 45 * 100) + '%"></i></div>' +
+    '<div class="tiny" style="margin-top:6px;color:' + (bad ? "var(--red)" : "var(--green)") + '">' +
+    "기초금액의 " + rate.toFixed(2) + "% (" + won(amt) + "원) · " +
+    (amt < lbAmt ? "낙찰하한 아래 — 1순위여도 심사 대상이 아닙니다" : amt >= cap ? "102% 상한 초과 — 접수되지 않습니다" : "제출 가능한 구간입니다") + "</div>";
+}
 function bindBidInput() {
   const inp = document.getElementById("bidAmount");
   if (!inp) return;
-  inp.addEventListener("input", () => {
+  const apply = () => {
     const digits = inp.value.replace(/[^0-9]/g, "");
     const v = digits ? parseInt(digits, 10) : 0;
     S.bid.amount = v;
-    inp.value = digits ? won(v) : "";
-  });
+    const pretty = digits ? won(v) : "";
+    if (inp.value !== pretty) inp.value = pretty;
+    const wrap = document.getElementById("bidJudgeWrap");
+    if (wrap) {
+      wrap.innerHTML = bidJudgeHTML(noticeOf(), v);
+      wrap.style.display = v ? "" : "none";
+    }
+  };
+  inp.addEventListener("input", apply);
+  inp.addEventListener("change", apply);
   inp.addEventListener("keydown", e => { if (e.key === "Enter") { const b = document.querySelector('[data-act="submitBid"]'); if (b) b.click(); } });
 }
 function submitBid() {
@@ -1947,7 +2000,7 @@ function finishBid() {
   else outcome = "탈락";
 
   const second = qualified.find(r => !r.mine);
-  S.result = { yej, rows, mine, outcome, second, lb: n.lb, careless: !!S.careless };
+  S.result = { yej, rows, mine, outcome, second, lb: n.lb, careless: !!S.careless, notifiedAt: S.now };
   S.phase = "open";
 }
 /* =====================================================================
@@ -2014,7 +2067,7 @@ function screenOpen() {
     '<div class="card"><div class="card-title"><span class="ico">★</span>' + T("yejeong", "예정가격") + "은 이렇게 정해졌습니다</div>" +
       '<p class="tiny muted">' + T("yebi", "예비가격") + " 15개 중 가장 많이 뽑힌 4개(★)의 평균입니다. 끝수는 소수점 첫째자리에서 올림합니다.</p>" +
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:8px">' + priceList + "</div>" +
-      '<div class="calc" style="margin-top:10px">(' + d.list.map(v => won(v)).join(" + ") + ") ÷ 4 = " + d.avg.toFixed(1) + "\n→ 올림 = " + won(yej) + "원</div>" +
+      '<div class="calc" style="margin-top:10px">(' + d.list.map(v => won(v)).join(" + ") + ") ÷ 4 = " + wonP(d.avg) + "원\n→ " + (d.avg === yej ? "끝수 없음 — 그대로 " : "소수점 이하 올림 — ") + won(yej) + "원</div>" +
     "</div>" +
 
     guide("개찰 뒤에 할 일",
@@ -2046,10 +2099,10 @@ function screenQual() {
   if (!n || !R) { S.screen = "list"; return screenList(); }
   if (!S.qual) {
     const auto = S.mode === "quick";
-    S.qual = { docs: QUAL_DOCS.map(() => auto), deadline: addDays(S.now, RULES.qualDocDays), fixDeadline: null, phase: "form", score: null, tried: 0 };
+    S.qual = { docs: QUAL_DOCS.map(() => auto), deadline: addBizDays(S.now, RULES.qualDocDays), fixDeadline: null, phase: "form", score: null, tried: 0 };
   }
   const q = S.qual;
-  const left = diffDays(S.now, q.deadline);
+  const left = bizDaysLeft(S.now, q.deadline);   // 토·일·공휴일은 세지 않는다
   const docsH = QUAL_DOCS.map((d, i) =>
     '<li class="' + (q.docs[i] ? "on" : "") + '" data-act="doc" data-i="' + i + '"><span class="box">' + (q.docs[i] ? "✓" : "") + "</span><span>" + d + "</span></li>").join("");
   const missing = q.docs.filter(x => !x).length;
@@ -2060,8 +2113,9 @@ function screenQual() {
       '<div class="card">' +
         '<div class="card-title"><span class="ico">1</span>서류를 5일 안에 내십시오</div>' +
         '<p class="tiny muted">' + T("qual", "적격심사") + ' 통보를 받은 날부터 <b>5일</b>(공휴일 제외) 안에 나라장터로 제출합니다. 부족하면 <b>7일</b> 안에 보완합니다.</p>' +
-        '<div class="warn" style="margin:10px 0"><b>남은 기한 ' + Math.max(0, left) + "일</b> (마감 " + fDate(q.deadline) + ")" +
+        '<div class="warn" style="margin:10px 0"><b>남은 기한 ' + left + "영업일 (D-" + left + ")</b> (마감 " + fDate(q.deadline) + ")" +
         (q.fixDeadline ? " · 보완 기한 " + fDate(q.fixDeadline) : "") + "</div>" +
+        '<p class="tiny muted" style="margin:-4px 0 10px">토요일·일요일·공휴일은 기한에 세지 않습니다. 그래서 마감일이 일요일로 떨어지지 않습니다.</p>' +
         '<ul class="checklist">' + docsH + "</ul>" +
         (q.tried > 0 ? '<div class="warn">서류가 빠져 보완 요청을 받았습니다. <b>빠진 서류를 채워 다시 내십시오.</b></div>' : "") +
         '<div class="tiny muted" style="margin-top:6px">※ 서류 5종 구성은 게임에서 단순화했습니다 (' + GS + ").</div>" +
@@ -2081,7 +2135,7 @@ function screenQual() {
       : "부적격 통보를 받으면 <b>3일 안에</b> 재심사를 요청할 수 있습니다. 다만 <b>새 서류를 덧붙일 수는 없습니다.</b>";
     core =
       '<div class="card"><div class="card-title"><span class="ico">2</span>심사 결과</div>' +
-        '<div class="' + (pass ? "good" : "bad") + '"><b>' + headline + "</b><br>" + sub + "</div>" +
+        '<div class="' + (pass ? "good" : "bad") + '"><b>' + headline + "</b> " + sub + "</div>" +
         (!q.failed ? '<div class="calc" style="margin-top:12px">입찰가격 평점 = 70 − 2 × |90 − (내 투찰가 ÷ 예정가격 × 100)|\n' +
           "            = 70 − 2 × |90 − " + (R.mine.rate * 100).toFixed(2) + "|\n" +
           "            = " + q.pricePart.toFixed(2) + "점\n" +
@@ -2136,7 +2190,7 @@ function screenContract() {
   const body =
     stepsHTML(6) +
     '<div class="card">' +
-      '<div class="tiny muted">낙찰 통지 후 10일 안에 계약합니다 · 남은 기한 ' + Math.max(0, RULES.contractDays - diffDays(S.now, S.now)) + "일</div>" +
+      '<div class="tiny muted">낙찰 통지 후 10일 안에 계약합니다 · 남은 기한 ' + Math.max(0, RULES.contractDays - dDay(R.notifiedAt || S.now, S.now)) + "일 (통지 " + fDate(R.notifiedAt || S.now) + ")" +
       '<div class="big" style="margin:4px 0 8px">계약서</div>' +
       '<dl class="kv">' +
         "<dt>계약상대자</dt><dd>" + esc(S.company) + "</dd>" +
@@ -2170,7 +2224,7 @@ function screenPerform() {
   const n = noticeOf(), R = S.result, c = CH();
   if (!n || !R || !S.contract) { S.screen = "list"; return screenList(); }
   const k = S.contract;
-  if (!S.perform) S.perform = { step: 0, lateDays: 0, fee: 0, invoice: null, paid: null, delivered: false };
+  if (!S.perform) S.perform = { step: 0, lateDays: 0, fee: 0, invoice: null, paid: null, delivered: false, inspAsk: null, inspDue: null, claimDay: null, payDue: null };
   const p = S.perform;
   const amount = k.amount;
   const targets = [0.08, 0.42, 0.72, 0.95];
@@ -2199,10 +2253,10 @@ function screenPerform() {
       '<p class="tiny muted" style="margin-top:8px">지체상금은 협상 대상이 아닙니다. 발주기관이 책임 있는 일수는 자료로 증명해야 뺄 수 있습니다.</p>' +
       '<div class="btn-row"><button class="btn" data-act="work" data-step="4">검사 신청</button></div></div>';
   } else if (p.step === 4) {
-    const inspDate = addDays(S.now, RULES.inspectDays);
+    const inspDate = p.inspDue || addDays(S.now, RULES.inspectDays);
     core = '<div class="card"><div class="card-title"><span class="ico">5</span>' + T("inspect", "검사") + "</div>" +
       "<p>발주기관은 이행완료 통지를 받은 날부터 <b>14일</b> 안에 검사합니다. 검사에 합격해야 대금을 청구할 수 있습니다.</p>" +
-      '<div class="warn">검사 예정일 · <b>' + fDate(inspDate) + "</b></div>" +
+      '<div class="warn">이행완료 통지일 · <b>' + fDate(p.inspAsk || S.now) + "</b><br>검사 예정일 · <b>" + fDate(inspDate) + "</b> <span class='tiny muted'>(통지일부터 14일째)</span></div>" +
       '<div class="card-title" style="margin-top:14px"><span class="ico">6</span>세금계산서를 언제 낼까요</div>' +
       '<p class="tiny muted">세금계산서 발행일이 청구일로 관리됩니다. 검사 전에 내면 반송될 수 있습니다.</p>' +
       '<div class="opts" style="margin-top:8px">' +
@@ -2210,26 +2264,28 @@ function screenPerform() {
         '<button class="opt" data-act="invoice" data-v="before">먼저 낸다 (빠를 것 같다)</button>' +
       "</div></div>";
   } else if (p.step === 5) {
-    const shipBase = addDays(S.now, RULES.inspectDays);
-    const dueBase = p.invoice === "before" ? addDays(shipBase, 6) : shipBase;
-    const due = addBizDays(dueBase, RULES.payDays);
+    const due = p.payDue || addBizDays(p.claimDay || S.now, RULES.payDays);
     core = '<div class="card"><div class="card-title"><span class="ico">7</span>대금 지급</div>' +
       (p.invoice === "before"
-        ? '<div class="warn"><b>세금계산서가 반송되었습니다.</b> 검사 완료 전에 발행했기 때문입니다. 반송일부터 다시 청구한 날까지는 지급기간에 넣지 않습니다. 5일이 다시 시작됩니다.</div>'
-        : '<div class="good">검사 완료 후 청구했습니다. 청구를 받은 날부터 5일 안에 지급됩니다. (공휴일·토요일 제외)</div>') +
+        ? '<div class="warn"><b>세금계산서가 반송되었습니다.</b> 검사 완료 전에 발행했기 때문입니다. 반송일부터 다시 청구한 날까지는 지급기간에 넣지 않습니다. 5영업일이 다시 시작됩니다.</div>'
+        : '<div class="good">검사 완료 후 청구했습니다. 청구를 받은 날부터 5영업일 안에 지급됩니다. (공휴일·토요일 제외)</div>') +
       '<div class="calc" style="margin-top:10px">계약금액        ' + won(amount) + "원\n" +
       "(-) 지체상금      " + won(p.fee) + "원\n" +
-      (k.bondPaid ? "(+) 보증금 반환   " + won(k.bond) + "원\n" : "") +
       "= 지급액         " + won(amount - p.fee) + "원\n" +
-      "지급 예정일       " + fDate(due) + " (" + WD[new Date(due).getUTCDay()] + ")</div>" +
+      "청구일           " + fDate(p.claimDay || S.now) + "\n" +
+      "지급 예정일       " + fDate(due) + "  (청구 후 " + RULES.payDays + "영업일)</div>" +
+      (k.bondPaid ? '<p class="tiny muted" style="margin-top:8px">계약보증금 ' + won(k.bond) + "원은 계약이 끝난 뒤 그대로 돌려받습니다. 위 지급액과는 따로 움직입니다.</p>" : "") +
       '<div class="btn-row"><button class="btn" data-act="work" data-step="6">대금을 받습니다</button></div></div>';
   } else {
     core = '<div class="card"><div class="card-title"><span class="ico">✓</span>이번 계약 결과</div>' +
       '<div class="good">대금이 입금되었습니다. 낙찰 1건을 완수했습니다.</div>' +
-      '<div class="calc" style="margin-top:10px">받은 대금        ' + won(amount - p.fee) + "원\n" +
-      "(-) 원가          " + won(k.cost || 0) + "원\n" +
+      '<div class="calc" style="margin-top:10px">계약금액        ' + won(amount) + "원\n" +
       "(-) 지체상금      " + won(p.fee) + "원\n" +
-      "= 이번 계약 손익  " + won(amount - p.fee - (k.cost || 0)) + "원</div>" +
+      "= 받은 대금      " + won(amount - p.fee) + "원\n" +
+      "(-) 원가          " + won(k.cost || 0) + "원\n" +
+      "= 이번 계약 손익  " + won(amount - p.fee - (k.cost || 0)) + "원\n" +
+      "입금일           " + fDate(p.paid || S.now) + "</div>" +
+      '<p class="tiny muted" style="margin-top:8px">지체상금은 받은 대금에서 이미 빠져 있습니다. 손익에서 다시 빼지 않습니다.</p>' +
       '<div class="btn-row"><button class="btn" data-act="finishJob">회사로 돌아가기</button></div></div>';
   }
 
@@ -2262,7 +2318,7 @@ function screenEnd() {
     ? "공고문을 읽지 않으면 서류 하나 때문에 입찰이 통째로 무효가 됩니다. 제재는 6개월부터입니다."
     : "공고문의 참가자격과 마감 시각을 먼저 확인하는 것만으로 절반은 이깁니다.";
   const learned = S.learned.length;
-  const slogan = "나는 ‘" + S.company + "’(으)로 나라장터 입찰 " + Math.min(S.rounds, ROUNDS()) + "건에 도전해 " + S.wins + "건 낙찰, 최종 자본 " + eok(S.capital) + ". 1순위가 낙찰이 아니라는 걸 이제 압니다.";
+  const slogan = "나는 ‘" + S.company + "’" + josaRo(S.company) + " 나라장터 입찰 " + Math.min(S.rounds, ROUNDS()) + "건에 도전해 " + S.wins + "건 낙찰, 최종 자본 " + eok(S.capital) + ". 1순위가 낙찰이 아니라는 걸 이제 압니다.";
 
   const body =
     '<div class="result-card">' +
@@ -2324,6 +2380,8 @@ function commitName(name) {
 }
 function gotoNextRound() {
   if (S.rounds >= ROUNDS()) { S.screen = "end"; S.phase = "end"; render(); return; }
+  /* 판이 바뀌면 다음 영업일로 넘어간다 — 게임 시계가 흘러야 같은 공고의 마감도 날짜와 맞는다 */
+  S.now = nextBiz(addDays(S.now, 1));
   buildNotices();
   S.phase = "list";
   S.screen = "list";
@@ -2441,13 +2499,13 @@ const ACT = {
   },
   delayQual: () => {
     const q = S.qual;
-    if (diffDays(S.now, q.deadline) <= 0) {
+    if (bizDaysLeft(S.now, q.deadline) <= 0) {
       q.phase = "result"; q.score = 0; q.pricePart = 0; S.qual.failed = "late";
-      toast("5일이 지났습니다. 서류를 내지 않아 차순위로 넘어갑니다.");
+      toast("5영업일이 지났습니다. 서류를 내지 않아 차순위로 넘어갑니다.");
       render(); return;
     }
     S.now = addDays(S.now, 1);
-    toast("하루 미뤘습니다. 남은 기한 " + Math.max(0, diffDays(S.now, q.deadline)) + "일");
+    toast("하루 미뤘습니다. 남은 기한 " + bizDaysLeft(S.now, q.deadline) + "영업일" + (isBn(S.now) ? " (오늘은 토·일·공휴일이라 기한이 줄지 않습니다)" : ""));
     render();
   },
   reexam: () => { toast("재심사를 요청했습니다. 새 서류는 붙일 수 없어 결과는 그대로입니다."); S.qual.phase = "result"; render(); },
@@ -2495,9 +2553,9 @@ const ACT = {
       p.lateDays = 3;
       p.fee = lateFee(k.amount, c.lateRate, p.lateDays).fee;
       p.step = 3;
-    } else if (step === 4) { S.now = addDays(S.now, RULES.inspectDays); p.step = 4; }
+    } else if (step === 4) { p.inspAsk = S.now; p.inspDue = addDays(S.now, RULES.inspectDays); p.step = 4; }
     else if (step === 6) {
-      const due = addBizDays(S.now, RULES.payDays);
+      const due = p.payDue || addBizDays(p.claimDay || S.now, RULES.payDays);
       S.now = due;
       S.capital += (k.amount - p.fee) - (k.cost || 0) + (k.bondPaid ? k.bond : 0);
       S.perf += k.amount;
@@ -2507,7 +2565,18 @@ const ACT = {
     }
     render();
   },
-  invoice: el => { S.perform.invoice = el.dataset.v; S.perform.step = 5; S.now = addDays(S.now, 1); render(); },
+  invoice: el => {
+    const p = S.perform;
+    p.invoice = el.dataset.v;
+    /* 검사가 끝나는 날(=청구할 수 있는 날)을 기준으로 기한을 잡는다.
+       검사 전에 낸 계산서는 반송되고, 반송일부터 다시 청구한 날까지는 지급기간에 넣지 않는다. */
+    const done = p.inspDue || addDays(S.now, RULES.inspectDays);
+    p.claimDay = p.invoice === "before" ? addDays(done, RULES.invoiceBounceDays) : done;
+    p.payDue = addBizDays(p.claimDay, RULES.payDays);
+    S.now = p.claimDay;
+    p.step = 5;
+    render();
+  },
   finishJob: () => { gotoNextRound(); },
 
   applyCert: () => {
