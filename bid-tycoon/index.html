@@ -2152,13 +2152,13 @@ const app = () => document.getElementById("app");
 const STEPS = ["회사 차리기", "공고 읽기", "보증금", "투찰", "개찰", "적격심사", "계약", "수행·대금", "사고·제재"];
 /* 첫 화면은 저장된 판이 있어도 항상 스플래시부터 — GATE 가 켜져 있는 동안은 인트로를 그린다 */
 let GATE = true;
-let BEAT = 1;            /* 0 타이틀 스플래시 · 1 오프닝 영상 · 2~5 스토리 · 6 판 선택 (시작은 2차 영상부터) */
+let BEAT = 1;            /* 0 타이틀 스플래시 · 1 오프닝 영상 · 2~5 스토리 · 6 판 선택 (시작은 3컷 오프닝부터) */
 const IS_IOS_MOTION = false;
 const OWNER_IMG = "assets/char_owner_worry.png";
 const FRIEND_IMG = "assets/char_friend_male.png";
-const OPENING_MP4 = "assets/opening.mp4?v=14";
-const OPENING2_MP4 = "assets/opening2.mp4?v=2";   /* 대표님 2차 영상 — 오프닝보다 먼저 */
-let OPENING_STAGE = 1;                             /* 1 = 2차 영상 · 2 = 본 오프닝 */
+const OPENING_MP4 = "assets/opening.mp4?v=15";
+const OPENING2_MP4 = "assets/opening2.mp4?v=3";   /* 대표님 10초 입찰타이쿤 영상 — 3컷 오프닝 다음 */
+let OPENING_STAGE = 1;                             /* 1 = 3컷 오프닝(캐릭터 3명) · 2 = 10초 입찰타이쿤 영상 */
 
 /* 장면 넘김 — 화면 키가 바뀌면 첫 장면부터 */
 let PG = { key: "", i: 0 };
@@ -2508,9 +2508,9 @@ function splashHTML() {
     "</div></div>";
 }
 /* 오프닝 챕터 영상 자리 — 파일이 없으면 첫 프레임 대신 일러스트로 대체
-   영상은 두 편을 차례로 튼다: 2차 영상 → 본 오프닝 → 5/5 이야기 */
+   영상은 두 편을 차례로 튼다: 3컷 오프닝 → 타이틀 → 10초 영상 → 이야기 */
 function videoHTML() {
-  const src = OPENING_STAGE === 1 ? OPENING2_MP4 : OPENING_MP4;
+  const src = OPENING_STAGE === 1 ? OPENING_MP4 : OPENING2_MP4;   /* 3컷 오프닝이 먼저 */
   return '<div class="vwrap">' +
     '<video id="openingV" src="' + src + '" muted playsinline autoplay preload="auto" poster="' + OWNER_IMG + '"></video>' +
     '<div class="vfall"><img src="' + OWNER_IMG + '" alt="밤 사무실에서 걱정하는 사장님">' +
@@ -2524,13 +2524,13 @@ function bindOpening() {
   if (!v) return;
   const fail = () => {
     if (!GATE || BEAT !== 1) return;
-    if (OPENING_STAGE === 1) { OPENING_STAGE = 2; BEAT = 0; render(); return; }   /* 2차 영상이 없으면 타이틀 → 본 오프닝 */
+    if (OPENING_STAGE === 1) { OPENING_STAGE = 2; BEAT = 0; render(); return; }   /* 3컷 오프닝이 없으면 타이틀 */
     BEAT = 2; render();
   };
   v.addEventListener("error", fail);
   v.addEventListener("ended", () => {
     if (!GATE || BEAT !== 1) return;
-    if (OPENING_STAGE === 1) { OPENING_STAGE = 2; BEAT = 0; render(); return; }   /* 2차 영상 끝 → 타이틀 → 본 오프닝 */
+    if (OPENING_STAGE === 1) { OPENING_STAGE = 2; BEAT = 0; render(); return; }   /* 3컷 오프닝 끝 → 타이틀 → 10초 영상 */
     BEAT = 6; render();
   });
   const wrap = () => document.querySelector(".vwrap");
@@ -3502,7 +3502,7 @@ document.addEventListener("click", e => {
     return;
   }
   if (a === "ib") { BEAT = Math.min(6, BEAT + 1); render(); return; }
-  if (a === "iskip") { if (GATE && BEAT < 6) { BEAT = 6; render(); return; } GATE = false; ACT.newGame(); return; }
+  if (a === "iskip") { if (GATE && BEAT < 6) { BEAT = 6; OPENING_STAGE = 1; render(); return; } GATE = false; ACT.newGame(); return; }
   if (a === "help") { openGuide(t.dataset.g); return; }
   if (a === "scan") {
     S.screen = "scan"; S.phase = "list"; closeTerm();
@@ -3822,7 +3822,7 @@ document.addEventListener("click", e => {
 }, true);
 
 const ACT = {
-  newGame: () => { const m = S.mode; S = freshState(); S.mode = m; S.screen = "sector"; PG.key = ""; PG.i = 0; render(); },
+  newGame: () => { const m = S.mode; S = freshState(); S.mode = m; S.screen = "sector"; PG.key = ""; PG.i = 0; OPENING_STAGE = 1; render(); },
   continue: () => { const o = load(); if (o) { S = o; if (!S.learned) S.learned = []; render(); } },
   mode: el => { S.mode = el.dataset.v; render(); },
   pickChar: el => { S.charId = el.dataset.id; render(); },
