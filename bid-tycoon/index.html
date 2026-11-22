@@ -986,6 +986,8 @@
   .vwrap.blocked video,.vwrap.nofile video{opacity:0}
   .vskip{position:absolute;right:12px;bottom:16px;z-index:3;background:rgba(0,0,0,.55);border:1.5px solid #5b739a;color:#dbe9ff;
     border-radius:99px;padding:7px 14px;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer}
+  .vsnd{position:absolute;left:12px;bottom:16px;z-index:3;background:rgba(0,0,0,.55);border:1.5px solid #d9b866;color:#ffe9b0;
+    border-radius:99px;padding:7px 14px;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer}
   .storywrap{display:flex;flex-direction:column;gap:8px;justify-content:center;flex:1 1 auto;min-height:0}
   .storywrap .say-fig{width:min(46vw,180px);height:min(56vw,220px);border-radius:18px}
   .storywrap .say{flex-direction:column;align-items:stretch}
@@ -2449,6 +2451,7 @@ function videoHTML() {
     '<video id="openingV" src="' + OPENING_MP4 + '" muted playsinline autoplay preload="auto" poster="' + OWNER_IMG + '"></video>' +
     '<div class="vfall"><img src="' + OWNER_IMG + '" alt="밤 사무실에서 걱정하는 사장님">' +
       '<div class="vfb-t">오프닝 영상이 아직 없습니다 · 이야기로 바로 갑니다</div></div>' +
+    '<button class="vsnd" data-act="isound">🔇 소리 켜기</button>' +
     '<button class="vskip" data-act="ib">건너뛰기 ›</button>' +
     "</div>";
 }
@@ -3350,6 +3353,16 @@ document.addEventListener("click", e => {
     PG.i += (+t.dataset.k || 1);
     render();
     closeTerm();
+    return;
+  }
+  if (a === "isound") {
+    const v = document.getElementById("openingV");
+    if (v) {
+      v.muted = !v.muted;
+      if (!v.muted && v.play) v.play().catch(function(){});
+      const b = document.querySelector(".vsnd");
+      if (b) b.textContent = v.muted ? "🔇 소리 켜기" : "🔊 소리 끄기";
+    }
     return;
   }
   if (a === "ib") { BEAT = Math.min(6, BEAT + 1); render(); return; }
