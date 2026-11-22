@@ -419,7 +419,7 @@
   .art > h5:before{content:"▾";font-size:11px;color:#8a7f66}
   .art.closed > h5:before{content:"▸"}
   .art.closed .art-c{display:none}
-  .art .tg{font-size:10.5px;font-weight:900;background:#e7dcc0;color:#6b5b39;border-radius:99px;padding:1px 7px}
+  .art .tg{font-size:10.5px;font-weight:900;background:#e7dcc0;color:#57482a;border-radius:99px;padding:1px 7px}
   .art-c{font-size:14px;line-height:1.72;color:#312a1b}
   .art-c p{margin:0 0 7px}
   .art-c .tiny{font-size:12.5px;color:#6b6250}
@@ -428,7 +428,7 @@
   .doct th{background:#efe7d3;font-weight:800;white-space:nowrap;color:#3a3120}
   .doct td b{color:#1c170c}
   .doc .term{color:#8a4b00;border-bottom-color:#b9a06a}
-  .doc .muted{color:#6b6250}
+  .doc .muted{color:#5d5443}
   .docwrap summary{cursor:pointer;font-weight:900;font-size:16px;color:#eaf3ff;list-style:none;
     display:flex;align-items:center;gap:8px;padding:2px 0}
   .docwrap summary::-webkit-details-marker{display:none}
@@ -482,6 +482,10 @@
   .wq.wrong .wn{background:var(--red);color:#fff;border-color:#9e261d}
   .watch .opts{gap:6px}
   .watch .opt{font-size:13px;padding:7px 11px;min-height:42px}
+  .watch-lead{font-size:12px;font-weight:800;line-height:1.5;color:#e8f1ff;background:rgba(255,199,58,.13);
+    border:1.5px solid #8a6a12;border-radius:11px;padding:6px 9px;margin:6px 0 8px}
+  .watch-lead b{color:#ffe6a8}
+  .watch-lead .wl2{display:block;font-weight:700;color:#cfe0f8;margin-top:2px}
 
   /* ============================ 개찰·결과 ============================ */
   .res-hero{position:relative;overflow:hidden;border-radius:20px;padding:18px 15px;text-align:center;
@@ -903,7 +907,11 @@
   .page{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:6px;overflow:hidden;
     animation:pgIn .3s cubic-bezier(.2,.9,.3,1) both}
   @keyframes pgIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
-  .sc-body{flex:1 1 auto;min-height:0;overflow:hidden;position:relative}
+  .sc-body{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;position:relative;
+    overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#3d5a86 transparent}
+  .sc-body::-webkit-scrollbar{width:4px}
+  .sc-body::-webkit-scrollbar-thumb{background:#3d5a86;border-radius:99px}
+  .sc-body::-webkit-scrollbar-track{background:transparent}
   .sc-body > * + *{margin-top:8px}
   .sc-act{flex:0 0 auto;display:flex;gap:8px;align-items:stretch}
   .sc-act .btn{flex:1 1 auto;min-height:52px;font-size:15.5px;white-space:nowrap;padding:0 12px;letter-spacing:-.03em}
@@ -966,6 +974,16 @@
   .vwrap .vfb-t{font-size:12px;font-weight:800;color:#9fb3d4}
   .vwrap.blocked .vfall,.vwrap.nofile .vfall{display:flex}
   .vwrap.blocked video,.vwrap.nofile video{opacity:0}
+  .vwrap.loading .vfall{display:flex}
+  .vwrap.loading video{opacity:0}
+  .vwrap .vfall img.vlogo{width:min(56vw,215px);border-radius:18px;border:0;box-shadow:0 14px 36px rgba(0,0,0,.72)}
+  .vwrap .vload-bar{width:min(56vw,215px);height:7px;border-radius:99px;background:#141f31;border:1px solid #2b3f5e;overflow:hidden}
+  .vwrap .vload-bar i{display:block;height:100%;width:42%;border-radius:99px;background:linear-gradient(90deg,#ffa51f,#ffe08a);animation:vload 1.15s ease-in-out infinite}
+  @keyframes vload{0%{margin-left:-42%}100%{margin-left:100%}}
+  .vwrap .vfb-h{font-size:11.5px;font-weight:800;color:#8fa8c9;display:none}
+  .vwrap.blocked .vfb-h,.vwrap.nofile .vfb-h{display:block}
+  .vwrap.blocked .vload-bar,.vwrap.nofile .vload-bar{display:none}
+  .vwrap.blocked .vfb-t,.vwrap.nofile .vfb-t{display:none}
   .vskip{position:absolute;right:12px;bottom:16px;z-index:3;background:rgba(0,0,0,.55);border:1.5px solid #5b739a;color:#dbe9ff;
     border-radius:99px;padding:7px 14px;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer}
   .vsnd{position:absolute;left:12px;bottom:16px;z-index:3;background:rgba(0,0,0,.55);border:1.5px solid #d9b866;color:#ffe9b0;
@@ -1108,6 +1126,7 @@
   .qrow{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed #2b4066;font-size:12.5px;color:#dbe9ff}
   .qrow b.ok{color:var(--mint)}.qrow b.no{color:var(--red)}
   .docwrap .doc{margin:0}
+  .docwrap .doc .doc-body{padding:8px 9px 9px}
   .doc .doc-head{padding:7px 10px 6px}
   .doc .doc-org{font-size:10.5px}
   .doc .doc-title{font-size:16px;letter-spacing:.14em;margin:2px 0 3px}
@@ -1118,29 +1137,38 @@
   .doc .art .tg{font-size:9px;padding:0 5px}
   .doc .art-c{font-size:11.6px;line-height:1.5}
   .doc .art-c p{margin:0 0 4px}
-  .doc .art-c .tiny{font-size:10px}
+  .doc .art-c .tiny{font-size:10px;color:#5d5443}
   .doc .doct{font-size:10.8px;margin:2px 0}
   .doc .doct th,.doc .doct td{padding:2px 5px}
-  .doc .doc-foot{padding:5px 9px 6px;font-size:9.5px;line-height:1.4}
+  .doc .doc-foot{padding:5px 9px 6px;font-size:9.5px;line-height:1.4;color:#5d5443}
   .doc .doc-foot .t2{display:none}
   /* ---------------------------- 투찰 ---------------------------- */
   .picks{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
   .pn{aspect-ratio:1;font-size:14px}
   .recap{font-size:11px;font-weight:900;color:#8ff0c8;background:rgba(51,214,154,.1);border:1.5px solid #1f8f68;border-radius:8px;padding:3px 8px}
-  .sl-head{display:flex;justify-content:space-between;font-size:10px;font-weight:900;color:#8ba1c2}
-  .sl-wrap{position:relative;padding:6px 0 2px;margin-bottom:6px}
+  .sl-head{display:flex;justify-content:space-between;font-size:13px;font-weight:900;color:#c3d5ef;margin-bottom:2px}
+  .sl-wrap{position:relative;padding:16px 0 22px;margin-bottom:6px}
   .sl-wrap input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:26px;background:transparent;margin:0}
   .sl-wrap input[type=range]::-webkit-slider-runnable-track{height:14px;border-radius:99px;
     background:linear-gradient(90deg,#8a2f27 0%,#ffa51f 38%,#33d69a 62%,#ffa51f 84%,#8a2f27 100%);border:2px solid #0a1320}
-  .sl-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+  .sl-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:36px;border-radius:4px;
+    background:linear-gradient(180deg,#ffe9a8,#ffc73a);border:2.5px solid #6d4408;cursor:grab;
     background:radial-gradient(circle at 35% 30%,#fff6cf,#ffc73a 60%,#b4711a);border:2.5px solid #6d4408;margin-top:-8px;
     box-shadow:0 3px 8px rgba(0,0,0,.6)}
   .sl-wrap input[type=range]::-moz-range-track{height:14px;border-radius:99px;background:linear-gradient(90deg,#8a2f27,#ffa51f,#33d69a,#ffa51f,#8a2f27)}
-  .sl-wrap input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#ffc73a;border:2.5px solid #6d4408}
-  .sl-mark{position:absolute;top:0;bottom:0;width:2px;background:#fff;opacity:.55;pointer-events:none}
-  .sl-mark b{position:absolute;top:-2px;left:-14px;font-size:8.5px;font-weight:900;color:#fff;background:#0a1320;padding:0 3px;border-radius:3px}
-  .sl-pick{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
-  .sl-pick .chip{font-size:10.5px;padding:4px 8px;min-height:0}
+  .sl-wrap input[type=range]::-moz-range-thumb{width:14px;height:34px;border-radius:4px;background:linear-gradient(180deg,#ffe9a8,#ffc73a);border:2.5px solid #6d4408}
+  .sl-mark{position:absolute;top:14px;bottom:22px;width:2px;background:#eaf3ff;opacity:.75;pointer-events:none}
+  .sl-mark b{position:absolute;top:100%;left:-17px;min-width:34px;text-align:center;font-size:11.5px;font-weight:900;color:#eaf3ff;
+    background:#12233c;border:1.5px solid #6d86b5;padding:0 5px;border-radius:5px}
+  .sl-pick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+  .sl-pick .chip{font-size:12.5px;padding:9px 12px;min-height:42px;border-color:#6d86b5;color:#eaf3ff;
+    box-shadow:0 3px 0 #070d18, inset 0 1px 0 rgba(255,255,255,.12)}
+  .sl-pick .chip:before{content:"▼ ";font-size:10px;color:var(--gold)}
+  .sl-pick .chip:active{transform:translateY(2px);box-shadow:0 1px 0 #070d18}
+  .fill-lead{font-size:12.5px;font-weight:700;color:#a9bdd9;margin:0 0 4px;line-height:1.45}
+  .fill-lead b{color:#ffe6a8}
+  .pick-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .pick-label{flex:0 0 auto;font-size:11.5px;font-weight:900;color:#8fa8c9;line-height:1.25}
   .readout{border:2px solid #3d5a86;border-radius:12px;padding:6px 9px;background:#0f1c2e}
   .readout.good{border-color:#1f8f68;background:rgba(51,214,154,.07)}
   .readout.warn{border-color:#8a6a12;background:rgba(255,199,58,.06)}
@@ -2155,6 +2183,7 @@ let GATE = true;
 let BEAT = 1;            /* 0 타이틀 스플래시 · 1 오프닝 영상 · 2~5 스토리 · 6 판 선택 (시작은 새·다람쥐 로고 영상부터) */
 const IS_IOS_MOTION = false;
 const OWNER_IMG = "assets/char_owner_worry.png";
+const BID_LOGO = "assets/bid_logo.png?v=1";   /* 로딩 화면 로고 */
 const FRIEND_IMG = "assets/char_friend_male.png";
 const OPENING_MP4 = "assets/opening.mp4?v=18";
 const OPENING2_MP4 = "assets/opening2.mp4?v=6";   /* 새·다람쥐 로고 영상 — 맨 먼저 */
@@ -2435,10 +2464,12 @@ function docChunks(n) {
   const h = docHTML(n);
   const bStart = h.indexOf('<div class="doc-body">');
   const fIdx = h.indexOf('<div class="doc-foot">');
-  const head = h.slice(0, bStart);
+  /* .doc(종이)·.doc-body 껍데기는 쪽마다 새로 씌운다. 예전에는 1쪽에만 들어가서
+     2쪽부터 검은 본문 글씨가 어두운 화면에 그대로 묻혔다. */
+  const head = h.slice('<div class="doc">'.length, bStart);
   const body = h.slice(bStart + '<div class="doc-body">'.length, h.lastIndexOf("</div>", fIdx));
   const secs = body.split("<section ").slice(1).map(x => "<section " + x);
-  let foot = h.slice(fIdx).replace(/<\/div><\/div>\s*$/, "</div>");
+  const foot = h.slice(fIdx).replace(/<\/div>\s*$/, "");
   return { head: head, secs: secs, foot: foot };
 }
 
@@ -2511,10 +2542,12 @@ function splashHTML() {
    영상은 두 편을 차례로 튼다: 새·다람쥐 로고 영상 → 타이틀 → 3컷 오프닝 → 이야기 */
 function videoHTML() {
   const src = OPENING_STAGE === 1 ? OPENING2_MP4 : OPENING_MP4;   /* 새·다람쥐 로고 영상이 먼저 */
-  return '<div class="vwrap">' +
-    '<video id="openingV" src="' + src + '"' + (OPENING_STAGE === 1 ? '' : ' muted') + ' playsinline autoplay preload="auto" poster="' + OWNER_IMG + '"></video>' +
-    '<div class="vfall"><img src="' + OWNER_IMG + '" alt="밤 사무실에서 걱정하는 사장님">' +
-      '<div class="vfb-t">오프닝 영상 불러오는 중 · 화면을 누르면 바로 재생됩니다</div></div>' +
+  return '<div class="vwrap loading">' +
+    '<video id="openingV" src="' + src + '"' + (OPENING_STAGE === 1 ? '' : ' muted') + ' playsinline autoplay preload="auto"></video>' +
+    '<div class="vfall"><img class="vlogo" src="' + BID_LOGO + '" alt="입찰 타이쿤">' +
+      '<div class="vload-bar"><i></i></div>' +
+      '<div class="vfb-t">게임을 불러오는 중입니다</div>' +
+      '<div class="vfb-h">화면을 누르면 바로 시작합니다</div></div>' +
     (OPENING_STAGE === 1 ? '' :
       '<button class="vsnd" data-act="isound">🔇 소리 켜기</button>' +
       '<button class="vskip" data-act="ib">건너뛰기 ›</button>') +
@@ -2529,6 +2562,9 @@ function bindOpening() {
     BEAT = 2; render();
   };
   v.addEventListener("error", fail);
+  const clearLoad = () => { const w = document.querySelector(".vwrap"); if (w) w.classList.remove("loading"); };
+  v.addEventListener("playing", clearLoad);
+  v.addEventListener("canplay", clearLoad);
   v.addEventListener("ended", () => {
     if (!GATE || BEAT !== 1) return;
     if (OPENING_STAGE === 1) { OPENING_STAGE = 2; BEAT = 0; render(); return; }   /* 로고 영상 끝 → 타이틀 → 3컷 오프닝 */
@@ -2961,7 +2997,9 @@ function screenDetail() {
     const secs = grp.map(k => dc.secs[k]).filter(Boolean).join("");
     pages.push({
       tag: "공고문 " + (gi + 1) + "/" + groups.length,
-      body: '<div class="docwrap">' + (gi === 0 ? dc.head : "") + secs + (gi === groups.length - 1 ? dc.foot : "") + "</div>",
+      body: '<div class="docwrap"><div class="doc">' + (gi === 0 ? dc.head : "") +
+        '<div class="doc-body">' + secs + "</div>" +
+        (gi === groups.length - 1 ? dc.foot : "") + "</div></div>",
       acts: gi === groups.length - 1 ? "" : ""
     });
   });
@@ -2979,6 +3017,7 @@ function screenDetail() {
     tag: "조건 5개",
     say: sayBoss(done ? "다섯 가지를 다 짚었습니다. 이제 낼 수 있습니다." : "공고문에서 본 다섯 가지를 짚어 둡시다. 놓치면 무효가 됩니다.", null),
     body: '<div class="card"><div class="card-title"><span class="ico">⑤</span>조건 5개 찾기 <span class="tag ' + (done ? "green" : "line") + '">' + answered + "/5</span></div>" +
+      '<div class="watch-lead"><b>각 질문에서 맞는 답을 하나씩 누르세요.</b> 5개를 모두 맞히면 무효 없이 투찰할 수 있습니다. <span class="wl2">틀린 답은 다시 누르면 바뀝니다 · 아래 질문은 화면을 위로 밀어 보세요</span></div>' +
       '<div class="watch">' + watchHTML + "</div></div>",
     acts: closed ? '<button class="btn big-btn" disabled>마감된 공고입니다</button>'
       : allOk
@@ -3072,13 +3111,14 @@ function screenBid() {
     tag: "투찰률",
     say: sayBoss("낮게 쓰면 이기기 쉽고 남는 게 적습니다. 어디에 걸까요?", null),
     body: recap +
-      '<div class="card tight"><div class="sl-head"><span>낮게 · 이기기 쉬움</span><span>높게 · 많이 남음</span></div>' +
+      '<div class="card tight"><div class="fill-lead"><b>마크를 좌우로 끌어</b> 금액 조정</div>' +
+      '<div class="sl-head"><span>낮게 · 이기기 쉬움</span><span>높게 · 많이 남음</span></div>' +
       '<div class="sl-wrap"><input id="rateSlider" type="range" min="7800" max="10199" step="5" value="' + Math.round(ratePct * 100) + '" aria-label="투찰률">' +
         '<i class="sl-mark" style="left:' + lbPos + '%"><b>하한</b></i></div>' +
-      '<div class="sl-pick"><button class="chip" data-act="fill" data-v="safe">안전 구간</button>' +
+      '<div class="pick-row"><span class="pick-label">버튼 선택으로<br>금액 선정</span><div class="sl-pick"><button class="chip" data-act="fill" data-v="safe">안전 구간</button>' +
         '<button class="chip" data-act="fill" data-v="lb">하한 바로 위</button>' +
         '<button class="chip" data-act="fill" data-v="mid">95%</button>' +
-        '<button class="chip" data-act="fill" data-v="over">102% 넘겨 보기</button></div>' +
+        '<button class="chip" data-act="fill" data-v="over">102% 넘겨 보기</button></div></div>' +
       '<div id="bidJudgeWrap">' + bidReadoutHTML(n, amt) + "</div>" +
       '<div class="money-in" style="margin-top:6px"><input id="bidAmount" inputmode="numeric" placeholder="0" value="' + (S.bid.amount ? won(S.bid.amount) : "") + '"><span class="unit">원</span></div>' +
       '<div id="bidErr" class="bad" style="display:none"></div>' +
