@@ -3815,11 +3815,11 @@ const ACT = {
   mode: el => { S.mode = el.dataset.v; render(); },
   pickChar: el => { S.charId = el.dataset.id; render(); },
   quiz: el => { S.quiz[+el.dataset.q] = el.dataset.v; render(); },
-  toName: () => { S.screen = "name"; S.nameMode = "auto"; S.autoName = S.autoName || genName(S.charId); render(); },
+  toName: () => { S.screen = "name"; S.nameMode = "auto"; S.autoName = S.autoName || genName(S.charId); S.typedName = S.autoName; render(); },
   modeName: el => { S.nameMode = el.dataset.m; render(); },
   reroll: () => { S.autoName = genName(S.charId); S.typedName = S.autoName; render(); },
   useAuto: () => {
-    const nm = String(S.typedName || S.autoName || "").trim();
+    const nm = String(S.typedName || "").trim();
     const v = validateName(nm);
     if (!v.ok) { toast(v.msg); return; }
     commitName(nm);
