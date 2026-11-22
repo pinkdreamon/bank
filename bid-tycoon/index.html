@@ -3484,6 +3484,20 @@ async function selfTest() {
       await walk("perform6");
       await go('[data-act="finishJob"]', 500);
       await walk("r2:list");
+      /* 성장 — 직접생산확인 취득으로 더 큰 공고(g1)가 열리는지 */
+      await go('[data-act="toDash"]', 400);
+      await walk("dash-after");
+      const g1before = (() => { const d = noticeDef("g1"); return d ? eligibility(d).map(r => r.ok) : null; })();
+      if (Q('[data-act="applyCert"]')) { await go('[data-act="applyCert"]', 500); }
+      else { await go('[data-act="toInvest"]', 300); if (Q('[data-act="buy"][data-u="ownProd"]')) { await go('[data-act="buy"][data-u="ownProd"]', 1700); clearFx(); } }
+      const g1after = (() => { const d = noticeDef("g1"); return d ? eligibility(d).map(r => r.ok) : null; })();
+      rep.events.push({ step: "unlock", g1Before: g1before, g1After: g1after, ownProd: S.ownProd, capital: S.capital });
+      await go('[data-act="toInvest"]', 350);
+      const staffBefore = S.staff;
+      if (Q('[data-act="buy"][data-u="staff"]')) { await go('[data-act="buy"][data-u="staff"]', 1700); clearFx(); }
+      rep.events.push({ step: "invest", staffBefore: staffBefore, staffAfter: S.staff, capital: S.capital });
+      await go('[data-act="scan"]', 300); await T(1700);
+      await walk("r2:list2");
     }
   }
   /* 3) 라운드 2 — 자본이 늘고 더 큰 공고가 열렸는지 */
