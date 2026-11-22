@@ -2655,13 +2655,13 @@ function splashHTML() {
 function videoHTML() {
   const src = OPENING_STAGE === 1 ? OPENING2_MP4 : OPENING_MP4;   /* 새·다람쥐 로고 영상이 먼저 */
   return '<div class="vwrap loading">' +
-    '<video id="openingV" src="' + src + '"' + (OPENING_STAGE === 1 ? '' : ' muted') + ' playsinline autoplay preload="auto"></video>' +
+    '<video id="openingV" src="' + src + '" playsinline autoplay preload="auto"></video>' +
     '<div class="vfall"><img class="vlogo" src="' + BID_LOGO + '" alt="입찰 타이쿤">' +
       '<div class="vload-bar"><i></i></div>' +
       '<div class="vfb-t">게임을 불러오는 중입니다</div>' +
       '<div class="vfb-h">화면을 누르면 바로 시작합니다</div></div>' +
     (OPENING_STAGE === 1 ? '' :
-      '<button class="vsnd" data-act="isound">🔇 소리 켜기</button>' +
+      '<button class="vsnd" data-act="isound">🔊 소리 끄기</button>' +
       '<button class="vskip" data-act="ib">건너뛰기 ›</button>') +
     "</div>";
 }
@@ -2684,9 +2684,11 @@ function bindOpening() {
   });
   const wrap = () => document.querySelector(".vwrap");
   const tryPlay = () => {
-    if (OPENING_STAGE === 1) { v.muted = false; v.volume = 1; }   /* 로고 영상은 소리 켜진 채로 재생 */
+    v.muted = false; v.volume = 1;
     const pr = v.play ? v.play() : null;
-    if (pr && pr.catch) pr.catch(() => { const w = wrap(); if (w) w.classList.add("blocked"); });
+    if (pr && pr.catch) pr.catch(() => {
+      const w = wrap(); if (w) w.classList.add("blocked");
+    });
   };
   tryPlay();
   /* 모바일 자동재생이 막혀도 첫 터치에서 바로 재생되도록 */
