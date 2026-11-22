@@ -608,30 +608,7 @@
     background:linear-gradient(180deg,#152437,#0a1320);border-top:2px solid rgba(255,199,58,.18);
     clip-path:polygon(0 26%,50% 0,100% 26%,100% 100%,0 100%)}
   .cast-row{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;z-index:1}
-  .actor{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;
-    font-family:inherit;background:none;border:0;padding:6px 2px 4px;color:#eaf3ff;
-    transition:transform .18s cubic-bezier(.2,1.4,.4,1), filter .18s;filter:saturate(.75) brightness(.85)}
-  .actor .pad{position:absolute;left:50%;bottom:16px;width:74%;height:18px;transform:translateX(-50%);
-    border-radius:50%;background:radial-gradient(ellipse,rgba(255,199,58,.55),transparent 70%);opacity:0;
-    transition:opacity .2s}
-  .actor .fig{position:relative;width:100%;aspect-ratio:3/4;max-height:180px;border-radius:16px 16px 10px 10px;
-    overflow:hidden;border:3px solid #3d5a86;background:#f6f1e3;
-    box-shadow:0 8px 16px rgba(0,0,0,.55);transition:border-color .2s, box-shadow .2s}
-  .actor .fig img{width:100%;height:100%;object-fit:cover;object-position:50% 10%;display:block}
-  .actor .nm{font-size:14px;font-weight:900;letter-spacing:-.02em;margin-top:2px;
-    text-shadow:0 2px 6px #000;display:flex;align-items:center;gap:4px}
-  .actor .dots{display:inline-flex;gap:2px}
-  .actor .dots i{width:6px;height:6px;border-radius:50%;background:#3c4c68;display:block}
-  .actor .dots i.f{background:var(--gold);box-shadow:0 0 6px rgba(255,199,58,.8)}
-  .actor .diff{font-size:10.5px;font-weight:900;color:#a8bddb;letter-spacing:.02em}
-  .actor:hover{filter:saturate(1) brightness(1)}
-  .actor.on{transform:translateY(-8px) scale(1.04);filter:none}
-  .actor.on .fig{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,199,58,.35), 0 14px 24px rgba(0,0,0,.6);
-    animation:bob 2.6s ease-in-out infinite}
-  .actor.on .pad{opacity:1}
-  .actor.on .nm{color:#ffdc7a}
-  .actor.on:after{content:"선택";position:absolute;top:-4px;right:2px;font-size:10px;font-weight:900;
-    background:var(--gold);color:#3a2800;border-radius:99px;padding:1px 8px;box-shadow:0 2px 0 #8a5a12}
+  /* .actor 세부 모양은 아래 ‘업종’ 절에서 한 곳에만 정의한다 (예전 중복 규칙·선택 리본 제거) */
   .cast-hint{position:relative;z-index:1;text-align:center;font-size:12px;font-weight:900;color:#93a7c6;
     margin-top:8px;letter-spacing:.02em}
 
@@ -995,21 +972,89 @@
   .storywrap .say .bub{font-size:17px;line-height:1.55}
   .story-hint{font-size:11.5px;font-weight:800;color:#8ba1c2;text-align:center}
   /* ---------------------------- 업종 ---------------------------- */
-  .cast-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-  .actor{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;background:transparent;
-    border:0;font-family:inherit;padding:0}
-  .actor .fig{position:relative;width:100%;aspect-ratio:3/4;max-height:230px;border-radius:14px;overflow:hidden;
-    border:2px solid #33507c;box-shadow:0 6px 14px rgba(0,0,0,.55);background:#0f1c2e}
+  /* 세 캐릭터를 390px에서도 3열로 — 사진·직업·조건·첫 관문·선택하기를 카드 안에 모두 담는다 */
+  .cast-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;align-items:stretch}
+  .actor{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:4px;cursor:pointer;
+    background:linear-gradient(180deg,#17253c,#0f1c2e);border:2px solid #33507c;border-radius:14px;
+    padding:6px 6px 7px;font-family:inherit;text-align:center;min-width:0;
+    box-shadow:0 6px 14px rgba(0,0,0,.5);transition:border-color .12s,box-shadow .12s,transform .12s}
+  .actor:hover{border-color:#4d6f9f}
+  .actor .fig{position:relative;width:100%;aspect-ratio:5/7;max-height:260px;border-radius:10px;overflow:hidden;
+    border:2px solid #2b4066;background:#0f1c2e}
   .actor .fig img{width:100%;height:100%;object-fit:cover;object-position:50% 12%;display:block}
-  .actor .nm{font-size:13.5px;font-weight:900;color:#fff}
-  .actor .who2{font-size:9.5px;font-weight:800;color:#8ba1c2;text-align:center;line-height:1.25}
+  .actor .nm{display:block;font-size:18px;font-weight:900;color:#fff;line-height:1.15;letter-spacing:-.03em}
+  .actor .diff{display:flex;align-items:center;justify-content:center;gap:4px;font-size:10.5px;font-weight:900;color:#a8bddb;line-height:1.2}
   .actor .dots{display:inline-flex;gap:2px}
   .actor .dots i{width:6px;height:6px;border-radius:50%;background:#3c4c68;display:block}
   .actor .dots i.f{background:var(--gold);box-shadow:0 0 6px rgba(255,199,58,.8)}
-  .actor .diff{font-size:10px;font-weight:900;color:#a8bddb}
-  .actor.on .fig{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,199,58,.35),0 10px 20px rgba(0,0,0,.6)}
+  .actor .who2{display:block;font-size:11.5px;font-weight:900;color:#eaf3ff;line-height:1.2}
+  .actor .shop2{display:block;font-size:10px;font-weight:800;color:#8ba1c2;line-height:1.25;word-break:keep-all}
+  .actor .who3{display:block;font-size:10px;font-weight:800;color:#6f88ab;line-height:1.25;word-break:keep-all}
+  .actor .conds{display:block;margin-top:2px;border-top:1px dashed #2f4a70;padding-top:4px}
+  .actor .cd{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:4px;align-items:baseline;font-size:11px;line-height:1.5;min-width:0}
+  .actor .cd i{font-style:normal;font-size:10px;font-weight:900;color:#7e97ba;flex:none}
+  .actor .cd b{font-weight:900;color:#fff;text-align:right;min-width:0}
+  .actor .cd.lic{display:block;text-align:left;margin-top:1px}
+  .actor .cd.lic i{display:block;font-size:10px;line-height:1.2}
+  .actor .cd.lic b{display:block;font-size:10px;color:#dce9fb;line-height:1.3;text-align:left}
+  .actor .gate{display:block;margin-top:3px;background:#2a1f06;border:1.5px solid #7a5a12;border-radius:8px;
+    padding:3px 4px;font-size:10.5px;font-weight:800;color:#ffdc7a;line-height:1.35}
+  .actor .gate i{display:block;font-style:normal;font-size:10px;font-weight:900;color:#c9a75a;letter-spacing:.02em}
+  .actor .selbtn{display:block;width:100%;margin-top:auto;min-height:32px;border-radius:9px;border:1.5px solid #8a5a12;
+    background:linear-gradient(180deg,#ffd978,#ffa51f);color:#2a1a02;font-family:inherit;font-size:12.5px;font-weight:900;
+    cursor:pointer;padding:0 4px;box-shadow:0 3px 0 #8a5a12;letter-spacing:-.02em}
+  .actor .selbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #8a5a12}
+  .actor .selbtn.on{background:linear-gradient(180deg,#fff4cc,#ffc73a);border-color:#ffe9a8;color:#3a2800}
+  .actor.on{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,199,58,.3),0 10px 20px rgba(0,0,0,.6);transform:translateY(-3px)}
+  .actor.on .fig{border-color:var(--gold)}
   .actor.on .nm{color:#ffdc7a}
   .pickbox{margin-top:6px;background:#0f1c2e;border:2px solid #7a5a12;border-radius:14px;padding:8px 10px}
+  /* 2단계 — 업종을 선택하세요 */
+  .stitle{font-size:17px;font-weight:900;color:#fff;letter-spacing:-.03em;margin:0 0 4px;text-align:left}
+  .stitle small{font-size:11px;font-weight:800;color:#8ba1c2;margin-left:6px;letter-spacing:0}
+  .secpick{display:flex;flex-direction:column;gap:8px}
+  .secrow{display:flex;align-items:center;gap:9px;cursor:pointer;text-align:left;font-family:inherit;
+    background:linear-gradient(180deg,#17253c,#0f1c2e);border:2px solid #33507c;border-radius:12px;padding:8px 9px;
+    box-shadow:0 4px 10px rgba(0,0,0,.45);min-width:0}
+  .secrow .fig{width:54px;height:68px;flex:none;border-radius:8px;overflow:hidden;border:2px solid #2b4066;background:#0f1c2e}
+  .secrow .fig img{width:100%;height:100%;object-fit:cover;object-position:50% 12%;display:block}
+  .secrow .info{flex:1 1 auto;min-width:0}
+  .secrow .t1{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .secrow .nm{font-size:15px;font-weight:900;color:#fff}
+  .secrow .diff{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:900;color:#a8bddb}
+  .secrow .dots{display:inline-flex;gap:2px}
+  .secrow .dots i{width:6px;height:6px;border-radius:50%;background:#3c4c68;display:block}
+  .secrow .dots i.f{background:var(--gold)}
+  .secrow .t2{display:block;font-size:11px;font-weight:800;color:#c4d8f6;line-height:1.35}
+  .secrow .t3{display:block;font-size:10.5px;font-weight:800;color:#8ba1c2;line-height:1.4}
+  .secrow .selbtn{flex:none;min-height:34px;border-radius:9px;border:1.5px solid #8a5a12;padding:0 10px;
+    background:linear-gradient(180deg,#ffd978,#ffa51f);color:#2a1a02;font-family:inherit;font-size:12px;font-weight:900;
+    box-shadow:0 3px 0 #8a5a12;cursor:pointer;white-space:nowrap}
+  .secrow.on{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,199,58,.28),0 8px 18px rgba(0,0,0,.55)}
+  .secrow.on .nm{color:#ffdc7a}
+  .secrow.on .selbtn{background:linear-gradient(180deg,#fff4cc,#ffc73a);border-color:#ffe9a8;color:#3a2800}
+  /* 넓은 화면(태블릿·데스크톱)에서는 카드가 넓으므로 글자를 함께 키운다 */
+  @media(min-width:620px){
+    .actor{gap:6px;padding:9px 10px 10px;border-radius:16px}
+    .actor .fig{aspect-ratio:auto;height:300px}
+    .actor .nm{font-size:22px}
+    .actor .diff{font-size:12px}
+    .actor .who2{font-size:14px}
+    .actor .shop2,.actor .who3{font-size:12px}
+    .actor .cd{font-size:13px}
+    .actor .cd i{font-size:11.5px}
+    .actor .cd.lic i,.actor .cd.lic b{font-size:11.5px}
+    .actor .gate{font-size:12px}
+    .actor .gate i{font-size:11.5px}
+    .actor .selbtn{min-height:38px;font-size:14px}
+    .secrow{padding:10px 12px;border-radius:14px}
+    .secrow .fig{width:62px;height:78px}
+    .secrow .nm{font-size:17px}
+    .secrow .t2{font-size:12.5px}
+    .secrow .t3{font-size:12px}
+    .secrow .selbtn{min-height:38px;font-size:13.5px}
+    .stitle{font-size:20px}
+  }
   .hintc{text-align:center;font-size:11.5px;font-weight:800;color:#8ba1c2;margin-top:6px}
   .quiz{margin-bottom:7px}
   .quiz .qtext{font-size:12px;font-weight:800;color:#eaf3ff;margin-bottom:4px}
@@ -2487,15 +2532,12 @@ function browserHTML() {
       "</div></div></div>";
 }
 function modePickHTML() {
-  const saved = load();
-  const hasSave = saved && saved.company && saved.screen && ["intro", "end"].indexOf(saved.screen) < 0;
   return '<div class="card" style="margin-top:2px">' +
     '<div class="card-title"><span class="ico">\u2605</span>어떤 판으로 할까요</div>' +
     '<div class="mode-row">' +
       modeBtn("quick", "빠른 판(체험판)", "3분", "green", "공고 확인 → 투찰 → 개찰까지만 빠르게 봅니다.") +
       modeBtn("full", "전체 판", "10분", "blue", "입찰 3번. 계약 → 납품 → 대금까지 다 겪습니다.") +
     "</div>" +
-    (hasSave ? '<button class="btn subtle wide" style="margin-top:8px" data-act="continue">이어서 하기 (' + esc(saved.company) + ")</button>" : "") +
     "</div>";
 }
 function modeBtn(v, label, tag, cls, desc) {
@@ -2538,32 +2580,57 @@ function screenSector() {
   const pick = S.charId ? charOf(S.charId) : null;
   const cast = CHARACTERS.map(c => {
     const dots = [1, 2, 3].map(i => '<i class="' + (i <= c.diff ? "f" : "") + '"></i>').join("");
-    return '<button class="actor ' + (S.charId === c.id ? "on" : "") + '" data-act="pickChar" data-id="' + c.id + '">' +
+    const on = S.charId === c.id;
+    const cd = (k, v) => '<span class="cd"><i>' + k + "</i><b>" + v + "</b></span>";
+    return '<div class="actor ' + (on ? "on" : "") + '" data-act="pickChar" data-id="' + c.id + '">' +
       '<span class="fig">' + portraitMarkup(c) + "</span>" +
       '<span class="nm">' + c.name + "</span>" +
-      '<span class="who2">' + c.owner + " · " + c.shop + "</span>" +
-      '<span class="diff"><span class="dots">' + dots + "</span> " + c.diffLabel + "</span></button>";
+      '<span class="diff"><span class="dots">' + dots + "</span>" + c.diffLabel + "</span>" +
+      '<span class="who2">' + c.owner + "</span>" +
+      '<span class="shop2">' + c.shop + "</span>" +
+      '<span class="who3">' + c.who + "</span>" +
+      '<span class="conds">' + cd("자본", eok(c.start.capital)) + cd("실적", c.start.perf ? eok(c.start.perf) : "없음") +
+        cd("인력", c.start.staff + "명") + '<span class="cd lic"><i>면허</i><b>' + c.start.license + "</b></span></span>" +
+      '<span class="gate"><i>첫 관문</i>' + c.firstGate + "</span>" +
+      '<button type="button" class="selbtn' + (on ? " on" : "") + '" data-act="pickChar" data-id="' + c.id + '">' +
+        (on ? "✓ 선택됨" : "선택하기") + "</button></div>";
   }).join("");
   const p0 = {
     tag: "업종 = 난이도",
-    say: sayBoss("나는 어떤 일로 시작해 볼까.", pick ? null : OWNER_IMG),
+    say: sayBoss(pick ? "좋다. 이 사람으로 해 보자." : "나는 어떤 일로 시작해 볼까.", pick ? null : OWNER_IMG),
     body: '<div class="cast-row">' + cast + "</div>" +
-      (pick ? '<div class="pickbox"><div class="tiny" style="color:#ffdc7a;font-weight:900">' + pick.name + " · " + pick.diffLabel + "</div>" +
-        '<div class="big" style="font-size:18px">' + pick.shop + "</div>" +
-        '<div class="tiny muted">' + pick.owner + " · " + pick.who + "</div>" +
-        '<p class="tiny" style="margin-top:6px;color:#c4d8f6">' + pick.line + "</p>" +
-        '<div class="mini4">' + miniStat("자본", eok(pick.start.capital)) + miniStat("실적", pick.start.perf ? eok(pick.start.perf) : "없음") +
-          miniStat("인력", pick.start.staff + "명") + miniStat("신용", pick.credit) + "</div>" +
-        '<div class="note" style="margin-top:7px">첫 관문 · ' + pick.firstGate + "</div></div>"
-        : '<div class="hintc">캐릭터를 눌러 업종을 고르세요</div>'),
-    acts: pick ? '<button class="btn big-btn" data-act="startBiz">이 업종으로 개업하기</button>' : ""
+      (pick
+        ? '<div class="hintc">' + pick.name + " · " + pick.diffLabel + " — 아래 ‘다음’을 누르면 업종을 한 번 더 고릅니다</div>"
+        : '<div class="hintc">캐릭터의 ‘선택하기’를 누르면 세 업종 중 하나가 선택됩니다</div>'),
+    acts: '<button class="btn big-btn" data-act="pg" data-k="1"' + (pick ? "" : " disabled") + ">다음 · 업종 선택</button>"
+  };
+  /* 2단계 — 업종을 한 번 더 골라 확정한다 */
+  const secRows = CHARACTERS.map(c => {
+    const dots = [1, 2, 3].map(i => '<i class="' + (i <= c.diff ? "f" : "") + '"></i>').join("");
+    const on = S.charId === c.id;
+    return '<div class="secrow ' + (on ? "on" : "") + '" data-act="pickChar" data-id="' + c.id + '">' +
+      '<span class="fig">' + portraitMarkup(c) + "</span>" +
+      '<span class="info"><span class="t1"><span class="nm">' + c.name + '</span>' +
+        '<span class="diff"><span class="dots">' + dots + "</span>" + c.diffLabel + "</span></span>" +
+        '<span class="t2">' + c.owner + " · " + c.shop + "</span>" +
+        '<span class="t3">' + c.who + " · 자본 " + eok(c.start.capital) + " · 실적 " + (c.start.perf ? eok(c.start.perf) : "없음") +
+          " · 인력 " + c.start.staff + "명</span></span>" +
+      '<button type="button" class="selbtn" data-act="pickChar" data-id="' + c.id + '">' + (on ? "✓ 선택됨" : "선택") + "</button></div>";
+  }).join("");
+  const p1 = {
+    tag: "업종 선택",
+    say: sayBoss(pick ? "업종을 하나 고르면 바로 개업합니다." : "먼저 업종을 하나 고르십시오.", pick ? null : OWNER_IMG),
+    body: '<div class="stitle">업종을 선택하세요<small>고른 업종으로 바로 개업합니다</small></div>' +
+      '<div class="secpick">' + secRows + "</div>" +
+      (pick ? '<div class="hintc">' + pick.name + " · 첫 관문 — " + pick.firstGate + "</div>" : ""),
+    acts: '<button class="btn big-btn" data-act="startBiz"' + (pick ? "" : " disabled") + ">이 업종으로 개업하기</button>"
   };
   const quiz = QUIZ.map((q, qi) =>
     '<div class="quiz"><div class="qtext">' + (qi + 1) + ". " + q.q + "</div>" +
     '<div class="opts">' + q.opts.map(o =>
       '<button class="opt ' + (S.quiz[qi] === o[1] ? "on" : "") + '" data-act="quiz" data-q="' + qi + '" data-v="' + o[1] + '">' + o[0] + "</button>").join("") + "</div></div>").join("");
   const rec = recommendSector();
-  const p1 = {
+  const p2 = {
     tag: "유형 찾기",
     body: '<div class="card"><div class="card-title"><span class="ico">?</span>나와 비슷한 유형 찾기</div>' +
       '<p class="tiny muted">세 가지만 고르면 어울리는 업종을 골라 드립니다. 직접 골라도 됩니다.</p>' + quiz +
@@ -2572,9 +2639,9 @@ function screenSector() {
         "물품은 세부품명 등록, 용역은 업종 등록, 공사는 건설업 등록이 필요합니다.",
         "1인 사업자는 4대보험 가입자 명부(상시근로자 1명 이상)에서 막히는 경우가 많습니다.",
         "등록 처리에 8근무시간이 걸립니다. 마감 하루 전에 시작하면 늦습니다."], "start"),
-    acts: '<button class="btn subtle" data-act="pg" data-k="-1">캐릭터로 돌아가기</button>'
+    acts: '<button class="btn subtle" data-act="pg" data-k="-1">업종 고르기로</button>'
   };
-  return frame([p0, p1], "sector" + (S.charId || "") + (S.quiz.join("")), 0);
+  return frame([p0, p1, p2], "sector" + S.quiz.join(""), 0);
 }
 function miniStat(k, v) { return '<div class="ms"><span>' + k + "</span><b>" + v + "</b></div>"; }
 function portraitMarkup(c, cls) {
@@ -2740,7 +2807,7 @@ function screenList() {
     const left = n.close - S.now, dd = dDay(S.now, n.close), closed = left <= 0;
     const base = { id: d.id, name: d.name, base: d.base };
     const chipz = rows.length ? rows.map(r => '<span class="mini ' + (r.ok ? "on" : "off") + '">' + (r.ok ? "✓ " : "✕ ") + r.label + "</span>").join("") : '<span class="mini on">✓ 자격 조건 없음</span>';
-    return '<button class="ncard ' + (ok && !closed ? "" : "locked") + '" data-act="' + (ok && !closed ? "openNotice" : "") + '" data-id="' + d.id + '" style="animation-delay:' + (i * 90) + 'ms">' +
+    return '<button class="ncard ' + (ok && !closed ? "" : "locked") + '" data-act="' + (ok && !closed ? "openNotice" : "lockedNotice") + '" data-id="' + d.id + '" style="animation-delay:' + (i * 90) + 'ms">' +
       '<div class="nc-top"><span class="nc-dday ' + (dd <= 1 ? "soon" : "") + '">' + (closed ? "마감" : dd === 0 ? "오늘 마감" : "D-" + dd) + "</span>" +
       (d.flagship ? '<span class="tag blue">공고문 전문</span>' : "") +
       '<span class="nc-go">' + (ok && !closed ? "입찰하기 ›" : "\uD83D\uDD12 자격 미달") + "</span></div>" +
@@ -3366,7 +3433,7 @@ document.addEventListener("click", e => {
     return;
   }
   if (a === "ib") { BEAT = Math.min(6, BEAT + 1); render(); return; }
-  if (a === "iskip") { if (GATE) { BEAT = 6; render(); } else { S.screen = "sector"; render(); } return; }
+  if (a === "iskip") { if (GATE && BEAT < 6) { BEAT = 6; render(); return; } GATE = false; ACT.newGame(); return; }
   if (a === "help") { openGuide(t.dataset.g); return; }
   if (a === "scan") {
     S.screen = "scan"; S.phase = "list"; closeTerm();
@@ -3678,15 +3745,15 @@ document.addEventListener("click", e => {
     if (a === "splashGo") { if (GATE && BEAT === 0) { clearTimeout(window.__splashT); BEAT = 1; render(); } return; }
     if (a === "introNext") { if (GATE) { BEAT = Math.min(5, BEAT + 1); render(); } return; }
     if (a === "skipStory") { if (GATE) { BEAT = 5; render(); } return; }
-    /* 개업 — 캐릭터를 고르면 회사는 이미 차려져 있다. 바로 대시보드로. */
-    if (a === "startBiz") { const c = charOf(S.charId); if (!c) return; S.autoName = c.shop; S.typedName = c.shop; ACT.useAuto(); return; }
+    /* 개업 — 업종을 고르면 간판(회사 이름)을 걸고 나라장터에 등록한다 */
+    if (a === "startBiz") { const c = charOf(S.charId); if (!c) return; S.autoName = c.shop; S.typedName = c.shop; S.screen = "name"; render(); return; }
     if (a === "fxGet") { closeModal(); return; }
     if ((a === "newGame" || a === "continue") && GATE) GATE = false;
   }
 }, true);
 
 const ACT = {
-  newGame: () => { const m = S.mode; S = freshState(); S.mode = m; S.screen = "sector"; render(); },
+  newGame: () => { const m = S.mode; S = freshState(); S.mode = m; S.screen = "sector"; PG.key = ""; PG.i = 0; render(); },
   continue: () => { const o = load(); if (o) { S = o; if (!S.learned) S.learned = []; render(); } },
   mode: el => { S.mode = el.dataset.v; render(); },
   pickChar: el => { S.charId = el.dataset.id; render(); },
@@ -3706,6 +3773,15 @@ const ACT = {
   openNotice: el => {
     S.noticeId = el.dataset.id; S.watch = null; S.readOk = false; S.bid = null; S.bondChoice = "memo";
     S.screen = "detail"; render();
+  },
+  /* 잠긴 공고를 눌렀을 때 — 고장처럼 보이지 않게 이유를 알려 준다 */
+  lockedNotice: el => {
+    const item = (S.notices || []).find(x => x.nid === el.dataset.id);
+    const d = noticeDef(el.dataset.id);
+    if (!d) { toast("지금은 열 수 없는 공고입니다."); return; }
+    if (item && item.close <= S.now) { toast("마감된 공고입니다 · 다음 판에서 다시 도전하십시오."); return; }
+    const miss = eligibility(d).filter(r => !r.ok).map(r => r.label);
+    toast("자격 미달 — " + (miss.length ? miss.join(" · ") : "참가자격") + " · 회사 키우기에서 올릴 수 있습니다");
   },
   bond: el => { S.bondChoice = el.dataset.v; render(); },
   watch: el => {
