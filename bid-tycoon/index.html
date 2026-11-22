@@ -2239,7 +2239,8 @@ function openingSeenRecently() {
   try { const t = +(localStorage.getItem(SND_SEEN_KEY) || 0); return t > 0 && (Date.now() - t) < SND_SEEN_WINDOW; } catch (e) { return false; }
 }
 function markOpeningSeen() { try { localStorage.setItem(SND_SEEN_KEY, String(Date.now())); } catch (e) {} }
-function openingStartMuted() { return sndOff() || openingSeenRecently(); }
+/* 어떤 경우에도 저절로 소리가 나지 않는다 — 첫 화면은 늘 무음, 사람이 눌렀을 때만 소리를 켠다 */
+function openingStartMuted() { return true; }
 function sndButtonLabel() { return openingMutedNow() ? "🔇 소리 켜기" : "🔊 소리 끄기"; }
 /* 이번 방문의 오프닝 소리 상태 — 페이지를 열 때 한 번만 정하고, 영상이 바뀌어도 유지한다 */
 let __openingMuted = null;
@@ -2722,7 +2723,8 @@ function bindOpening() {
   /* 브라우저 자동재생 차단 시 화면을 누르면 재생되도록 (재생 중이면 건드리지 않는다) */
   const kick = e => {
     if (e && e.target && e.target.closest && e.target.closest("button")) return;
-    if (!v.paused && v.currentTime > 0) return;   /* 이미 재생 중 — 처음으로 되돌리지 않는다 */
+    if (!window.__sndChosen) { window.__sndChosen = true; muted = false; v.muted = false; }   /* 사람이 눌렀을 때만 소리를 켠다 */
+    if (!v.paused && v.currentTime > 0) { if (!v.muted && v.play) v.play().catch(function(){}); return; }
     clearPlay();
     tryPlay();
   };
@@ -3676,6 +3678,7 @@ document.addEventListener("click", e => {
     if (v) {
       v.muted = !v.muted;
       __openingMuted = v.muted;
+      window.__sndChosen = true;
       setSndOff(v.muted);                 /* 끈 상태는 다음 영상·다음 방문에도 이어진다 */
       if (!v.muted && v.play) v.play().catch(function(){});
       const b = document.querySelector(".vsnd");
