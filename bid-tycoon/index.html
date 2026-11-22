@@ -455,6 +455,7 @@ const RULES = {
   contractBondExempt: 50000000,        // 5천만원 이하 면제 + 지급확약서 (영 §50⑥3·⑩)
   lateCapRate: 0.30,                   // 지체상금 상한 30% (영 §74③)
   qualDocDays: 5,                      // 적격심사 서류 5일 (물품 세부기준 §3)
+  qualReviewDays: 3,                   // 심사 처리 3영업일 (게임용 설정 — 통과 뒤 낙찰자 결정 통지)
   qualFixDays: 7,                      // 보완 7일
   qualReexamDays: 3,                   // 재심사 요청 3일 (적격심사기준 §9③)
   contractDays: 10,                    // 낙찰통지 후 10일 내 계약
@@ -890,6 +891,8 @@ const eok = n => {
   return s + won(a) + "원";
 };
 const pct = (r, d = 2) => (r * 100).toFixed(d) + "%";
+/* 추정가격은 부가가치세를 뺀 금액 (국가계약법 시행령 §9②) — 기초금액은 부가세를 더한 금액 */
+const vatExcluded = n => Math.floor(n / 1.1);
 const dISO = ms => { const d = new Date(ms); return d.getUTCFullYear() + "-" + p2(d.getUTCMonth() + 1) + "-" + p2(d.getUTCDate()); };
 const fDate = ms => { const d = new Date(ms); return d.getUTCFullYear() + ". " + p2(d.getUTCMonth() + 1) + ". " + p2(d.getUTCDate()) + ". (" + WD[d.getUTCDay()] + ")"; };
 const fDT = ms => { const d = new Date(ms); return fDate(ms) + " " + p2(d.getUTCHours()) + ":" + p2(d.getUTCMinutes()); };
@@ -913,6 +916,12 @@ function bizDaysLeft(a, b) {
   let c = 0, t = a, guard = 0;
   while (t < b && guard++ < 400) { t = addDays(t, 1); if (t <= b && !isBn(t)) c++; }
   return c;
+}
+/* 주말·공휴일이면 그 앞 영업일로 — ‘14일 이내’ 같은 기한을 넘기지 않게 */
+function prevBiz(ms) {
+  let t = ms, guard = 0;
+  while (isBn(t) && guard++ < 30) t = addDays(t, -1);
+  return t;
 }
 /* 날짜만 보고 세는 D-day — 03.03 09:00 에서 03.06 마감이면 D-3 */
 const dayKey = ms => { const d = new Date(ms); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()); };
@@ -1081,7 +1090,6 @@ function lateFee(amount, rate, days) {
 function docHTML(n) {
   const c = CH();
   const cap = Math.floor(n.base * RULES.capRate);
-  const exempt = n.base <= RULES.contractBondExempt;
   const bondAmt = Math.round(n.base * RULES.bidBondRate);
 
   const attr = n.need.ownProd
@@ -1108,11 +1116,12 @@ function docHTML(n) {
     "<tr><th>공 고 명</th><td><b>" + n.name + "</b></td></tr>" +
     "<tr><th>발주기관</th><td>" + n.org + " (수요기관: " + n.demand + ")</td></tr>" +
     "<tr><th>사업 내용</th><td>" + n.spec + "</td></tr>" +
-    "<tr><th>추정가격</th><td>" + won(n.base) + "원 (부가가치세 포함)</td></tr>" +
-    "<tr><th>" + T("basePrice", "기초금액") + "</th><td><b>" + won(n.base) + "원</b></td></tr>" +
+    "<tr><th>추정가격</th><td>" + won(vatExcluded(n.base)) + "원 <span class='tiny muted'>(부가가치세 제외)</span></td></tr>" +
+    "<tr><th>" + T("basePrice", "기초금액") + "</th><td><b>" + won(n.base) + "원</b> <span class='tiny muted'>(부가가치세 포함)</span></td></tr>" +
     "<tr><th>납품·이행 기한</th><td>계약일부터 <b>" + n.deliverDays + "일</b></td></tr>" +
     "<tr><th>계약종류</th><td>" + n.contractKind + "</td></tr>" +
-    "</tbody></table>", "필수");
+    "</tbody></table>" +
+    '<p class="tiny muted">※ 추정가격은 부가가치세를 뺀 금액이고, 기초금액은 여기에 부가가치세를 더해 정한 금액입니다. 예정가격과 투찰가는 기초금액을 기준으로 계산합니다.</p>', "필수");
 
   /* 2 */
   h += sec("s2", "2. 계약방법 및 낙찰자 결정방법",
@@ -1139,8 +1148,7 @@ function docHTML(n) {
     "<p>가. " + T("bidBond", "입찰보증금") + ": 입찰금액의 <b>100분의 5 이상</b>(약 " + won(bondAmt) + "원). 다만 조달청은 신용거래불량자 등 예외를 제외하고 " + T("memo", "지급각서") + " 제출로 <b>면제</b>합니다.</p>" +
     "<p>나. 면제받은 자가 정당한 이유 없이 계약을 체결하지 아니하는 경우에는 보증금에 해당하는 금액을 현금으로 징수합니다.</p>" +
     "<p>다. " + T("contractBond", "계약보증금") + ": 계약금액의 <b>100분의 10 이상</b>. 다만 계약금액이 <b>5천만원 이하</b>인 경우 면제할 수 있으며, 이 경우 <b>지급확약서</b>를 제출하여야 합니다.</p>" +
-    '<p class="tiny muted">※ 이 공고의 추정가격은 ' + won(n.base) + "원이므로, 낙찰금액이 5천만원을 넘으면 계약보증금이 적용됩니다. (" +
-    (exempt ? "추정가격 기준으로는 면제 대상" : "면제 대상 아님") + ")</p>", "필수");
+    '<p class="tiny muted">※ 계약보증금 면제는 ‘계약금액’ 5천만원 이하를 기준으로 합니다. 이 공고의 기초금액은 ' + won(n.base) + "원(부가세 포함)이므로, 낙찰금액이 5천만원을 넘으면 계약보증금이 적용됩니다.</p>", "필수");
 
   /* 5 */
   h += sec("s5", "5. " + T("joint", "공동수급") + " 및 현장설명",
@@ -1163,7 +1171,7 @@ function docHTML(n) {
     "<p>가. " + T("yebi", "예비가격") + ": 기초금액의 ±2% 범위 안에서 서로 다른 15개의 가격을 작성·밀봉합니다.</p>" +
     "<p>나. 입찰자는 예비가격번호 <b>2개를 반드시 추첨</b>하여야 하며, 추첨하지 않으면 투찰할 수 없습니다.</p>" +
     "<p>다. 가장 많이 추첨된 번호 4개의 예비가격을 산술평균하여 예정가격으로 합니다. (동수인 경우 낮은 번호 순)</p>" +
-    "<p>라. 투찰 상한: 기초금액의 <b>102% 미만</b> — " + won(cap) + "원 미만만 시스템이 접수합니다.</p>" +
+    "<p>라. 투찰 상한: 기초금액의 <b>102% 미만</b> — " + won(cap) + "원 미만만 시스템이 접수합니다. <span class='tiny muted'>(이 공고 기준 · 공고에 따라 다를 수 있습니다)</span></p>" +
     "<p>마. " + T("lowerBound", "낙찰하한율") + ": <b>" + n.lbLabel + "</b>. 이보다 낮으면 1순위이어도 심사 대상이 되지 않습니다. <span class=\"tiny muted\">(" + n.lbBasis + ")</span></p>", "필수");
 
   /* 8 */
@@ -1188,7 +1196,7 @@ function docHTML(n) {
     "<p>가. 입찰서에는 <b>산출내역서</b>를 함께 제출하여야 합니다. 내지 않거나 금액이 다르면 " + T("invalid", "입찰 무효") + "입니다.</p>" +
     "<p>나. 제출한 입찰서는 <b>교환·변경·취소할 수 없습니다.</b> 정정공고가 나도 이미 낸 입찰서는 그대로 유효합니다.</p>" +
     "<p>다. 담합, 서류 위조·허위 제출, 승인 없는 하도급 등은 <b>6개월 ~ 2년</b>의 입찰참가자격 제한 사유입니다.</p>" +
-    "<p>라. " + T("yuchal", "유찰·재공고") + ": 재공고 후에도 입찰자·낙찰자가 없을 때 수의계약으로 전환될 수 있으며, 가격·조건은 변경되지 않습니다.</p>", "필수");
+    "<p>라. " + T("yuchal", "유찰·재공고") + ": 재공고 후에도 입찰자·낙찰자가 없을 때 수의계약으로 전환될 수 있으며, 가격·조건은 변경되지 않습니다. <span class='tiny muted'>(전환 조건과 재공고 횟수는 계약방법·공고에 따라 다릅니다)</span></p>", "필수");
 
   /* 11 */
   h += sec("s11", "11. 문의처",
@@ -1388,7 +1396,8 @@ function chrome(body, opts) {
   opts = opts || {};
   let h = (opts.bar === false ? "" : topbar()) + body;
   h += '<div class="footer">입찰 타이쿤 · 나라장터 입찰 전 과정 체험 (프로토타입)<br>' +
-    "규칙과 수치는 「나라장터 입찰 전 과정 조사」에서 가져왔고, 자료에 없는 값은 ‘게임용 설정’으로 표시했습니다.</div>";
+    "규칙과 수치는 「나라장터 입찰 전 과정 조사」에서 가져왔고, 자료에 없는 값은 ‘게임용 설정’으로 표시했습니다.<br>" +
+    "※ 이 게임의 판정은 게임 내 설정 기준입니다. 실제 입찰에서는 해당 공고문과 나라장터 유의사항을 반드시 확인하십시오.</div>";
   return h;
 }
 function toast(msg) {
@@ -1599,7 +1608,7 @@ function screenName() {
       '<div class="note" style="margin-top:14px">게임 안에서만 쓰는 가상 이름이며, 실제 사업자 등록과는 아무 관계가 없습니다.</div>' +
     "</div>" +
     guide("이 이름은 어디까지 따라갑니까",
-      ["입찰 참가 신청서, 투찰 화면, 개찰 결과표, 낙찰 통보문, 계약서, 제재 안내문, 결과 카드에 계속 나옵니다.",
+      ["입찰 참가 신청서, 투찰 화면, 개찰 결과표, 적격심사 대상자 통보문, 계약서, 제재 안내문, 결과 카드에 계속 나옵니다.",
        "실제 나라장터에서는 사업자등록증의 상호와 똑같이 써야 합니다. 다르면 ‘상호·대표자 변경등록 누락’으로 입찰이 무효가 될 수 있습니다."]);
   return chrome(body);
 }
@@ -1731,7 +1740,7 @@ function screenDetail() {
   if (!el3.length) qual = '<div class="tiny muted">이 공고는 별도 자본·실적 요건을 두지 않았습니다.</div>';
 
   const bondNote = n.base <= RULES.contractBondExempt
-    ? "추정가격이 5천만원 이하라 계약보증금은 면제 대상입니다. 다만 ‘지급확약서’는 반드시 내야 합니다."
+    ? "기초금액이 5천만원 이하라 낙찰금액도 5천만원을 넘지 않습니다. 계약보증금은 면제 대상이지만 ‘지급확약서’는 반드시 내야 합니다."
     : "계약보증금은 계약금액의 10%입니다. (낙찰금액이 5천만원 이하가 되면 면제 + 지급확약서)";
 
   const w = S.watch || (S.watch = buildWatch(n));
@@ -1832,6 +1841,9 @@ function screenBid() {
   const cap = Math.floor(n.base * RULES.capRate);
   const lbAmt = Math.ceil(n.base * n.lb);
   const sb = safeBand(n), safeLow = sb.low, safeHigh = sb.high;
+  /* 안전 구간이 하한율보다 몇 %p 위인지 — 실제 산식 값으로 표시한다 */
+  const pLow = (((safeLow / n.base) * 100) - (n.lb * 100)).toFixed(2);
+  const pHigh = (((safeHigh / n.base) * 100) - (n.lb * 100)).toFixed(2);
   const picksDone = S.bid.picks.length === 2;
   const amt = S.bid.amount;
 
@@ -1857,11 +1869,12 @@ function screenBid() {
         '<div style="text-align:right"><div class="tiny muted">마감</div><div style="font-weight:700">' + fDT(n.close) + "</div></div>" +
       "</div>" +
       '<div class="tw" style="margin-top:12px"><table><tbody>' +
-        "<tr><th style='width:38%'>제출할 수 있는 상한</th><td>기초금액의 102% <b>미만</b> — " + won(cap) + "원 미만</td></tr>" +
+        "<tr><th style='width:38%'>제출할 수 있는 상한</th><td>기초금액의 102% <b>미만</b> — " + won(cap) + "원 미만 <span class='tiny muted'>(게임 설정 기준 · 공고에 따라 다름)</span></td></tr>" +
         "<tr><th>" + T("lowerBound", "낙찰하한율") + " (" + n.lbLabel + ")</th><td>기초금액 기준 <b>" + won(lbAmt) + "원</b> <span class='tiny muted'>" + n.lbBasis + "</span></td></tr>" +
-        "<tr><th>가장 안전한 구간</th><td><b>" + won(safeLow) + " ~ " + won(safeHigh) + "원</b> <span class='tiny muted'>(" + GS + " · 하한율보다 2~2.5%p 높게)</span></td></tr>" +
+        "<tr><th>가장 안전한 구간</th><td><b>" + won(safeLow) + " ~ " + won(safeHigh) + "원</b> <span class='tiny muted'>(기초금액 기준 · 하한율보다 " + pLow + "~" + pHigh + "%p 높게, " + GS + ")</span></td></tr>" +
         "<tr><th>입찰보증금</th><td>" + (S.bondChoice === "memo" ? "지급각서 제출 (면제)" : "현금 " + eok(n.base * RULES.bidBondRate) + " 납부") + "</td></tr>" +
       "</tbody></table></div>" +
+      '<div class="note" style="margin-top:10px">※ 하한·안전 구간은 <b>기초금액</b> 기준으로 표시한 게임 설정 참고값입니다. <b>실제 판정은 예정가격 기준(±2%)</b>입니다 — 예정가격은 기초금액의 ±2% 안에서 정해지므로, 예정가격이 높게 나오면 같은 금액도 하한 아래로 떨어질 수 있습니다. 하한율·투찰 제한은 공고마다 다르니 공고문을 확인하십시오.</div>' +
     "</div>" +
     (S.watch ? recap : '<div class="warn">공고문의 조건 5개를 짚지 않고 왔습니다. 이대로 투찰하면 <b>다음 판에서 서류가 빠져 입찰이 무효</b>가 됩니다.</div>') +
 
@@ -1889,9 +1902,10 @@ function screenBid() {
     "</div>" +
 
     guide("값을 어디에 쓰면 좋을까요",
-      ["낙찰하한율보다 낮으면 1순위여도 심사 대상이 되지 않습니다. 하한선 바로 위가 가장 안전한 자리입니다.",
-       "기초금액의 102%를 넘기면 시스템이 접수하지 않습니다. 예정가격을 넘어도 낙찰 대상이 아닙니다.",
-       "같은 곳(같은 IP)에서 두 번 내면 무효입니다."],
+      ["낙찰하한율보다 낮으면 1순위여도 심사 대상이 되지 않습니다. 다만 실제 판정은 예정가격 기준이라, 하한선 겨우 위에 쓰면 예정가격이 높게 나올 때 하한 아래로 떨어집니다. 그래서 안전 구간을 따로 표시합니다.",
+       "기초금액의 102%를 넘는 투찰은 게임 설정상 시스템이 받지 않습니다(일부 공고 기준). 예정가격을 넘어도 낙찰 대상이 아닙니다.",
+       "같은 곳(같은 IP)에서 두 번 내면 무효입니다.",
+       "이 화면의 상한·하한·안전 구간은 게임 설정 기준입니다. 실제로는 그 공고문과 나라장터 유의사항이 기준입니다."],
       "bid") +
 
     '<div class="btn-row">' +
@@ -1917,7 +1931,7 @@ function bidJudgeHTML(n, amt) {
   return '<div class="gauge"><i class="' + (bad ? "low" : "mid") + '" style="width:' + Math.min(100, Math.max(0, rate - 60) / 45 * 100) + '%"></i></div>' +
     '<div class="tiny" style="margin-top:6px;color:' + (bad ? "var(--red)" : "var(--green)") + '">' +
     "기초금액의 " + rate.toFixed(3) + "% (" + won(amt) + "원" + edge + ") · " +
-    (amt < lbAmt ? "낙찰하한 아래 — 1순위여도 심사 대상이 아닙니다" : amt >= cap ? "102% 상한 초과 — 접수되지 않습니다" : "제출 가능한 구간입니다") + "</div>";
+    (amt < lbAmt ? "낙찰하한 아래 — 1순위여도 심사 대상이 아닙니다" : amt >= cap ? "102% 상한 초과 — 접수되지 않습니다 (게임 설정)" : "제출 가능한 구간입니다") + "</div>";
 }
 function bindBidInput() {
   const inp = document.getElementById("bidAmount");
@@ -1945,8 +1959,10 @@ function submitBid() {
   const box = document.getElementById("bidErr");
   if (box) box.style.display = "none";
   if (amt <= 0) return bidError("투찰가를 입력하십시오.");
-  if (amt >= cap) return bidError("기초금액의 <b>102%(" + won(cap) + "원)를 넘겨 시스템이 접수하지 않았습니다.</b><br>조달청 복수예가 입찰은 기초금액의 102% 미만만 받습니다. 금액을 낮춰 다시 쓰십시오.");
+  if (amt >= cap) return bidError("기초금액의 <b>102%(" + won(cap) + "원)를 넘긴 금액이라 접수되지 않았습니다.</b><br>복수예가 입찰은 기초금액의 102%를 넘는 투찰을 시스템이 제한하는 경우가 많고(게임은 102% 이상 접수 불가로 단순화), 상한은 공고마다 다를 수 있습니다. 금액을 낮춰 다시 쓰십시오.");
   if (n.close <= S.now) return bidError("마감 시각이 지나 접수되지 않았습니다. 서버 접수 시각이 기준입니다.");
+  /* 투찰이 끝나면 게임 시계도 개찰 시각으로 넘어간다 — 통지일·마감일이 개찰보다 앞서지 않게 */
+  S.now = n.close;
   S.bid.amount = amt;
   S.rivals = makeRivals(n);
   S.draw = drawYejeong(n);
@@ -2025,7 +2041,7 @@ function screenOpen() {
   else if (R.outcome === "하한미달") msg = "<b>가장 낮은 금액을 썼지만 심사 대상이 되지 못했습니다.</b> " + T("lowerBound", "낙찰하한율") + " " + n.lbLabel + "보다 낮았기 때문입니다. 1순위여도 하한 아래면 아예 심사하지 않습니다.";
   else if (R.outcome === "초과") msg = "<b>예정가격을 넘겼습니다.</b> 예정가격(" + won(yej) + "원)보다 비싼 입찰은 낙찰 대상이 되지 않습니다.";
   else if (R.outcome === "무효") msg = "<b>입찰이 무효가 되었습니다.</b> 산출내역서를 함께 내지 않았습니다. 공고문 10항 유의사항에 적혀 있던 조건입니다. 무효가 되면 순위에도 들지 못합니다. (국가계약법 시행규칙 제44조)";
-  else msg = "<b>유찰입니다.</b> 유효한 입찰자가 없습니다. 재공고하게 되며, 한 번 유찰됐다고 바로 수의계약으로 바뀌지는 않습니다.";
+  else msg = "<b>유찰입니다.</b> 유효한 입찰자가 없습니다. 재공고하게 되며, 한 번 유찰됐다고 바로 수의계약으로 바뀌지는 않습니다. 재공고 횟수와 수의계약 전환 조건은 계약방법·공고에 따라 다릅니다.";
 
   const rowsH = R.rows.map((r, i) => {
     const note = r.invalid ? "무효 (산출내역서 미제출)" : r.over ? "예정가격 초과" : r.lbFail ? "하한 미달 · 심사 대상 아님" : (r.qualRank === 1 ? "심사 1순위" : "심사 " + r.qualRank + "순위");
@@ -2104,7 +2120,7 @@ function screenQual() {
   if (!n || !R) { S.screen = "list"; return screenList(); }
   if (!S.qual) {
     const auto = S.mode === "quick";
-    S.qual = { docs: QUAL_DOCS.map(() => auto), deadline: addBizDays(S.now, RULES.qualDocDays), fixDeadline: null, phase: "form", score: null, tried: 0 };
+    S.qual = { docs: QUAL_DOCS.map(() => auto), notifiedAt: S.now, deadline: addBizDays(S.now, RULES.qualDocDays), fixDeadline: null, phase: "form", score: null, tried: 0 };
   }
   const q = S.qual;
   const left = bizDaysLeft(S.now, q.deadline);   // 토·일·공휴일은 세지 않는다
@@ -2147,6 +2163,7 @@ function screenQual() {
           "비가격 평점 (실적·신용·경영상태) = " + RULES.nonPriceScore.toFixed(2) + "점 (" + GS + ")\n" +
           "합계 = " + q.score.toFixed(2) + "점 / 통과점수 " + c.qualScore + "점</div>" : "") +
         '<p class="tiny muted" style="margin-top:8px">근거 · ' + c.qualBasis + ". 비가격 배점은 게임에서 30점 만점으로 단순화했습니다.</p>" +
+        (pass ? '<div class="tiny muted" style="margin-top:8px">낙찰자 결정 통지 · <b>' + fDT(R.awardedAt || S.now) + '</b> — 계약은 이 통지를 받은 날부터 10일 이내입니다.</div>' : "") +
         '<div class="btn-row">' +
           (pass ? '<button class="btn" data-act="toContract">계약하러 가기</button>'
                 : (q.failed ? '<button class="btn" data-act="giveUpQual">다음 공고로</button>'
@@ -2157,10 +2174,10 @@ function screenQual() {
   }
   const body =
     stepsHTML(5) +
-    '<div class="card tight" style="background:#fbfdff"><div class="tiny muted">낙찰 통보</div>' +
+    '<div class="card tight" style="background:#fbfdff"><div class="tiny muted">적격심사 대상자 통보</div>' +
       '<div style="font-weight:700;font-size:16px;margin:3px 0">' + esc(S.company) + " 귀하</div>" +
-      '<div class="tiny">「' + n.name + '」에 대하여 <b>적격심사 대상자</b>로 선정되었음을 통보합니다. 낙찰 금액은 <b>' + won(R.mine.amount) + "원</b>입니다.</div>" +
-      '<div class="tiny muted" style="margin-top:5px">' + n.org + " · " + fDT(S.now) + '</div><div class="seal" style="position:absolute"></div></div>' +
+      '<div class="tiny">「' + n.name + '」에 대하여 <b>적격심사 대상자</b>로 선정되었음을 통보합니다. 이것은 낙찰 확정이 아니라 심사 대상 통보입니다. 심사를 통과해야 낙찰자로 확정됩니다.<br>심사 대상 금액(내 투찰가)은 <b>' + won(R.mine.amount) + "원</b>입니다.</div>" +
+      '<div class="tiny muted" style="margin-top:5px">' + n.org + " · " + fDT(q.notifiedAt || S.now) + '</div><div class="seal" style="position:absolute"></div></div>' +
     core +
     guide("적격심사에서 실제로 많이 틀립니다",
       ["자기평가 및 심사표를 잘못 써서 점수가 깎입니다. 실적증명서를 미리 발급받아 두어야 합니다.",
@@ -2190,12 +2207,12 @@ function screenContract() {
     ? '<div class="good"><b>계약보증금 면제</b> — 계약금액 ' + won(amount) + "원은 5천만원 이하입니다.<br>" +
       "면제여도 <b>지급확약서</b>는 내야 합니다. 계약을 어기면 계약금액의 10%(" + won(k.bond) + "원)를 현금으로 냅니다.</div>"
     : '<div class="warn"><b>계약보증금 ' + won(k.bond) + "원</b> — 계약금액의 10%입니다. 계약체결일까지 내야 합니다.<br>" +
-      "내 자본 " + eok(S.capital) + "원에서 빼면 " + eok(S.capital - k.bond) + "원이 남습니다.</div>";
+      "내 자본 " + eok(S.capital) + "에서 빼면 " + eok(S.capital - k.bond) + "이 남습니다.</div>";
 
   const body =
     stepsHTML(6) +
     '<div class="card">' +
-      '<div class="tiny muted">낙찰 통지 후 10일 안에 계약합니다 · 남은 기한 ' + Math.max(0, RULES.contractDays - dDay(R.notifiedAt || S.now, S.now)) + "일 (통지 " + fDate(R.notifiedAt || S.now) + ")" +
+      '<div class="tiny muted">낙찰자 결정 통지 후 10일 안에 계약합니다 · 남은 기한 ' + Math.max(0, RULES.contractDays - dDay(R.awardedAt || R.notifiedAt || S.now, S.now)) + "일 (통지 " + fDate(R.awardedAt || R.notifiedAt || S.now) + ")" +
       '<div class="big" style="margin:4px 0 8px">계약서</div>' +
       '<dl class="kv">' +
         "<dt>계약상대자</dt><dd>" + esc(S.company) + "</dd>" +
@@ -2238,7 +2255,7 @@ function screenPerform() {
   let core = "";
   if (p.step === 0) {
     core = '<div class="card"><div class="card-title"><span class="ico">1</span>일을 시작합니다</div>' +
-      "<p>계약기간은 계약일부터 <b>" + n.deliverDays + "일</b>입니다. 오늘 착수합니다.</p>" +
+      "<p>계약기간은 계약일부터 <b>" + n.deliverDays + "일</b>입니다. 지정 납품일은 <b>" + fDate(k.due || nextBiz(addDays(S.now, n.deliverDays))) + "</b>이고, 오늘 착수합니다.</p>" +
       '<div class="btn-row"><button class="btn" data-act="work" data-step="1">작업 시작</button></div></div>';
   } else if (p.step === 1) {
     core = '<div class="card"><div class="card-title"><span class="ico">2</span>작업 중</div>' +
@@ -2246,22 +2263,23 @@ function screenPerform() {
       '<div class="btn-row"><button class="btn" data-act="work" data-step="2">계속 진행</button></div></div>';
   } else if (p.step === 2) {
     core = '<div class="card"><div class="card-title"><span class="ico">3</span>완성했습니다</div>' +
+      '<p class="tiny muted">지정 납품일은 <b>' + fDate(k.due || nextBiz(addDays(S.now, n.deliverDays))) + "</b>입니다. (계약일부터 " + n.deliverDays + "일 · 그날이 주말·공휴일이면 다음 영업일)</p>" +
       "<p>납품·이행완료 통지를 <b>날짜가 남는 형태</b>로 해야 합니다. 구두 통지는 나중에 지체일수 다툼이 됩니다.</p>" +
       '<div class="btn-row"><button class="btn" data-act="work" data-step="3">납품 완료 보고</button></div></div>';
   } else if (p.step === 3) {
     const lf = lateFee(amount, c.lateRate, p.lateDays);
     core = '<div class="card"><div class="card-title"><span class="ico">4</span>' + T("late", "지체상금") + "</div>" +
-      '<div class="bad">자재 입고가 늦어 납품이 <b>' + p.lateDays + "일</b> 늦었습니다. " + T("late", "지체상금") + "이 붙습니다.</div>" +
+      '<div class="bad">지정 납품일 <b>' + fDate(k.due || S.now) + "</b>보다 <b>" + p.lateDays + "일</b> 늦은 <b>" + fDate(p.actual || S.now) + "</b>에 납품했습니다. (자재 입고 지연) " + T("late", "지체상금") + "이 붙습니다.</div>" +
       '<div class="calc" style="margin-top:10px">지체상금 = 계약금액 × 지체상금률 × 지체일수\n' +
       "        = " + won(amount) + " × " + c.lateRate + " × " + p.lateDays + "\n" +
       "        = " + won(lf.fee) + "원" + (lf.capped ? "\n(상한 30% 적용)" : "") + "</div>" +
       '<p class="tiny muted" style="margin-top:8px">지체상금은 협상 대상이 아닙니다. 발주기관이 책임 있는 일수는 자료로 증명해야 뺄 수 있습니다.</p>' +
       '<div class="btn-row"><button class="btn" data-act="work" data-step="4">검사 신청</button></div></div>';
   } else if (p.step === 4) {
-    const inspDate = p.inspDue || addDays(S.now, RULES.inspectDays);
+    const inspDate = p.inspDue || prevBiz(addDays(S.now, RULES.inspectDays));
     core = '<div class="card"><div class="card-title"><span class="ico">5</span>' + T("inspect", "검사") + "</div>" +
       "<p>발주기관은 이행완료 통지를 받은 날부터 <b>14일</b> 안에 검사합니다. 검사에 합격해야 대금을 청구할 수 있습니다.</p>" +
-      '<div class="warn">이행완료 통지일 · <b>' + fDate(p.inspAsk || S.now) + "</b><br>검사 예정일 · <b>" + fDate(inspDate) + "</b> <span class='tiny muted'>(통지일부터 14일째)</span></div>" +
+      '<div class="warn">이행완료 통지일 · <b>' + fDate(p.inspAsk || S.now) + "</b> <span class='tiny muted'>(토·일·공휴일이면 다음 영업일)</span><br>검사 예정일 · <b>" + fDate(inspDate) + "</b> <span class='tiny muted'>(통지일부터 14일 이내 · 그날이 주말·공휴일이면 앞 영업일)</span></div>" +
       '<div class="card-title" style="margin-top:14px"><span class="ico">6</span>세금계산서를 언제 낼까요</div>' +
       '<p class="tiny muted">세금계산서 발행일이 청구일로 관리됩니다. 검사 전에 내면 반송될 수 있습니다.</p>' +
       '<div class="opts" style="margin-top:8px">' +
@@ -2346,8 +2364,9 @@ function screenEnd() {
     '<div class="card">' +
       '<div class="card-title"><span class="ico">→</span>실제로 나라장터를 할 때 확인할 것</div>' +
       "<p>1. 공고문의 <b>참가자격</b>과 <b>마감 시각</b>을 먼저 확인하십시오. 내 업종이라도 직접생산확인·면허가 없으면 들어갈 수 없습니다.</p>" +
-      "<p>2. 공고문의 <b>낙찰자 결정방법</b>과 <b>낙찰하한율</b>을 보고 값을 정하십시오. 기초금액의 102%를 넘으면 접수조차 되지 않습니다.</p>" +
+      "<p>2. 공고문의 <b>낙찰자 결정방법</b>과 <b>낙찰하한율</b>을 보고 값을 정하십시오. 기초금액의 102%를 넘는 투찰은 접수되지 않는 경우가 많으니, 공고에 적힌 투찰 상한을 먼저 확인하십시오.</p>" +
       "<p>3. 낙찰되면 <b>5일 안에 적격심사 서류</b>, <b>10일 안에 계약</b>입니다. 이 두 기한을 놓치면 낙찰이 사라집니다.</p>" +
+      "<p>4. 이 게임의 수치·판정(투찰 상한, 하한·안전 구간, 점수, 기한, 보증금)은 교육을 위해 단순화한 <b>게임 설정</b>입니다. 공고마다 다를 수 있으므로 실제 입찰에서는 해당 <b>공고문과 나라장터 유의사항</b>을 확인하십시오.</p>" +
     "</div>" +
     '<div class="card"><div class="card-title"></div>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
@@ -2500,6 +2519,11 @@ const ACT = {
     q.pricePart = priceScore(R.mine.amount, R.yej);
     q.score = q.pricePart + RULES.nonPriceScore;
     q.phase = "result";
+    /* 통과해야 낙찰자 확정 — 심사에 걸린 3영업일만큼 게임 시계도 흘러 낙찰자 결정 통지일이 된다 */
+    if (q.score >= CH().qualScore) {
+      S.now = addBizDays(S.now, RULES.qualReviewDays);
+      R.awardedAt = S.now;
+    }
     render();
   },
   delayQual: () => {
@@ -2523,8 +2547,13 @@ const ACT = {
   toContract: () => { S.contract = null; S.screen = "contract"; S.phase = "contract"; render(); },
   promise: () => { S.contract.promised = !S.contract.promised; render(); },
   signContract: () => {
-    const k = S.contract, c = CH();
+    const k = S.contract, c = CH(), n = noticeOf();
     k.cost = Math.round(k.amount * c.costRate);
+    /* 계약일과 지정 납품일을 계약 시점에 고정한다 — 수행 화면의 지체일수가 이 날짜를 본다 */
+    k.contractDay = S.now;
+    k.deliverDays = n ? n.deliverDays : 30;
+    /* 계약일부터 N일이 주말·공휴일이면 다음 영업일까지가 지정 납품일 */
+    k.due = nextBiz(addDays(k.contractDay, k.deliverDays));
     if (!k.exempt) { S.capital -= k.bond; k.bondPaid = true; }
     k.done = true;
     document.getElementById("modal-root").innerHTML =
@@ -2532,7 +2561,7 @@ const ACT = {
       '<svg class="seal" width="120" height="70" viewBox="0 0 120 70" style="display:block;margin:0 auto 6px">' +
       '<text x="60" y="40" text-anchor="middle" font-size="20" font-weight="800" fill="#c0392b" font-family="serif">' + esc(S.company) + "</text>" +
       '<text x="60" y="58" text-anchor="middle" font-size="13" fill="#c0392b" font-family="serif">(인)</text></svg>' +
-      "<h3>계약을 체결했습니다</h3><p class='tiny muted'>" + fDate(S.now) + " · 낙찰통지 후 10일 이내</p></div></div>";
+      "<h3>계약을 체결했습니다</h3><p class='tiny muted'>" + fDate(S.now) + " · 낙찰자 결정 통지 후 10일 이내</p></div></div>";
     setTimeout(() => {
       document.getElementById("modal-root").innerHTML = "";
       S.perform = null; S.screen = "perform"; S.phase = "perform"; render();
@@ -2551,14 +2580,24 @@ const ACT = {
 
   work: el => {
     const p = S.perform, step = +el.dataset.step, c = CH(), k = S.contract;
-    if (step === 1) { S.now = addDays(S.now, 5); p.step = 1; }
-    else if (step === 2) { S.now = addDays(S.now, 8); p.step = 2; }
+    /* 계약기간(납기)을 실제로 쓰게 한다 — 날짜는 계약일에서 계산한다 */
+    const len = k.deliverDays || 30;
+    const from = k.contractDay || S.now;
+    if (step === 1) { S.now = nextBiz(addDays(from, Math.max(1, Math.round(len * 0.33)))); p.step = 1; }
+    else if (step === 2) { S.now = nextBiz(addDays(from, Math.max(2, Math.round(len * 0.7)))); p.step = 2; }
     else if (step === 3) {
-      S.now = addDays(S.now, 5);
-      p.lateDays = 3;
+      /* 자재 입고가 늦어 지정 납품일보다 사흘 늦게 납품 — 주말·공휴일이면 다음 영업일 */
+      const planned = k.due ? nextBiz(addDays(k.due, 3)) : nextBiz(addDays(S.now, 3));
+      p.actual = planned;
+      S.now = planned;
+      p.lateDays = k.due ? Math.max(1, diffDays(k.due, planned)) : 3;
       p.fee = lateFee(k.amount, c.lateRate, p.lateDays).fee;
       p.step = 3;
-    } else if (step === 4) { p.inspAsk = S.now; p.inspDue = addDays(S.now, RULES.inspectDays); p.step = 4; }
+    } else if (step === 4) {
+      p.inspAsk = S.now;
+      p.inspDue = prevBiz(addDays(S.now, RULES.inspectDays));
+      p.step = 4;
+    }
     else if (step === 6) {
       const due = p.payDue || addBizDays(p.claimDay || S.now, RULES.payDays);
       S.now = due;
@@ -2575,8 +2614,8 @@ const ACT = {
     p.invoice = el.dataset.v;
     /* 검사가 끝나는 날(=청구할 수 있는 날)을 기준으로 기한을 잡는다.
        검사 전에 낸 계산서는 반송되고, 반송일부터 다시 청구한 날까지는 지급기간에 넣지 않는다. */
-    const done = p.inspDue || addDays(S.now, RULES.inspectDays);
-    p.claimDay = p.invoice === "before" ? addDays(done, RULES.invoiceBounceDays) : done;
+    const done = p.inspDue || prevBiz(addDays(S.now, RULES.inspectDays));
+    p.claimDay = p.invoice === "before" ? nextBiz(addDays(done, RULES.invoiceBounceDays)) : done;
     p.payDue = addBizDays(p.claimDay, RULES.payDays);
     S.now = p.claimDay;
     p.step = 5;
