@@ -440,6 +440,11 @@
 
   /* ============================ 투찰 입력 ============================ */
   .money-in{position:relative;display:flex;align-items:center;margin-top:8px}
+  .namefield{position:relative;display:flex;align-items:center;margin-top:8px}
+  .namefield input{width:100%;font-family:inherit;font-size:17px;font-weight:800;color:#fff;background:#0a1320;
+    border:2px solid #24344f;border-radius:10px;padding:10px 12px;min-height:44px;box-shadow:inset 0 3px 8px rgba(0,0,0,.7)}
+  .namefield input:focus{outline:none;border-color:var(--gold);box-shadow:inset 0 3px 8px rgba(0,0,0,.7), 0 0 0 3px rgba(255,199,58,.25)}
+  .namefield input::placeholder{color:#6b7f9c;font-weight:700}
   .money-in input{width:100%;font-family:inherit;font-size:24px;font-weight:900;text-align:right;
     padding:11px 46px 11px 14px;border-radius:15px;letter-spacing:-.02em;
     background:#08101c;border:3px solid #3d5a86;color:#ffe08a;font-variant-numeric:tabular-nums;
@@ -2198,6 +2203,7 @@ function hudHTML() {
 
 /* ---------------------------- 장면 틀 ---------------------------- */
 function frame(pages, key, land) {
+  window.__sceneKey = key;
   const n = pages.length, i = pageIdx(key, n, land), s = pages[i] || {};
   const dots = pages.map((x, k) => '<i class="' + (k === i ? "on" : k < i ? "past" : "") + '"></i>').join("");
   const acts = s.acts || (i < n - 1 ? '<button class="btn big-btn" data-act="pg" data-k="1">다음</button>' : "");
@@ -2221,7 +2227,7 @@ function frame(pages, key, land) {
 function toast(msg) {
   const t = document.getElementById("toast");
   if (!t) return;
-  t.textContent = msg; t.classList.add("show");
+  t.textContent = msg; t.classList.add("show"); t.dataset.at = String(Date.now());
   clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("show"), 2800);
 }
 function modal(html) { document.getElementById("modal-root").innerHTML = '<div class="modal-bg" data-act="closeModal"><div class="modal pop" data-stop="1">' + html + "</div></div>"; }
@@ -2270,9 +2276,18 @@ function screenOf(sc) {
 }
 function render() {
   const sc = GATE ? "intro" : S.screen;
+  const prevKey = window.__sceneKey;
   app().innerHTML = screenOf(sc);
+  /* 장면이 바뀌면 앞 장면에서 띄운 하단 안내 토스트는 지운다 */
+  if (prevKey !== undefined && window.__sceneKey !== prevKey) clearToastOnSceneChange();
   if (S && S.company) save();
   afterRender();
+}
+function clearToastOnSceneChange() {
+  const t = document.getElementById("toast");
+  if (!t || !t.classList.contains("show")) return;
+  if (Date.now() - (+t.dataset.at || 0) < 400) return; /* 같은 조작에서 띄운 안내는 남긴다 */
+  clearTimeout(t._t); t.classList.remove("show");
 }
 function countUp(el, to, fmt) {
   if (!el) return;
@@ -2683,21 +2698,44 @@ function screenName() {
     tag: "개업",
     say: sayBoss("간판만 걸면 됩니다. 나라장터에도 등록해 둘게요.", null),
     body: '<div class="signstage">' +
-      '<div class="signboard"><div class="sn">' + esc(S.autoName) + '</div><div class="ss">' + c.name + " · " + c.owner + "</div></div>" +
+      '<div class="signboard"><div class="sn" id="signName">' + esc(S.typedName || S.autoName) + '</div><div class="ss">' + c.name + " · " + c.owner + "</div></div>" +
       '<div class="note" style="margin-top:8px">' + c.shop + " 문 열었습니다! 오늘부터 나라장터에 입찰해 볼 겁니다.</div>" +
       '<div class="mini4" style="grid-template-columns:repeat(2,minmax(0,1fr))">' + miniStat("자본금", eok(c.start.capital)) + miniStat("신용", c.credit) +
         miniStat("실적", c.start.perf ? eok(c.start.perf) : "없음") + miniStat("직원", c.start.staff + "명") + "</div>" +
+      '<div class="namefield"><input id="companyName" type="text" inputmode="text" maxlength="20" autocomplete="off" spellcheck="false" placeholder="회사 이름 직접 입력" value="' + esc(S.typedName || S.autoName) + '" aria-label="회사 이름"></div>' +
+      '<div id="nameErr" class="bad" style="display:none;margin-top:6px"></div>' +
       '<p class="tiny muted" style="margin-top:8px">한글·영문·숫자만, 2~20자. 이 이름이 계약서·개찰표까지 따라갑니다.</p>' +
       "</div>" +
       guide("이 이름은 어디까지 따라갑니까", [
         "입찰 참가 신청서, 투찰 화면, 개찰 결과표, 적격심사 통보문, 계약서, 제재 안내문, 결과 카드에 계속 나옵니다.",
         "실제 나라장터에서는 사업자등록증의 상호와 똑같이 써야 합니다. 다르면 ‘상호·대표자 변경등록 누락’으로 입찰이 무효가 될 수 있습니다."]),
     acts: '<button class="btn subtle" data-act="reroll">다시 뽑기</button>' +
-      '<button class="btn big-btn" data-act="useAuto">이 이름 쓰기</button>'
+      '<button class="btn big-btn" data-act="useAuto">이 이름으로 개업하기</button>'
   };
-  return frame([p], "name" + S.autoName);
+  return frame([p], "name" + (S.typedName || S.autoName));
 }
-function bindNameInput() { }
+/* 회사 이름 직접 입력 — 이름을 고치는 동안에는 화면을 다시 그리지 않고 간판 글자만 바꾼다 */
+function bindNameInput() {
+  const inp = document.getElementById("companyName");
+  if (!inp) return;
+  const board = document.getElementById("signName");
+  const err = document.getElementById("nameErr");
+  const apply = () => {
+    const v = inp.value.replace(/[^가-힣a-zA-Z0-9]/g, "").slice(0, 20);
+    if (inp.value !== v) inp.value = v;
+    S.typedName = v;
+    if (board) board.textContent = v || "(이름 없음)";
+    if (err) {
+      if (v && !validateName(v).ok) { err.innerHTML = validateName(v).msg; err.style.display = ""; }
+      else err.style.display = "none";
+    }
+  };
+  inp.addEventListener("input", apply);
+  inp.addEventListener("change", () => { save(); });
+  inp.addEventListener("keydown", e => {
+    if (e.key === "Enter") { const b = document.querySelector('[data-act="useAuto"]'); if (b) b.click(); }
+  });
+}
 
 /* =====================================================================
    [23] 내 회사 — 자본·성장·다음 할 일
@@ -3010,7 +3048,7 @@ function screenBid() {
     acts: picksDone ? '<button class="btn big-btn" data-act="pg" data-k="1">투찰률 정하러 가기</button>' : '<button class="btn big-btn" disabled>번호 2개를 뽑으세요</button>'
   };
 
-  const amt = S.bid.amount || Math.round(n.base * 0.95);
+  const amt = S.bid.amount || Math.round(n.base * 0.95 / 1000) * 1000;
   const ratePct = Math.min(101.99, Math.max(78, amt / n.base * 100));
   const lbPos = ((n.lb * 100) - 78) / (101.99 - 78) * 100;
   const recap = S.watch ? '<div class="recap">공고문에서 짚은 것 · ' + (watchDone() ? "5개 모두 확인" : watchScore() + "/5 확인") + "</div>"
@@ -3047,8 +3085,11 @@ function bindBidInput() {
   };
   if (sl) {
     sl.addEventListener("input", () => {
-      const rate = (+sl.value) / 100;
-      const amt = Math.round(n.base * (rate / 100) / 1000) * 1000;
+      const mu = +sl.value;                                   /* 만분율 — 화면에 보이는 소수 둘째 자리 투찰률 */
+      const amt = Math.round(n.base * mu / 10000 / 1000) * 1000;
+      /* 천원 단위로 맞춘 금액이 슬라이더 값과 어컷나면 슬라이더를 실제 비율로 되돌린다 */
+      const back = Math.round(amt / n.base * 10000 / 5) * 5;
+      if (back !== mu) sl.value = String(Math.min(10199, Math.max(7800, back)));
       S.bid.amount = amt;
       paint(amt);
     });
@@ -3345,7 +3386,7 @@ function screenPerform() {
     tag = "지체상금";
     const lf = lateFee(amount, c.lateRate, p.lateDays);
     body = '<div class="card"><div class="card-title"><span class="ico">4</span>' + T("late", "지체상금") + "</div>" +
-      '<div class="bad">지정 납품일 <b>' + fDate(k.due || S.now) + "</b>보다 <b>" + p.lateDays + "일</b> 늦은 <b>" + fDate(p.actual || S.now) + "</b>에 납품했습니다. (자재 입고 지연) " + T("late", "지체상금") + "이 붙습니다.</div>" +
+      '<div class="bad">지정 납품일 <b>' + fDate(k.due || S.now) + "</b>보다 <b>" + p.lateDays + "일</b> 늦은 <b>" + fDate(p.actual || S.now) + "</b>에 납품했습니다. (자재 입고 지연) 지체상금 <b>" + won(lf.fee) + "원</b>이 붙습니다.</div>" +
       '<div class="calc" style="margin-top:8px">지체상금 = 계약금액 × 지체상금률 × 지체일수\n        = ' + won(amount) + " × " + c.lateRate + " × " + p.lateDays + "\n        = " + won(lf.fee) + "원" + (lf.capped ? "\n(상한 30% 적용)" : "") + "</div>" +
       '<p class="tiny muted" style="margin-top:6px">지체상금은 협상 대상이 아닙니다. 발주기관이 책임 있는 일수는 자료로 증명해야 뺄 수 있습니다.</p></div>';
     acts = '<button class="btn big-btn" data-act="work" data-step="4">검사 신청</button>';
@@ -3776,8 +3817,13 @@ const ACT = {
   quiz: el => { S.quiz[+el.dataset.q] = el.dataset.v; render(); },
   toName: () => { S.screen = "name"; S.nameMode = "auto"; S.autoName = S.autoName || genName(S.charId); render(); },
   modeName: el => { S.nameMode = el.dataset.m; render(); },
-  reroll: () => { S.autoName = genName(S.charId); render(); },
-  useAuto: () => commitName(S.autoName),
+  reroll: () => { S.autoName = genName(S.charId); S.typedName = S.autoName; render(); },
+  useAuto: () => {
+    const nm = String(S.typedName || S.autoName || "").trim();
+    const v = validateName(nm);
+    if (!v.ok) { toast(v.msg); return; }
+    commitName(nm);
+  },
   useManual: () => {
     const v = validateName(S.typedName);
     if (!v.ok) { toast(v.msg); return; }
@@ -3846,7 +3892,7 @@ const ACT = {
     else if (v === "base") amt = n.base;
     else if (v === "under") amt = n.base * (n.lb - 0.03);
     else if (v === "over") amt = n.base * 1.03;
-    S.bid.amount = Math.round(amt / 1000) * 1000;
+    S.bid.amount = Math.round(n.base * (Math.round(amt / n.base * 10000 / 5) * 5) / 10000 / 1000) * 1000;
     render();
   },
   submitBid: submitBid,
